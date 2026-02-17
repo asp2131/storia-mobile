@@ -1,0 +1,145 @@
+[
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "afa1783",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833/subagents/agent-afa1783.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a8c0e97",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833/subagents/agent-a8c0e97.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a333371",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833/subagents/agent-a333371.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "ac11aa7",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833/subagents/agent-ac11aa7.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "b1930f2d-908d-4913-929f-7471f37283e1",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b1930f2d-908d-4913-929f-7471f37283e1.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a05dda9",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b1930f2d-908d-4913-929f-7471f37283e1/subagents/agent-a05dda9.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "b1930f2d-908d-4913-929f-7471f37283e1",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b1930f2d-908d-4913-929f-7471f37283e1.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a5d0985",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b1930f2d-908d-4913-929f-7471f37283e1/subagents/agent-a5d0985.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "ad37372",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8/subagents/agent-ad37372.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a5bfdba",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8/subagents/agent-a5bfdba.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a3a5627",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8/subagents/agent-a3a5627.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a0449d2",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa/subagents/agent-a0449d2.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a703e12",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa/subagents/agent-a703e12.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/31fe48ea-4e1b-40e7-9d0c-846a9a08f412.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "ad2ec2d",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/31fe48ea-4e1b-40e7-9d0c-846a9a08f412/subagents/agent-ad2ec2d.jsonl",
+    "agent_type": ""
+  },
+  {
+    "session_id": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/31fe48ea-4e1b-40e7-9d0c-846a9a08f412.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false,
+    "agent_id": "a1b868f",
+    "agent_transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/31fe48ea-4e1b-40e7-9d0c-846a9a08f412/subagents/agent-a1b868f.jsonl",
+    "agent_type": ""
+  }
+]

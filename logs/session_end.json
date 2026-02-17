@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionEnd",
+    "reason": "prompt_input_exit",
+    "logged_at": "2026-02-08T16:07:07.911579"
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionEnd",
+    "reason": "other",
+    "logged_at": "2026-02-16T07:04:51.065533"
+  },
+  {
+    "session_id": "b1930f2d-908d-4913-929f-7471f37283e1",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b1930f2d-908d-4913-929f-7471f37283e1.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionEnd",
+    "reason": "other",
+    "logged_at": "2026-02-16T07:04:51.425233"
+  },
+  {
+    "session_id": "390b51bb-416e-4a3e-abab-685a110212a5",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/390b51bb-416e-4a3e-abab-685a110212a5.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionEnd",
+    "reason": "prompt_input_exit",
+    "logged_at": "2026-02-16T07:13:10.896156"
+  },
+  {
+    "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionEnd",
+    "reason": "other",
+    "logged_at": "2026-02-17T09:49:55.262082"
+  }
+]

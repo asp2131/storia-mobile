@@ -1,0 +1,146 @@
+[
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "lets put the audio controls in between the illustration and page text"
+  },
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "on @app/reader/[id].tsx ?"
+  },
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the audio controls are cleary still under the text, come on claude"
+  },
+  {
+    "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia/b84b1a7f-f1f4-4449-a894-8d20ce664833.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "put a little space in between the image and the audio controls"
+  },
+  {
+    "session_id": "b1930f2d-908d-4913-929f-7471f37283e1",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b1930f2d-908d-4913-929f-7471f37283e1.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "when logging in/signing up i see network request failed"
+  },
+  {
+    "session_id": "b1930f2d-908d-4913-929f-7471f37283e1",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b1930f2d-908d-4913-929f-7471f37283e1.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Lets get rid of auth for now and make the initial view the library page"
+  },
+  {
+    "session_id": "b1930f2d-908d-4913-929f-7471f37283e1",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b1930f2d-908d-4913-929f-7471f37283e1.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "are we connected to postgresql://postgres:postgres@localhost:5432/storia_dev?"
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "i put a NEXT_PUBLIC_SUPABASE_URL , NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY , NEXT_PUBLIC_SUPABASE_ANON_KEY in the .env so that we can connect to our supabase db"
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "yes psl"
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "seems like it actually connected to my local dev pg db, which is fine"
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": " ERROR  [WorkletsError: [Worklets] Mismatch between JavaScript part and native part of Worklets (0.7.2 vs 0.5.1).\n    See `https://docs.swmansion.com/react-native-worklets/docs/guides/troubleshooting#mismatch-between-javascript-part-and-native-part-of-worklets` for more details.]\n\nCode: _layout.tsx\n  4 | import { useFonts } from 'expo-font';\n  5 | import * as SplashScreen from 'expo-splash-screen';\n> 6 | import { GestureHandlerRootView } from 'react-native-gesture-handler';\n    | ^\n  7 | import { QueryProvider } from '@/providers/QueryProvider';\n  8 |\n  9 | SplashScreen.preventAutoHideAsync();\nCall Stack\n  <global> (app/_layout.tsx:6)"
+  },
+  {
+    "session_id": "30c57881-32a4-4c67-8515-08de8745fbf8",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/30c57881-32a4-4c67-8515-08de8745fbf8.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "<task-notification>\n<task-id>ba0fbf8</task-id>\n<output-file>/private/tmp/claude-503/-Users-akinpound-Documents-experiments-storia-mobile/tasks/ba0fbf8.output</output-file>\n<status>killed</status>\n<summary>Background command \"Start Expo with cleared cache\" was stopped</summary>\n</task-notification>\nRead the output file to retrieve the result: /private/tmp/claude-503/-Users-akinpound-Documents-experiments-storia-mobile/tasks/ba0fbf8.output"
+  },
+  {
+    "session_id": "390b51bb-416e-4a3e-abab-685a110212a5",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/390b51bb-416e-4a3e-abab-685a110212a5.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "t.\n ERROR  [WorkletsError: [Worklets] Mismatch between JavaScript part and native part of Worklets (0.7.3 vs 0.5.1).\n    See `https://docs.swmansion.com/react-native-worklets/docs/guides/troubleshooting#mismatch-between-javascript-part-and-native-part-of-worklets` for more details.] \n\nCode: _layout.tsx\n  4 | import { useFonts } from 'expo-font';\n  5 | import * as SplashScreen from 'expo-splash-screen';\n> 6 | import { GestureHandlerRootView } from 'react-native-gesture-handler';\n    | ^\n  7 | import { QueryProvider } from '@/providers/QueryProvider';\n  8 |\n  9 | SplashScreen.preventAutoHideAsync();\nCall Stack\n  <global> (app/_layout.tsx:6)"
+  },
+  {
+    "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "t.\n ERROR  [WorkletsError: [Worklets] Mismatch between JavaScript part and native part of Worklets (0.7.3 vs 0.5.1).\n    See `https://docs.swmansion.com/react-native-worklets/docs/guides/troubleshooting#mismatch-between-javascript-part-and-native-part-of-worklets` for more details.] \n\nCode: _layout.tsx\n  4 | import { useFonts } from 'expo-font';\n  5 | import * as SplashScreen from 'expo-splash-screen';\n> 6 | import { GestureHandlerRootView } from 'react-native-gesture-handler';\n    | ^\n  7 | import { QueryProvider } from '@/providers/QueryProvider';\n  8 |\n  9 | SplashScreen.preventAutoHideAsync();\nCall Stack\n  <global> (app/_layout.tsx:6)"
+  },
+  {
+    "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "did you check this out? https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/getting-started/"
+  },
+  {
+    "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "warn: incorrect peer dependency \"react@19.1.0\"\n\n+ @types/react@19.1.17 (v19.2.14 available)"
+  },
+  {
+    "session_id": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/31fe48ea-4e1b-40e7-9d0c-846a9a08f412.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "npx expo-doctor\n\nnpm warn Unknown user config \"python\". This will stop working in the next major version of npm.                                   \nenv: load .env\nenv: export EXPO_PUBLIC_API_URL NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY NEXT_PUBLIC_SUPABASE_ANON_KEY      \n16/17 checks passed. 1 checks failed. Possible issues detected:\nUse the --verbose flag to see more details about passed checks.\n\n\u2716 Check that packages match versions required by installed Expo SDK                                                               \nnpm warn Unknown env config \"python\". This will stop working in the next major version of npm.                                    \nnpm warn Unknown user config \"python\". This will stop working in the next major version of npm.                                   \nAdvice:\nUse 'npx expo install --check' to review and upgrade your dependencies.                                                           \nTo ignore specific packages, add them to \"expo.install.excle\" in package.json. Learn more: https://expo.fyi/dependency-validation                                                                \n\n1 check failed, indicating possible issues with the project."
+  },
+  {
+    "session_id": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/31fe48ea-4e1b-40e7-9d0c-846a9a08f412.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "warning: Run script build phase '[CP-User] [Hermes] Replace Hermes for the right configuration, if needed' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking \"Based on dependency analysis\" in the script phase. (in target 'hermes-engine' from project 'Pods')\nnote: Run script build phase '[CP-User] [RNDeps] Replace React Native Dependencies for the right configuration, if needed' will be run during every build because the option to run the script phase \"Based on dependency analysis\" is unchecked. (in target 'ReactNativeDependencies' from project 'Pods')\nnote: Run script build phase '[CP-User] [RN]Check FBReactNativeSpec' will be run during every build because the option to run the script phase \"Based on dependency analysis\" is unchecked. (in target 'React-RCTFBReactNativeSpec' from project 'Pods')\nnote: Run script build phase '[CP-User] Generate app.config for prebuilt Constants.manifest' will be run during every build because the option to run the script phase \"Based on dependency analysis\" is unchecked. (in target 'EXConstants' from project 'Pods')\n\n\n--- xcodebuild: WARNING: Using the first of multiple matching destinations:\n{ platform:iOS Simulator, id:A2595BF1-75BC-42C0-A14C-DFF434756183, OS:18.1, name:iPhone 16 Plus }\n{ platform:iOS Simulator, id:A2595BF1-75BC-42C0-A14C-DFF434756183, OS:18.1, name:iPhone 16 Plus }\n** BUILD FAILED **\n\n\nThe following build commands failed:\n        CompileAssetCatalogVariant thinned /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Storia.app /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets (in target 'Storia' from project 'Storia')\n        Building workspace Storia with scheme Storia and configuration Debug\n(2 failures)\nBuild logs written to /Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log\nerror: script \"ios\" exited with code 1"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+  "prompts": [
+    "t.\n ERROR  [WorkletsError: [Worklets] Mismatch between JavaScript part and native part of Worklets (0.7.3 vs 0.5.1).\n    See `https://docs.swmansion.com/react-native-worklets/docs/guides/troubleshooting#mismatch-between-javascript-part-and-native-part-of-worklets` for more details.] \n\nCode: _layout.tsx\n  4 | import { useFonts } from 'expo-font';\n  5 | import * as SplashScreen from 'expo-splash-screen';\n> 6 | import { GestureHandlerRootView } from 'react-native-gesture-handler';\n    | ^\n  7 | import { QueryProvider } from '@/providers/QueryProvider';\n  8 |\n  9 | SplashScreen.preventAutoHideAsync();\nCall Stack\n  <global> (app/_layout.tsx:6)",
+    "did you check this out? https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/getting-started/",
+    "warn: incorrect peer dependency \"react@19.1.0\"\n\n+ @types/react@19.1.17 (v19.2.14 available)"
+  ]
+}

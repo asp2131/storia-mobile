@@ -1,0 +1,9 @@
+{
+  "session_id": "b84b1a7f-f1f4-4449-a894-8d20ce664833",
+  "prompts": [
+    "lets put the audio controls in between the illustration and page text",
+    "on @app/reader/[id].tsx ?",
+    "the audio controls are cleary still under the text, come on claude",
+    "put a little space in between the image and the audio controls"
+  ]
+}

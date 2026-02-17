@@ -1,0 +1,31 @@
+[
+  {
+    "timestamp": "2026-02-16T07:28:33.140421",
+    "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+    "hook_event_name": "PostToolUseFailure",
+    "tool_name": "Read",
+    "tool_use_id": "toolu_01M2vFKoDRAbMeTWcBt8bWrH",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/babel.config.js"
+    },
+    "error": "File does not exist.",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+    "raw_input": {
+      "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "permission_mode": "default",
+      "hook_event_name": "PostToolUseFailure",
+      "tool_name": "Read",
+      "tool_input": {
+        "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/babel.config.js"
+      },
+      "tool_use_id": "toolu_01M2vFKoDRAbMeTWcBt8bWrH",
+      "error": "File does not exist.",
+      "is_interrupt": false,
+      "logged_at": "2026-02-16T07:28:33.140421"
+    }
+  }
+]

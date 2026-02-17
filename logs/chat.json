@@ -1,0 +1,1302 @@
+[
+  {
+    "type": "file-history-snapshot",
+    "messageId": "50d44188-a99f-47ca-99db-ef45878d719e",
+    "snapshot": {
+      "messageId": "50d44188-a99f-47ca-99db-ef45878d719e",
+      "trackedFileBackups": {},
+      "timestamp": "2026-02-17T19:21:11.596Z"
+    },
+    "isSnapshotUpdate": false
+  },
+  {
+    "parentUuid": null,
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "SessionStart",
+      "hookName": "SessionStart:startup",
+      "command": "uv run ~/.claude/hooks/session_start.py"
+    },
+    "parentToolUseID": "e166ca67-6e07-4e91-983a-00b57f42741b",
+    "toolUseID": "e166ca67-6e07-4e91-983a-00b57f42741b",
+    "timestamp": "2026-02-17T19:21:08.202Z",
+    "uuid": "cdc5ea56-4bcc-4c3f-9c30-543da804ee8f"
+  },
+  {
+    "parentUuid": "cdc5ea56-4bcc-4c3f-9c30-543da804ee8f",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": "npx expo-doctor\n\nnpm warn Unknown user config \"python\". This will stop working in the next major version of npm.                                   \nenv: load .env\nenv: export EXPO_PUBLIC_API_URL NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY NEXT_PUBLIC_SUPABASE_ANON_KEY      \n16/17 checks passed. 1 checks failed. Possible issues detected:\nUse the --verbose flag to see more details about passed checks.\n\n\u2716 Check that packages match versions required by installed Expo SDK                                                               \nnpm warn Unknown env config \"python\". This will stop working in the next major version of npm.                                    \nnpm warn Unknown user config \"python\". This will stop working in the next major version of npm.                                   \nAdvice:\nUse 'npx expo install --check' to review and upgrade your dependencies.                                                           \nTo ignore specific packages, add them to \"expo.install.excle\" in package.json. Learn more: https://expo.fyi/dependency-validation                                                                \n\n1 check failed, indicating possible issues with the project."
+    },
+    "uuid": "50d44188-a99f-47ca-99db-ef45878d719e",
+    "timestamp": "2026-02-17T19:21:11.507Z",
+    "thinkingMetadata": {
+      "maxThinkingTokens": 31999
+    },
+    "todos": [],
+    "permissionMode": "default"
+  },
+  {
+    "parentUuid": "50d44188-a99f-47ca-99db-ef45878d719e",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_011FhZXiWsw3qfZztC54BGd7",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "\n\n"
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 3,
+        "cache_creation_input_tokens": 22537,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 22537
+        },
+        "output_tokens": 11,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    },
+    "requestId": "req_011CYEBd27XHQJ3j1VSDU4rU",
+    "type": "assistant",
+    "uuid": "5c706b22-0260-421b-8a4c-ef6e72cb4dba",
+    "timestamp": "2026-02-17T19:21:14.570Z"
+  },
+  {
+    "parentUuid": "5c706b22-0260-421b-8a4c-ef6e72cb4dba",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_011FhZXiWsw3qfZztC54BGd7",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The user wants to fix the dependency version mismatch. Let me run the suggested command.",
+          "signature": "EoACCkYICxgCKkA3C+Z8io+SL/YyZs3eBQSm4WhOyACQFxT+1d01sYaKFFoN/lnEPHJNcbicDqP0DVmF6JgV2txeQT8n0QZs5pbfEgyhQxZasuRlk19IihMaDMPNUgy7ipu+daTibCIwJSB3BKxyHEMisLTWtf0q7Nq0tsfrOIpVmV7FBB5lfj2GpcENlydXgZ2vwMpD4fIZKmiyRr0G9bqL/4zknwa+DuCEBA07LHisR+NPq9wetFVF6Z39UBBiQLZiyZOrWU6E7VpY7Q5SjeHYSjHImr1rX47p5TTJlI5qkW1PCV9jpEu557Kl0YOgbVGqT7MezyhBuwhvQnLbkKHdVxgB"
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 3,
+        "cache_creation_input_tokens": 22537,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 22537
+        },
+        "output_tokens": 11,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    },
+    "requestId": "req_011CYEBd27XHQJ3j1VSDU4rU",
+    "type": "assistant",
+    "uuid": "3dae7434-59b1-4125-b173-ab53fb0d2f9e",
+    "timestamp": "2026-02-17T19:21:15.382Z"
+  },
+  {
+    "parentUuid": "3dae7434-59b1-4125-b173-ab53fb0d2f9e",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_011FhZXiWsw3qfZztC54BGd7",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_018pmYLQT3BqbF5bA3ephqvh",
+          "name": "Bash",
+          "input": {
+            "command": "npx expo install --check 2>&1",
+            "description": "Check and list dependency version mismatches"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 3,
+        "cache_creation_input_tokens": 22537,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 137,
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 22537,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "",
+        "iterations": [],
+        "speed": "standard"
+      }
+    },
+    "requestId": "req_011CYEBd27XHQJ3j1VSDU4rU",
+    "type": "assistant",
+    "uuid": "4bdab9b8-5631-4f6b-808e-f1c74bcae17e",
+    "timestamp": "2026-02-17T19:21:16.318Z"
+  },
+  {
+    "parentUuid": "4bdab9b8-5631-4f6b-808e-f1c74bcae17e",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PreToolUse",
+      "hookName": "PreToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+    },
+    "toolUseID": "toolu_018pmYLQT3BqbF5bA3ephqvh",
+    "parentToolUseID": "toolu_018pmYLQT3BqbF5bA3ephqvh",
+    "uuid": "2b9ffa0e-2773-4fff-80c4-667a730cd6eb",
+    "timestamp": "2026-02-17T19:21:16.322Z"
+  },
+  {
+    "parentUuid": "2b9ffa0e-2773-4fff-80c4-667a730cd6eb",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PostToolUse",
+      "hookName": "PostToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/post_tool_use.py"
+    },
+    "parentToolUseID": "toolu_018pmYLQT3BqbF5bA3ephqvh",
+    "toolUseID": "toolu_018pmYLQT3BqbF5bA3ephqvh",
+    "timestamp": "2026-02-17T19:21:17.671Z",
+    "uuid": "624c6114-1266-4c75-bc3f-1a08290611f3"
+  },
+  {
+    "parentUuid": "4bdab9b8-5631-4f6b-808e-f1c74bcae17e",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_018pmYLQT3BqbF5bA3ephqvh",
+          "type": "tool_result",
+          "content": "npm warn Unknown user config \"python\". This will stop working in the next major version of npm.\nenv: load .env\nenv: export EXPO_PUBLIC_API_URL NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY NEXT_PUBLIC_SUPABASE_ANON_KEY\nDependencies are up to date",
+          "is_error": false
+        }
+      ]
+    },
+    "uuid": "f6da08d8-f633-4863-af3f-385e2cdbc13a",
+    "timestamp": "2026-02-17T19:21:17.669Z",
+    "toolUseResult": {
+      "stdout": "npm warn Unknown user config \"python\". This will stop working in the next major version of npm.\nenv: load .env\nenv: export EXPO_PUBLIC_API_URL NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY NEXT_PUBLIC_SUPABASE_ANON_KEY\nDependencies are up to date",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "noOutputExpected": false
+    },
+    "sourceToolAssistantUUID": "4bdab9b8-5631-4f6b-808e-f1c74bcae17e"
+  },
+  {
+    "parentUuid": "f6da08d8-f633-4863-af3f-385e2cdbc13a",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_01DmA2NZtycG2MhNoYz3YySa",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Dependencies are already up to date. The check passed when actually running `expo install --check`. This can happen when `expo-doctor` uses slightly different version resolution than the install checker. The project dependencies are fine \u2014 no action needed."
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 1,
+        "cache_creation_input_tokens": 221,
+        "cache_read_input_tokens": 22537,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 221
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    },
+    "requestId": "req_011CYEBdSqZJ1t84Ch19tmms",
+    "type": "assistant",
+    "uuid": "27135b84-0e19-45f9-89c6-6d88e6b01b6e",
+    "timestamp": "2026-02-17T19:21:21.429Z"
+  },
+  {
+    "parentUuid": "27135b84-0e19-45f9-89c6-6d88e6b01b6e",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "Stop",
+      "hookName": "Stop",
+      "command": "uv run ~/.claude/hooks/stop.py --chat"
+    },
+    "parentToolUseID": "9756c4b2-759b-4634-b37c-e1cc5e9f272c",
+    "toolUseID": "9756c4b2-759b-4634-b37c-e1cc5e9f272c",
+    "timestamp": "2026-02-17T19:21:21.472Z",
+    "uuid": "6314906f-00c4-464c-9827-b4ea87693dba"
+  },
+  {
+    "parentUuid": "6314906f-00c4-464c-9827-b4ea87693dba",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "system",
+    "subtype": "stop_hook_summary",
+    "hookCount": 1,
+    "hookInfos": [
+      {
+        "command": "uv run ~/.claude/hooks/stop.py --chat"
+      }
+    ],
+    "hookErrors": [],
+    "preventedContinuation": false,
+    "stopReason": "",
+    "hasOutput": false,
+    "level": "suggestion",
+    "timestamp": "2026-02-17T19:21:21.545Z",
+    "uuid": "5a2c25b6-7bf8-4ad0-a0f8-95323d2e8abf",
+    "toolUseID": "9756c4b2-759b-4634-b37c-e1cc5e9f272c"
+  },
+  {
+    "type": "file-history-snapshot",
+    "messageId": "50e7cd5e-9fd0-42b1-94ea-53497cd2d2e1",
+    "snapshot": {
+      "messageId": "50e7cd5e-9fd0-42b1-94ea-53497cd2d2e1",
+      "trackedFileBackups": {},
+      "timestamp": "2026-02-17T19:23:06.458Z"
+    },
+    "isSnapshotUpdate": false
+  },
+  {
+    "parentUuid": "5a2c25b6-7bf8-4ad0-a0f8-95323d2e8abf",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": "warning: Run script build phase '[CP-User] [Hermes] Replace Hermes for the right configuration, if needed' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking \"Based on dependency analysis\" in the script phase. (in target 'hermes-engine' from project 'Pods')\nnote: Run script build phase '[CP-User] [RNDeps] Replace React Native Dependencies for the right configuration, if needed' will be run during every build because the option to run the script phase \"Based on dependency analysis\" is unchecked. (in target 'ReactNativeDependencies' from project 'Pods')\nnote: Run script build phase '[CP-User] [RN]Check FBReactNativeSpec' will be run during every build because the option to run the script phase \"Based on dependency analysis\" is unchecked. (in target 'React-RCTFBReactNativeSpec' from project 'Pods')\nnote: Run script build phase '[CP-User] Generate app.config for prebuilt Constants.manifest' will be run during every build because the option to run the script phase \"Based on dependency analysis\" is unchecked. (in target 'EXConstants' from project 'Pods')\n\n\n--- xcodebuild: WARNING: Using the first of multiple matching destinations:\n{ platform:iOS Simulator, id:A2595BF1-75BC-42C0-A14C-DFF434756183, OS:18.1, name:iPhone 16 Plus }\n{ platform:iOS Simulator, id:A2595BF1-75BC-42C0-A14C-DFF434756183, OS:18.1, name:iPhone 16 Plus }\n** BUILD FAILED **\n\n\nThe following build commands failed:\n        CompileAssetCatalogVariant thinned /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Storia.app /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets (in target 'Storia' from project 'Storia')\n        Building workspace Storia with scheme Storia and configuration Debug\n(2 failures)\nBuild logs written to /Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log\nerror: script \"ios\" exited with code 1"
+    },
+    "uuid": "50e7cd5e-9fd0-42b1-94ea-53497cd2d2e1",
+    "timestamp": "2026-02-17T19:23:06.334Z",
+    "thinkingMetadata": {
+      "maxThinkingTokens": 31999
+    },
+    "todos": [],
+    "permissionMode": "default"
+  },
+  {
+    "parentUuid": "50e7cd5e-9fd0-42b1-94ea-53497cd2d2e1",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_01VFYPXS52j7xaj6eRHKg3ia",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "\n\n"
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 3,
+        "cache_creation_input_tokens": 657,
+        "cache_read_input_tokens": 22758,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 657
+        },
+        "output_tokens": 9,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    },
+    "requestId": "req_011CYEBmU4CtYTZTsMsqzJBS",
+    "type": "assistant",
+    "uuid": "093c300c-22c4-4d14-904c-7540bee83445",
+    "timestamp": "2026-02-17T19:23:09.113Z"
+  },
+  {
+    "parentUuid": "093c300c-22c4-4d14-904c-7540bee83445",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_01VFYPXS52j7xaj6eRHKg3ia",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "The build failed due to `CompileAssetCatalogVariant` - this is an asset catalog compilation issue. Let me check the xcassets and the build log for more details.",
+          "signature": "EskCCkYICxgCKkA6Of48KfuOlnoLGJWqobo1rI5CtEkAFRk6M7CwC4/ECn7RWqyI6W/WXZFCr7WSkEJJOna73zes7jdp0tkdiX6sEgxVFltNnxOGv6hp3W8aDAz5YgNCjxbKWEXr7iIwYTtpU0RMsWPMgKc32iPKXb1kfcXlCOdHACtB358McTHIg5nF1gaFDF7zAOFYEyKtKrABeOHLuV/p8h1WieXBhtL2FDbSYumue7x9SWQ1L0ld0FjgRjdwK7ieZwLSWJ226HYvvrrY081lvy19CN7I53zGaTOOXC4lya6BVWxN09xpy55smEwzhbLb1oJOAE/8l26WWP3fuR9MaacCQ9toMC5HbiC8YPM1OVJjBlIo/G4FTuKFdWyvGWHjuY5V8XYjWAVjyTXtTxp3u3sxQg1O8qVdnqcybWwxqdXpa7J8i3cYS5oYAQ=="
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 3,
+        "cache_creation_input_tokens": 657,
+        "cache_read_input_tokens": 22758,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 657
+        },
+        "output_tokens": 9,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    },
+    "requestId": "req_011CYEBmU4CtYTZTsMsqzJBS",
+    "type": "assistant",
+    "uuid": "dfb6566f-c09d-4c03-8a50-12b0b58cfc0b",
+    "timestamp": "2026-02-17T19:23:10.320Z"
+  },
+  {
+    "parentUuid": "dfb6566f-c09d-4c03-8a50-12b0b58cfc0b",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_01VFYPXS52j7xaj6eRHKg3ia",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_014LRMaxrN9oTBB3f8X1mrGL",
+          "name": "Bash",
+          "input": {
+            "command": "tail -100 /Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log 2>&1 | grep -i -A5 \"error\\|asset\\|CompileAssetCatalog\"",
+            "description": "Check build log for asset catalog errors"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 3,
+        "cache_creation_input_tokens": 657,
+        "cache_read_input_tokens": 22758,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 657
+        },
+        "output_tokens": 9,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    },
+    "requestId": "req_011CYEBmU4CtYTZTsMsqzJBS",
+    "type": "assistant",
+    "uuid": "8dea2867-205e-4755-aa8d-713b38df8c98",
+    "timestamp": "2026-02-17T19:23:11.873Z"
+  },
+  {
+    "parentUuid": "8dea2867-205e-4755-aa8d-713b38df8c98",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PreToolUse",
+      "hookName": "PreToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+    },
+    "toolUseID": "toolu_014LRMaxrN9oTBB3f8X1mrGL",
+    "parentToolUseID": "toolu_014LRMaxrN9oTBB3f8X1mrGL",
+    "uuid": "ed5eda30-94d7-4afb-9016-803539d2eaa5",
+    "timestamp": "2026-02-17T19:23:11.878Z"
+  },
+  {
+    "parentUuid": "ed5eda30-94d7-4afb-9016-803539d2eaa5",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PostToolUse",
+      "hookName": "PostToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/post_tool_use.py"
+    },
+    "parentToolUseID": "toolu_014LRMaxrN9oTBB3f8X1mrGL",
+    "toolUseID": "toolu_014LRMaxrN9oTBB3f8X1mrGL",
+    "timestamp": "2026-02-17T19:23:12.020Z",
+    "uuid": "7c8faadf-591f-44f7-b84e-e886612b83e6"
+  },
+  {
+    "parentUuid": "8dea2867-205e-4755-aa8d-713b38df8c98",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_014LRMaxrN9oTBB3f8X1mrGL",
+          "type": "tool_result",
+          "content": "note: Removed stale file '/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/ExpoAsset.build/Script-46EB2E00017AB0.sh'\n\nnote: Removed stale file '/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/libdav1d.build/Objects-normal/arm64/cpu-e21019d22d57a28fbd7b88a41790cdce.o'\n\nnote: Removed stale file '/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/ExpoBlur.build/Script-46EB2E00017C10.sh'",
+          "is_error": false
+        }
+      ]
+    },
+    "uuid": "4aaa891a-8cd1-4c8c-92ca-133a174ccda3",
+    "timestamp": "2026-02-17T19:23:12.019Z",
+    "toolUseResult": {
+      "stdout": "note: Removed stale file '/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/ExpoAsset.build/Script-46EB2E00017AB0.sh'\n\nnote: Removed stale file '/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/libdav1d.build/Objects-normal/arm64/cpu-e21019d22d57a28fbd7b88a41790cdce.o'\n\nnote: Removed stale file '/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/ExpoBlur.build/Script-46EB2E00017C10.sh'",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "noOutputExpected": false
+    },
+    "sourceToolAssistantUUID": "8dea2867-205e-4755-aa8d-713b38df8c98"
+  },
+  {
+    "parentUuid": "4aaa891a-8cd1-4c8c-92ca-133a174ccda3",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_01VFYPXS52j7xaj6eRHKg3ia",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01CwBgxQqG2rbhQz6AMGUWVg",
+          "name": "Bash",
+          "input": {
+            "command": "ls /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets/",
+            "description": "List xcassets contents"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 3,
+        "cache_creation_input_tokens": 657,
+        "cache_read_input_tokens": 22758,
+        "output_tokens": 268,
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 657,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "",
+        "iterations": [],
+        "speed": "standard"
+      }
+    },
+    "requestId": "req_011CYEBmU4CtYTZTsMsqzJBS",
+    "type": "assistant",
+    "uuid": "c2574e94-1d81-46d2-b3d3-b0efafbba6de",
+    "timestamp": "2026-02-17T19:23:12.823Z"
+  },
+  {
+    "parentUuid": "c2574e94-1d81-46d2-b3d3-b0efafbba6de",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PreToolUse",
+      "hookName": "PreToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+    },
+    "toolUseID": "toolu_01CwBgxQqG2rbhQz6AMGUWVg",
+    "parentToolUseID": "toolu_01CwBgxQqG2rbhQz6AMGUWVg",
+    "uuid": "640dd3a3-2a1c-4fde-be91-3c7322b79c1f",
+    "timestamp": "2026-02-17T19:23:12.824Z"
+  },
+  {
+    "parentUuid": "640dd3a3-2a1c-4fde-be91-3c7322b79c1f",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PostToolUse",
+      "hookName": "PostToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/post_tool_use.py"
+    },
+    "parentToolUseID": "toolu_01CwBgxQqG2rbhQz6AMGUWVg",
+    "toolUseID": "toolu_01CwBgxQqG2rbhQz6AMGUWVg",
+    "timestamp": "2026-02-17T19:23:12.910Z",
+    "uuid": "037fdc1d-cd1c-400c-92b6-5c8a9f2e1b57"
+  },
+  {
+    "parentUuid": "c2574e94-1d81-46d2-b3d3-b0efafbba6de",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_01CwBgxQqG2rbhQz6AMGUWVg",
+          "type": "tool_result",
+          "content": "AppIcon.appiconset\nContents.json\nSplashScreenBackground.colorset\nSplashScreenLegacy.imageset",
+          "is_error": false
+        }
+      ]
+    },
+    "uuid": "54ccb347-c9f5-4797-9774-225a27afaa1c",
+    "timestamp": "2026-02-17T19:23:12.909Z",
+    "toolUseResult": {
+      "stdout": "AppIcon.appiconset\nContents.json\nSplashScreenBackground.colorset\nSplashScreenLegacy.imageset",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "noOutputExpected": false
+    },
+    "sourceToolAssistantUUID": "c2574e94-1d81-46d2-b3d3-b0efafbba6de"
+  },
+  {
+    "parentUuid": "54ccb347-c9f5-4797-9774-225a27afaa1c",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_0195Kb4Y6hEzpuFmyQpoFbnz",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01SHAaG6YYQ3dvFemMTu2oVW",
+          "name": "Bash",
+          "input": {
+            "command": "grep -i \"error\" /Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log | grep -i \"asset\\|icon\\|image\\|catalog\" | tail -20",
+            "description": "Search for asset-related errors in build log"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 1,
+        "cache_creation_input_tokens": 662,
+        "cache_read_input_tokens": 23415,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 662
+        },
+        "output_tokens": 25,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    },
+    "requestId": "req_011CYEBmw9Na1FGB6qbqsMk9",
+    "type": "assistant",
+    "uuid": "66c6d744-de6b-4626-b154-cfb2ae8410db",
+    "timestamp": "2026-02-17T19:23:16.683Z"
+  },
+  {
+    "parentUuid": "66c6d744-de6b-4626-b154-cfb2ae8410db",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PreToolUse",
+      "hookName": "PreToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+    },
+    "toolUseID": "toolu_01SHAaG6YYQ3dvFemMTu2oVW",
+    "parentToolUseID": "toolu_01SHAaG6YYQ3dvFemMTu2oVW",
+    "uuid": "b5338c39-c081-4a81-83d2-e2addefc555a",
+    "timestamp": "2026-02-17T19:23:16.685Z"
+  },
+  {
+    "parentUuid": "b5338c39-c081-4a81-83d2-e2addefc555a",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PostToolUse",
+      "hookName": "PostToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/post_tool_use.py"
+    },
+    "parentToolUseID": "toolu_01SHAaG6YYQ3dvFemMTu2oVW",
+    "toolUseID": "toolu_01SHAaG6YYQ3dvFemMTu2oVW",
+    "timestamp": "2026-02-17T19:23:16.907Z",
+    "uuid": "cff2af62-40b0-4d2f-afe8-19e2f7f68ffa"
+  },
+  {
+    "parentUuid": "66c6d744-de6b-4626-b154-cfb2ae8410db",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_01SHAaG6YYQ3dvFemMTu2oVW",
+          "type": "tool_result",
+          "content": "<persisted-output>\nOutput too large (358.3KB). Full output saved to: /Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/31fe48ea-4e1b-40e7-9d0c-846a9a08f412/tool-results/b5dec2f.txt\n\nPreview (first 2KB):\n    export VALIDATE_DEVELOPMENT_ASSET_PATHS\\=YES_ERROR\n    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name EXConstants -Onone -whole-module-optimization -enforce-exclusivity\\=checked @/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/Objects-normal/arm64/EXConstants.SwiftFileList -DDEBUG -D COCOAPODS -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore/ExpoModulesCore.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen/ReactCodegen.modulemap -import-underlying-module -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXConstants/EXConstants.modulemap -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.1.sdk -target arm64-apple-ios15.1-simulator -g -module-cache-path /Users/akinpound/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Index.noindex/DataStore -enable-experimental-feature OpaqueTypeErasure -Xcc -D_LIBCPP_HARDENING_MODE\\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqor\n...\n</persisted-output>",
+          "is_error": false
+        }
+      ]
+    },
+    "uuid": "f0287ba0-d127-45ee-a697-8f8b9ebcf61f",
+    "timestamp": "2026-02-17T19:23:16.906Z",
+    "toolUseResult": {
+      "stdout": "    export VALIDATE_DEVELOPMENT_ASSET_PATHS\\=YES_ERROR\n    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name EXConstants -Onone -whole-module-optimization -enforce-exclusivity\\=checked @/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/Objects-normal/arm64/EXConstants.SwiftFileList -DDEBUG -D COCOAPODS -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore/ExpoModulesCore.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen/ReactCodegen.modulemap -import-underlying-module -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXConstants/EXConstants.modulemap -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.1.sdk -target arm64-apple-ios15.1-simulator -g -module-cache-path /Users/akinpound/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Index.noindex/DataStore -enable-experimental-feature OpaqueTypeErasure -Xcc -D_LIBCPP_HARDENING_MODE\\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/React-Core-prebuilt -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/ReactNativeDependencies/framework/packages/react-native -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/hermes-engine/destroot/Library/Frameworks/universal -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/React-Core-prebuilt -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/ReactNativeDependencies -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/hermes-engine/Pre-built -parse-as-library -c -num-threads 10 -Xcc -ivfsstatcache -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.1-22B74-3d93aac3a03ebac1dd8474c5def773dc.sdkstatcache -output-file-map /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/Objects-normal/arm64/EXConstants-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/Objects-normal/arm64/EXConstants.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/akinpound/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/Objects-normal/arm64/EXConstants_const_extract_protocols.json -Xcc -iquote -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/EXConstants-generated-files.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/EXConstants-own-target-headers.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/EXConstants-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/Pods-8699adb1dd336b26511df848a716bd42-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/EXConstants-project-headers.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants/include -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/EXConstants -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoModulesCore -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/FBLazyVector -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTRequired -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTTypeSafety -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Core -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Core-prebuilt -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-CoreModules -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Fabric -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-FabricComponents -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-FabricImage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-ImageManager -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Mapbuffer -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-NativeModulesApple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTAnimation -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTBlob -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTFBReactNativeSpec -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTFabric -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTImage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTRuntime -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTText -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeApple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeCore -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeHermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-callinvoker -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-cxxreact -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-debug -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-defaultsnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-domnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-featureflags -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-featureflagsnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-graphics -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-hermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-idlecallbacksnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jserrorhandler -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsi -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsiexecutor -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspector -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectorcdp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectornetwork -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectortracing -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsitooling -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-logger -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-microtasksnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-oscompat -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-perflogger -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-performancetimeline -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-rendererconsistency -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-renderercss -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-rendererdebug -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-runtimeexecutor -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-runtimescheduler -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-timing -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-utils -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCommon -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactNativeDependencies -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/Yoga -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/hermes-engine -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/DerivedSources-normal/arm64 -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/DerivedSources/arm64 -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/DerivedSources -Xcc -DPOD_CONFIGURATION_DEBUG\\=1 -Xcc -DDEBUG\\=1 -Xcc -DCOCOAPODS\\=1 -emit-objc-header -emit-objc-header-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/EXConstants.build/Objects-normal/arm64/EXConstants-Swift.h -working-directory /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods -no-emit-module-separately-wmo\n    export HEADER_SEARCH_PATHS\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants/include\\ \\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/EXConstants\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoModulesCore\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/FBLazyVector\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTRequired\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTTypeSafety\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Core\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Core-prebuilt\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-CoreModules\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Fabric\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-FabricComponents\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-FabricImage\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-ImageManager\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Mapbuffer\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-NativeModulesApple\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTAnimation\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTBlob\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTFBReactNativeSpec\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTFabric\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTImage\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTRuntime\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTText\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeApple\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeCore\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeHermes\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-callinvoker\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-cxxreact\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-debug\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-defaultsnativemodule\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-domnativemodule\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-featureflags\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-featureflagsnativemodule\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-graphics\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-hermes\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-idlecallbacksnativemodule\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jserrorhandler\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsi\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsiexecutor\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspector\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectorcdp\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectornetwork\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectortracing\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsitooling\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-logger\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-microtasksnativemodule\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-oscompat\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-perflogger\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-performancetimeline\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-rendererconsistency\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-renderercss\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-rendererdebug\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-runtimeexecutor\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-runtimescheduler\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-timing\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-utils\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCommon\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactNativeDependencies\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/Yoga\\\"\\ \\\"/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/hermes-engine\\\"\n    export VALIDATE_DEVELOPMENT_ASSET_PATHS\\=YES_ERROR\n/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -cc1 -Wundef-prefix\\=TARGET_OS_ -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit\\=0 -ferror-limit 19 -serialize-diagnostic-file /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/Pods-Storia.build/Objects-normal/arm64/Pods-Storia-dummy.dia -Wdeprecated-objc-isa-usage -Werror\\=deprecated-objc-isa-usage -Werror\\=implicit-function-declaration -Wnon-modular-include-in-framework-module -Werror\\=non-modular-include-in-framework-module -Wno-trigraphs -Wno-missing-field-initializers -Wno-missing-prototypes -Werror\\=return-type -Wdocumentation -Wunreachable-code -Wno-implicit-atomic-properties -Werror\\=deprecated-objc-isa-usage -Wno-objc-interface-ivars -Werror\\=objc-root-class -Wno-arc-repeated-use-of-weak -Wimplicit-retain-self -Wduplicate-method-match -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wno-float-conversion -Wnon-literal-null-conversion -Wobjc-literal-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wundeclared-selector -Wdeprecated-implementations -Wno-implicit-fallthrough -Wprotocol -Wdeprecated-declarations -Wno-sign-conversion -Winfinite-recursion -Wcomma -Wblock-capture-autoreleasing -Wstrict-prototypes -Wno-semicolon-before-method-body -Wunguarded-availability -Wno-comma -Wno-shorten-64-to-32 -Wno-reorder-init-list -Wno-implicit-int-float-conversion -Wno-c99-designator -Wno-final-dtor-non-final-class -Wno-extra-semi-stmt -Wno-misleading-indentation -Wno-quoted-include-in-framework-header -Wno-implicit-fallthrough -Wno-enum-enum-conversion -Wno-enum-float-conversion -Wno-elaborated-enum-base -Wno-reserved-identifier -Wno-gnu-folding-constant -index-store-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Index.noindex/DataStore -index-unit-output-path /Pods.build/Debug-iphonesimulator/Pods-Storia.build/Objects-normal/arm64/Pods-Storia-dummy.o -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXAV/EXAV.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXApplication/EXApplication.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants/EXConstants.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Expo/Expo.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoAsset/ExpoAsset.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoBlur/ExpoBlur.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoCrypto/ExpoCrypto.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFileSystem/ExpoFileSystem.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFont/ExpoFont.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHaptics/ExpoHaptics.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHead/ExpoHead.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoImage/ExpoImage.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoKeepAwake/ExpoKeepAwake.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinearGradient/ExpoLinearGradient.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinking/ExpoLinking.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore/ExpoModulesCore.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSecureStore/ExpoSecureStore.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSplashScreen/ExpoSplashScreen.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSystemUI/ExpoSystemUI.modulemap -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoWebBrowser/ExpoWebBrowser.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/SDWebImageSVGCoder/SDWebImageSVGCoder.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/SDWebImageWebPCoder/SDWebImageWebPCoder.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNReanimated/RNReanimated.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNScreens/RNScreens.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNWorklets/RNWorklets.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactAppDependencyProvider/ReactAppDependencyProvider.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen/ReactCodegen.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImage/SDWebImage.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageAVIFCoder/SDWebImageAVIFCoder.modulemap -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libavif/libavif.modulemap -fmodule-map-file\\=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/Foundation.framework/Modules/module.modulemap -o /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/Pods-Storia.build/Objects-normal/arm64/Pods-Storia-dummy.o -disable-free -emit-obj -x objective-c /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Target\\ Support\\ Files/Pods-Storia/Pods-Storia-dummy.m -target-abi darwinpcs -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -triple arm64-apple-ios15.1.0-simulator -target-linker-version 1115.7.3 -target-sdk-version\\=18.1 -fmodules-validate-system-headers -fno-modulemap-allow-subdirectory-search -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.1.sdk -resource-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/16 -fmodule-file\\=Foundation\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/ExplicitPrecompiledModules/Foundation-9BCESORCTIFJOUB6S4NXD8LMJ.pcm -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/Pods-Storia.build/Pods-Storia-own-target-headers.hmap -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/Pods-Storia.build/Pods-Storia-all-non-framework-target-headers.hmap -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/include -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXAV -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXApplication -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXConstants -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/Expo -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoFileSystem -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoHead -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoModulesCore -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/FBLazyVector -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTDeprecation -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTRequired -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTTypeSafety -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNCAsyncStorage -I /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNGestureHandler -I /Users/akinpound/Documents/experiments/storia",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "noOutputExpected": false,
+      "persistedOutputPath": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/31fe48ea-4e1b-40e7-9d0c-846a9a08f412/tool-results/b5dec2f.txt",
+      "persistedOutputSize": 366877
+    },
+    "sourceToolAssistantUUID": "66c6d744-de6b-4626-b154-cfb2ae8410db"
+  },
+  {
+    "parentUuid": "f0287ba0-d127-45ee-a697-8f8b9ebcf61f",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_0195Kb4Y6hEzpuFmyQpoFbnz",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_015tDdfBCN8yJKSmwUkagCzk",
+          "name": "Bash",
+          "input": {
+            "command": "ls /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets/AppIcon.appiconset/",
+            "description": "List app icon assets"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 1,
+        "cache_creation_input_tokens": 662,
+        "cache_read_input_tokens": 23415,
+        "output_tokens": 215,
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 662,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "",
+        "iterations": [],
+        "speed": "standard"
+      }
+    },
+    "requestId": "req_011CYEBmw9Na1FGB6qbqsMk9",
+    "type": "assistant",
+    "uuid": "4048a403-3a76-4fd3-bb68-b57e6d816fe3",
+    "timestamp": "2026-02-17T19:23:17.430Z"
+  },
+  {
+    "parentUuid": "4048a403-3a76-4fd3-bb68-b57e6d816fe3",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PreToolUse",
+      "hookName": "PreToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+    },
+    "toolUseID": "toolu_015tDdfBCN8yJKSmwUkagCzk",
+    "parentToolUseID": "toolu_015tDdfBCN8yJKSmwUkagCzk",
+    "uuid": "e47e7aa4-3ccb-4f91-a078-fee180909c73",
+    "timestamp": "2026-02-17T19:23:17.432Z"
+  },
+  {
+    "parentUuid": "e47e7aa4-3ccb-4f91-a078-fee180909c73",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PostToolUse",
+      "hookName": "PostToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/post_tool_use.py"
+    },
+    "parentToolUseID": "toolu_015tDdfBCN8yJKSmwUkagCzk",
+    "toolUseID": "toolu_015tDdfBCN8yJKSmwUkagCzk",
+    "timestamp": "2026-02-17T19:23:17.524Z",
+    "uuid": "e6849ed6-62df-40f3-bb46-ae7e62f21aa3"
+  },
+  {
+    "parentUuid": "4048a403-3a76-4fd3-bb68-b57e6d816fe3",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_015tDdfBCN8yJKSmwUkagCzk",
+          "type": "tool_result",
+          "content": "App-Icon-1024x1024@1x.png\nContents.json",
+          "is_error": false
+        }
+      ]
+    },
+    "uuid": "f17005fe-50c9-49aa-a080-8e460129646f",
+    "timestamp": "2026-02-17T19:23:17.523Z",
+    "toolUseResult": {
+      "stdout": "App-Icon-1024x1024@1x.png\nContents.json",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "noOutputExpected": false
+    },
+    "sourceToolAssistantUUID": "4048a403-3a76-4fd3-bb68-b57e6d816fe3"
+  },
+  {
+    "parentUuid": "f17005fe-50c9-49aa-a080-8e460129646f",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_01PAbpmu76iognVRVRvSKHjv",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01BbxuZd26P7csSo3taUGRYK",
+          "name": "Bash",
+          "input": {
+            "command": "grep -i \"CompileAssetCatalog\" /Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log | grep -i \"error\" | tail -5",
+            "description": "Find CompileAssetCatalog error lines"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 1,
+        "cache_creation_input_tokens": 1159,
+        "cache_read_input_tokens": 24077,
+        "output_tokens": 124,
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1159,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "",
+        "iterations": [],
+        "speed": "standard"
+      }
+    },
+    "requestId": "req_011CYEBnGoKEzzhFGBvPQ3tk",
+    "type": "assistant",
+    "uuid": "790ea4e2-bbae-4995-b518-1efda1a0e4d6",
+    "timestamp": "2026-02-17T19:23:21.534Z"
+  },
+  {
+    "parentUuid": "790ea4e2-bbae-4995-b518-1efda1a0e4d6",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PreToolUse",
+      "hookName": "PreToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+    },
+    "toolUseID": "toolu_01BbxuZd26P7csSo3taUGRYK",
+    "parentToolUseID": "toolu_01BbxuZd26P7csSo3taUGRYK",
+    "uuid": "d063ff7c-d078-4eee-aacf-484ca6b45f2c",
+    "timestamp": "2026-02-17T19:23:21.536Z"
+  },
+  {
+    "parentUuid": "d063ff7c-d078-4eee-aacf-484ca6b45f2c",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PostToolUse",
+      "hookName": "PostToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/post_tool_use.py"
+    },
+    "parentToolUseID": "toolu_01BbxuZd26P7csSo3taUGRYK",
+    "toolUseID": "toolu_01BbxuZd26P7csSo3taUGRYK",
+    "timestamp": "2026-02-17T19:23:21.723Z",
+    "uuid": "fb23f18f-5724-4bdd-b106-13c6ed33d37f"
+  },
+  {
+    "parentUuid": "790ea4e2-bbae-4995-b518-1efda1a0e4d6",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_01BbxuZd26P7csSo3taUGRYK",
+          "type": "tool_result",
+          "content": "",
+          "is_error": false
+        }
+      ]
+    },
+    "uuid": "ea78a2f0-1c20-4f55-8bd0-48b3b9b9d61b",
+    "timestamp": "2026-02-17T19:23:21.721Z",
+    "toolUseResult": {
+      "stdout": "",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "noOutputExpected": false
+    },
+    "sourceToolAssistantUUID": "790ea4e2-bbae-4995-b518-1efda1a0e4d6"
+  },
+  {
+    "parentUuid": "ea78a2f0-1c20-4f55-8bd0-48b3b9b9d61b",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_018jga9WXbhAjsvyQskXVuSC",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01Dv4h5LWAZ27C4DudksQTWy",
+          "name": "Bash",
+          "input": {
+            "command": "grep -A3 \"CompileAssetCatalogVariant\" /Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log | tail -20",
+            "description": "Find CompileAssetCatalogVariant details"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 1,
+        "cache_creation_input_tokens": 150,
+        "cache_read_input_tokens": 25236,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 150
+        },
+        "output_tokens": 25,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      }
+    },
+    "requestId": "req_011CYEBnayTay3HhxbTV2vjv",
+    "type": "assistant",
+    "uuid": "548b078d-46f6-4fc7-9172-7e5c0ee3985e",
+    "timestamp": "2026-02-17T19:23:24.952Z"
+  },
+  {
+    "parentUuid": "548b078d-46f6-4fc7-9172-7e5c0ee3985e",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PreToolUse",
+      "hookName": "PreToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+    },
+    "toolUseID": "toolu_01Dv4h5LWAZ27C4DudksQTWy",
+    "parentToolUseID": "toolu_01Dv4h5LWAZ27C4DudksQTWy",
+    "uuid": "3aafbdfc-65c2-4628-a971-4a08e422278a",
+    "timestamp": "2026-02-17T19:23:24.956Z"
+  },
+  {
+    "parentUuid": "3aafbdfc-65c2-4628-a971-4a08e422278a",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PostToolUse",
+      "hookName": "PostToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/post_tool_use.py"
+    },
+    "parentToolUseID": "toolu_01Dv4h5LWAZ27C4DudksQTWy",
+    "toolUseID": "toolu_01Dv4h5LWAZ27C4DudksQTWy",
+    "timestamp": "2026-02-17T19:23:25.105Z",
+    "uuid": "135f8db2-0ab2-452e-8f28-10ad695de037"
+  },
+  {
+    "parentUuid": "548b078d-46f6-4fc7-9172-7e5c0ee3985e",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_01Dv4h5LWAZ27C4DudksQTWy",
+          "type": "tool_result",
+          "content": "CompileAssetCatalogVariant thinned /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Storia.app /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets (in target 'Storia' from project 'Storia')\n    cd /Users/akinpound/Documents/experiments/storia-mobile/ios\n    /Applications/Xcode.app/Contents/Developer/usr/bin/actool --output-format human-readable-text --notices --warnings --export-dependency-info /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_generated_info.plist --app-icon AppIcon --compress-pngs --enable-on-demand-resources YES --filter-for-thinning-device-configuration iPhone17,4 --filter-for-device-os-version 18.1 --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 15.1 --platform iphonesimulator --compile /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_output/thinned /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets\n/* com.apple.actool.errors */",
+          "is_error": false
+        }
+      ]
+    },
+    "uuid": "c28b9018-358a-4275-bd80-8a2189fb4982",
+    "timestamp": "2026-02-17T19:23:25.104Z",
+    "toolUseResult": {
+      "stdout": "CompileAssetCatalogVariant thinned /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Storia.app /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets (in target 'Storia' from project 'Storia')\n    cd /Users/akinpound/Documents/experiments/storia-mobile/ios\n    /Applications/Xcode.app/Contents/Developer/usr/bin/actool --output-format human-readable-text --notices --warnings --export-dependency-info /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_generated_info.plist --app-icon AppIcon --compress-pngs --enable-on-demand-resources YES --filter-for-thinning-device-configuration iPhone17,4 --filter-for-device-os-version 18.1 --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 15.1 --platform iphonesimulator --compile /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_output/thinned /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets\n/* com.apple.actool.errors */",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "noOutputExpected": false
+    },
+    "sourceToolAssistantUUID": "548b078d-46f6-4fc7-9172-7e5c0ee3985e"
+  },
+  {
+    "parentUuid": "c28b9018-358a-4275-bd80-8a2189fb4982",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "message": {
+      "model": "claude-opus-4-6",
+      "id": "msg_01DxYMyFzgAcHb4gxhgDTPeX",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_014HcCJWSDts7EKh6sNNT1TC",
+          "name": "Bash",
+          "input": {
+            "command": "grep -A20 \"com.apple.actool.errors\" /Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log | head -25",
+            "description": "Get actool error details"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "stop_reason": null,
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 1,
+        "cache_creation_input_tokens": 785,
+        "cache_read_input_tokens": 25386,
+        "output_tokens": 115,
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 785,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "",
+        "iterations": [],
+        "speed": "standard"
+      }
+    },
+    "requestId": "req_011CYEBnqpgABBJVuyiQLYCv",
+    "type": "assistant",
+    "uuid": "0ee12c84-e317-4221-b6ad-9f6f6e39ec3d",
+    "timestamp": "2026-02-17T19:23:28.668Z"
+  },
+  {
+    "parentUuid": "0ee12c84-e317-4221-b6ad-9f6f6e39ec3d",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PreToolUse",
+      "hookName": "PreToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/pre_tool_use.py"
+    },
+    "toolUseID": "toolu_014HcCJWSDts7EKh6sNNT1TC",
+    "parentToolUseID": "toolu_014HcCJWSDts7EKh6sNNT1TC",
+    "uuid": "3675f26f-7075-4e47-9701-7526787620da",
+    "timestamp": "2026-02-17T19:23:28.670Z"
+  },
+  {
+    "parentUuid": "3675f26f-7075-4e47-9701-7526787620da",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "progress",
+    "data": {
+      "type": "hook_progress",
+      "hookEvent": "PostToolUse",
+      "hookName": "PostToolUse:Bash",
+      "command": "uv run ~/.claude/hooks/post_tool_use.py"
+    },
+    "parentToolUseID": "toolu_014HcCJWSDts7EKh6sNNT1TC",
+    "toolUseID": "toolu_014HcCJWSDts7EKh6sNNT1TC",
+    "timestamp": "2026-02-17T19:23:28.835Z",
+    "uuid": "95c9e71d-8e35-458b-aa20-50e2e8ffd0b6"
+  },
+  {
+    "parentUuid": "0ee12c84-e317-4221-b6ad-9f6f6e39ec3d",
+    "isSidechain": false,
+    "userType": "external",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "sessionId": "31fe48ea-4e1b-40e7-9d0c-846a9a08f412",
+    "version": "2.1.45",
+    "gitBranch": "main",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_014HcCJWSDts7EKh6sNNT1TC",
+          "type": "tool_result",
+          "content": "/* com.apple.actool.errors */\n/Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets: error: Failed to launch AssetCatalogSimulatorAgent via CoreSimulator spawn\n    Underlying Errors:\n        Description: Failed to handshake with platform tool\n        Failure Reason: Failed to open connection over FIFOs with platform tool\n        Underlying Errors:\n            Description: \n            Recovery Suggestion: Try restarting your computer\n            Underlying Errors:\n                Description: Failed to open FIFOs for handshaking with platform tool\n                Failure Reason: AssetCatalogSimulatorAgent exited before we could handshake\n/* com.apple.actool.compilation-results */\n/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_generated_info.plist\n/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_output/thinned/AppIcon60x60@2x.png\n/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_output/thinned/AppIcon76x76@2x~ipad.png\n\n\nSwiftDriver Storia normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Storia' from project 'Storia')\n    cd /Users/akinpound/Documents/experiments/storia-mobile/ios\n    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Storia -Onone -enforce-exclusivity\\=checked @/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia.SwiftFileList -DDEBUG -D COCOAPODS -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXAV/EXAV.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXApplication/EXApplication.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants/EXConstants.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Expo/Expo.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoAsset/ExpoAsset.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoBlur/ExpoBlur.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoCrypto/ExpoCrypto.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFileSystem/ExpoFileSystem.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFont/ExpoFont.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHaptics/ExpoHaptics.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHead/ExpoHead.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoImage/ExpoImage.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoKeepAwake/ExpoKeepAwake.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinearGradient/ExpoLinearGradient.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinking/ExpoLinking.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore/ExpoModulesCore.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSecureStore/ExpoSecureStore.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSplashScreen/ExpoSplashScreen.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSystemUI/ExpoSystemUI.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoWebBrowser/ExpoWebBrowser.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/SDWebImageSVGCoder/SDWebImageSVGCoder.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/SDWebImageWebPCoder/SDWebImageWebPCoder.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNReanimated/RNReanimated.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNScreens/RNScreens.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNWorklets/RNWorklets.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactAppDependencyProvider/ReactAppDependencyProvider.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen/ReactCodegen.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImage/SDWebImage.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageAVIFCoder/SDWebImageAVIFCoder.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libavif/libavif.modulemap -D EXPO_CONFIGURATION_DEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.1.sdk -target arm64-apple-ios15.1-simulator -g -module-cache-path /Users/akinpound/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Index.noindex/DataStore -enable-experimental-feature OpaqueTypeErasure -Xcc -D_LIBCPP_HARDENING_MODE\\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXAV -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXApplication -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Expo -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoAsset -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoBlur -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoCrypto -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFileSystem -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFont -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHaptics -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHead -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoImage -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoKeepAwake -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinearGradient -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinking -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSecureStore -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSplashScreen -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSystemUI -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoWebBrowser -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/React-Core-prebuilt -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/ReactNativeDependencies/framework/packages/react-native -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/hermes-engine/destroot/Library/Frameworks/universal -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/React-Core-prebuilt -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/ReactNativeDependencies -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/hermes-engine/Pre-built -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.1-22B74-3d93aac3a03ebac1dd8474c5def773dc.sdkstatcache -output-file-map /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/akinpound/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia_const_extract_protocols.json -Xcc -iquote -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Storia-generated-files.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Storia-own-target-headers.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Storia-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia-baf54dee69eb0d44f9418eaddacc3ce1-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Storia-project-headers.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXAV -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXApplication -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXConstants -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/Expo -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoFileSystem -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoHead -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoModulesCore -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/FBLazyVector -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTDeprecation -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTRequired -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTTypeSafety -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNCAsyncStorage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNGestureHandler -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNReanimated -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNScreens -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNWorklets -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Core -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Core-prebuilt -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-CoreModules -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Fabric -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-FabricComponents -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-FabricImage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-ImageManager -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Mapbuffer -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-NativeModulesApple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTAnimation -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTAppDelegate -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTBlob -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTFBReactNativeSpec -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTFabric -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTImage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTRuntime -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTSettings -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTText -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTVibration -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeApple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeCore -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeHermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-callinvoker -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-cxxreact -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-debug -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-defaultsnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-domnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-featureflags -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-featureflagsnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-graphics -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-hermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-idlecallbacksnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jserrorhandler -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsi -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsiexecutor -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspector -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectorcdp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectornetwork -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectortracing -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsitooling -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-logger -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-microtasksnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-oscompat -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-perflogger -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-performancetimeline -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-rendererconsistency -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-renderercss -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-rendererdebug -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-runtimeexecutor -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-runtimescheduler -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-timing -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-utils -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactAppDependencyProvider -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCommon -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactNativeDependencies -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageAVIFCoder -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageSVGCoder -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageWebPCoder -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/Yoga -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/hermes-engine -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libavif -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libdav1d -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libwebp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/react-native-netinfo -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/react-native-safe-area-context -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Expo/Swift\\ Compatibility\\ Header -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/Yoga -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore/Swift\\ Compatibility\\ Header -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/Yoga -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/boost -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/boost-for-react-native -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/glog -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/RCT-Folly -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-hermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/hermes-engine -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNWorklets -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native/ReactCommon -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-reanimated/apple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-reanimated/Common/cpp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-reanimated/Common/NativeView -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-worklets/apple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-worklets/Common/cpp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/boost -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/boost-for-react-native -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/glog -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/RCT-Folly -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-hermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/hermes-engine -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native/ReactCommon -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-worklets/apple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-worklets/Common/cpp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/React-Core -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/React-Core -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/Yoga -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/DerivedSources-normal/arm64 -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/DerivedSources/arm64 -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/DerivedSources -Xcc -DDEBUG\\=1 -Xcc -DCOCOAPODS\\=1 -Xcc -DDEBUG\\=1 -Xcc -DSD_WEBP\\=1 -Xcc -DFB_SONARKIT_ENABLED\\=1 -emit-objc-header -emit-objc-header-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia-Swift.h -import-objc-header /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Storia-Bridging-Header.h -pch-output-dir /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/PrecompiledHeaders -working-directory /Users/akinpound/Documents/experiments/storia-mobile/ios -experimental-emit-module-separately -disable-cmo",
+          "is_error": false
+        }
+      ]
+    },
+    "uuid": "5d181a2b-ed67-41ed-bb2d-2fe4eca6b9af",
+    "timestamp": "2026-02-17T19:23:28.834Z",
+    "toolUseResult": {
+      "stdout": "/* com.apple.actool.errors */\n/Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Images.xcassets: error: Failed to launch AssetCatalogSimulatorAgent via CoreSimulator spawn\n    Underlying Errors:\n        Description: Failed to handshake with platform tool\n        Failure Reason: Failed to open connection over FIFOs with platform tool\n        Underlying Errors:\n            Description: \n            Recovery Suggestion: Try restarting your computer\n            Underlying Errors:\n                Description: Failed to open FIFOs for handshaking with platform tool\n                Failure Reason: AssetCatalogSimulatorAgent exited before we could handshake\n/* com.apple.actool.compilation-results */\n/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_generated_info.plist\n/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_output/thinned/AppIcon60x60@2x.png\n/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/assetcatalog_output/thinned/AppIcon76x76@2x~ipad.png\n\n\nSwiftDriver Storia normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Storia' from project 'Storia')\n    cd /Users/akinpound/Documents/experiments/storia-mobile/ios\n    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Storia -Onone -enforce-exclusivity\\=checked @/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia.SwiftFileList -DDEBUG -D COCOAPODS -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXAV/EXAV.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXApplication/EXApplication.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants/EXConstants.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Expo/Expo.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoAsset/ExpoAsset.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoBlur/ExpoBlur.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoCrypto/ExpoCrypto.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFileSystem/ExpoFileSystem.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFont/ExpoFont.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHaptics/ExpoHaptics.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHead/ExpoHead.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoImage/ExpoImage.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoKeepAwake/ExpoKeepAwake.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinearGradient/ExpoLinearGradient.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinking/ExpoLinking.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore/ExpoModulesCore.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSecureStore/ExpoSecureStore.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSplashScreen/ExpoSplashScreen.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSystemUI/ExpoSystemUI.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoWebBrowser/ExpoWebBrowser.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/SDWebImageSVGCoder/SDWebImageSVGCoder.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/SDWebImageWebPCoder/SDWebImageWebPCoder.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNReanimated/RNReanimated.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNScreens/RNScreens.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNWorklets/RNWorklets.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactAppDependencyProvider/ReactAppDependencyProvider.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen/ReactCodegen.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImage/SDWebImage.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageAVIFCoder/SDWebImageAVIFCoder.modulemap -Xcc -fmodule-map-file\\=/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libavif/libavif.modulemap -D EXPO_CONFIGURATION_DEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator18.1.sdk -target arm64-apple-ios15.1-simulator -g -module-cache-path /Users/akinpound/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Index.noindex/DataStore -enable-experimental-feature OpaqueTypeErasure -Xcc -D_LIBCPP_HARDENING_MODE\\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXAV -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXApplication -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/EXConstants -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Expo -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoAsset -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoBlur -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoCrypto -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFileSystem -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoFont -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHaptics -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoHead -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoImage -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoKeepAwake -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinearGradient -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoLinking -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSecureStore -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSplashScreen -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoSystemUI -I /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoWebBrowser -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/React-Core-prebuilt -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/ReactNativeDependencies/framework/packages/react-native -F /Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/hermes-engine/destroot/Library/Frameworks/universal -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/React-Core-prebuilt -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/ReactNativeDependencies -F /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/XCFrameworkIntermediates/hermes-engine/Pre-built -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphonesimulator18.1-22B74-3d93aac3a03ebac1dd8474c5def773dc.sdkstatcache -output-file-map /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/akinpound/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia_const_extract_protocols.json -Xcc -iquote -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Storia-generated-files.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Storia-own-target-headers.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Storia-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia-baf54dee69eb0d44f9418eaddacc3ce1-VFS-iphonesimulator/all-product-headers.yaml -Xcc -iquote -Xcc /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Storia-project-headers.hmap -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXAV -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXApplication -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/EXConstants -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/Expo -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoFileSystem -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoHead -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ExpoModulesCore -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/FBLazyVector -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTDeprecation -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTRequired -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RCTTypeSafety -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNCAsyncStorage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNGestureHandler -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNReanimated -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNScreens -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNWorklets -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Core -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Core-prebuilt -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-CoreModules -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Fabric -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-FabricComponents -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-FabricImage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-ImageManager -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-Mapbuffer -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-NativeModulesApple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTAnimation -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTAppDelegate -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTBlob -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTFBReactNativeSpec -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTFabric -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTImage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTRuntime -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTSettings -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTText -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RCTVibration -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeApple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeCore -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-RuntimeHermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-callinvoker -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-cxxreact -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-debug -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-defaultsnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-domnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-featureflags -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-featureflagsnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-graphics -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-hermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-idlecallbacksnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jserrorhandler -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsi -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsiexecutor -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspector -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectorcdp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectornetwork -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsinspectortracing -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-jsitooling -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-logger -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-microtasksnativemodule -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-oscompat -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-perflogger -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-performancetimeline -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-rendererconsistency -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-renderercss -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-rendererdebug -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-runtimeexecutor -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-runtimescheduler -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-timing -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-utils -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactAppDependencyProvider -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCodegen -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactCommon -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/ReactNativeDependencies -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImage -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageAVIFCoder -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageSVGCoder -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/SDWebImageWebPCoder -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/Yoga -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/hermes-engine -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libavif -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libdav1d -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/libwebp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/react-native-netinfo -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/react-native-safe-area-context -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/Expo/Swift\\ Compatibility\\ Header -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/Yoga -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Products/Debug-iphonesimulator/ExpoModulesCore/Swift\\ Compatibility\\ Header -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/Yoga -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/boost -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/boost-for-react-native -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/glog -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/RCT-Folly -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-hermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/hermes-engine -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/RNWorklets -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native/ReactCommon -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-reanimated/apple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-reanimated/Common/cpp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-reanimated/Common/NativeView -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-worklets/apple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-worklets/Common/cpp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/boost -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/boost-for-react-native -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/glog -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/RCT-Folly -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/React-hermes -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Public/hermes-engine -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native/ReactCommon -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-worklets/apple -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/node_modules/react-native-worklets/Common/cpp -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/React-Core -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/React-Core -Xcc -I/Users/akinpound/Documents/experiments/storia-mobile/ios/Pods/Headers/Private/Yoga -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/DerivedSources-normal/arm64 -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/DerivedSources/arm64 -Xcc -I/Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/DerivedSources -Xcc -DDEBUG\\=1 -Xcc -DCOCOAPODS\\=1 -Xcc -DDEBUG\\=1 -Xcc -DSD_WEBP\\=1 -Xcc -DFB_SONARKIT_ENABLED\\=1 -emit-objc-header -emit-objc-header-path /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/Storia.build/Debug-iphonesimulator/Storia.build/Objects-normal/arm64/Storia-Swift.h -import-objc-header /Users/akinpound/Documents/experiments/storia-mobile/ios/Storia/Storia-Bridging-Header.h -pch-output-dir /Users/akinpound/Library/Developer/Xcode/DerivedData/Storia-fpiusmvsqorfagcfxedauvpbjvqq/Build/Intermediates.noindex/PrecompiledHeaders -working-directory /Users/akinpound/Documents/experiments/storia-mobile/ios -experimental-emit-module-separately -disable-cmo",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "noOutputExpected": false
+    },
+    "sourceToolAssistantUUID": "0ee12c84-e317-4221-b6ad-9f6f6e39ec3d"
+  }
+]
