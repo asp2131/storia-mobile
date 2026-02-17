@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { Audio, type AVPlaybackStatus } from 'expo-av';
 
-type AudioPlayerState = {
+export type AudioPlayerState = {
   isPlaying: boolean;
   positionMs: number;
   durationMs: number;

@@ -14,7 +14,7 @@ type Props = {
   visible: boolean;
 };
 
-export function SwipePageIndicator({ visible }: Props) {
+export const SwipePageIndicator = React.memo(function SwipePageIndicator({ visible }: Props) {
   const opacity = useSharedValue(visible ? 0.7 : 0);
   const bounceY = useSharedValue(0);
 
@@ -47,7 +47,7 @@ export function SwipePageIndicator({ visible }: Props) {
       <Animated.Text style={[styles.chevron, chevronStyle]}>{'\u2303'}</Animated.Text>
     </Animated.View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

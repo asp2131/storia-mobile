@@ -18,8 +18,7 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useReaderData } from '@/hooks/useBookData';
 import { useReadingProgress, useAutoSaveProgress } from '@/hooks/useReadingProgress';
-import { useAudioPlayer } from '@/hooks/useAudioPlayer';
-import { useLocalPreferences } from '@/hooks/useLocalPreferences';
+import { useReaderAudio } from '@/hooks/useReaderAudio';
 import { useThemeColors, fonts } from '@/lib/theme';
 import { ReaderTopBar } from '@/components/ReaderTopBar';
 import { AudioControls } from '@/components/AudioControls';
@@ -54,29 +53,6 @@ export default function ReaderScreen() {
   const [showSettings, setShowSettings] = useState(false);
   const progressRestoredRef = useRef(false);
 
-  // Audio
-  const {
-    narrationState,
-    loadNarration,
-    playNarration,
-    pauseNarration,
-    soundscapeState,
-    loadSoundscape,
-    playSoundscape,
-    pauseSoundscape,
-    crossfadeSoundscape,
-    fadeOutSoundscape,
-    cleanup,
-  } = useAudioPlayer();
-
-  const [isNarrationActive, setIsNarrationActive] = useState(false);
-  const [isSoundscapeActive, setIsSoundscapeActive] = useState(false);
-
-  // Preferences
-  const { preferences } = useLocalPreferences();
-  const introFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const introFadedPages = useRef(new Set<number>());
-
   // Derived
   const pages = useMemo(
     () => [...(readerData?.pages ?? [])].sort((a, b) => a.pageNumber - b.pageNumber),
@@ -86,6 +62,17 @@ export default function ReaderScreen() {
   const currentPage = pages[activeIndex]?.pageNumber ?? 1;
   const pageData: PageData | undefined = pages[activeIndex];
   const progressPercent = totalPages > 0 ? ((activeIndex + 1) / totalPages) * 100 : 0;
+
+  // Audio
+  const {
+    isNarrationActive,
+    isSoundscapeActive,
+    narrationState,
+    soundscapeState,
+    toggleNarration,
+    toggleSoundscape,
+    cleanup,
+  } = useReaderAudio({ pageData, bookId });
 
   const narrationAssignment = pageData?.assignments?.find((a) => a.audioType === 'narration');
   const soundscapeAssignment = pageData?.assignments?.find((a) => a.audioType === 'soundscape');
@@ -170,89 +157,16 @@ export default function ReaderScreen() {
   }, [savedProgress, isLoading, readerData, totalPages, pages, activeIndexShared]);
 
   // ═══════════════════════════════════════════════════════════════
-  // AUDIO
+  // CLEANUP
   // ═══════════════════════════════════════════════════════════════
-
-  // Load narration audio when page changes
-  useEffect(() => {
-    if (narrationUrl) {
-      loadNarration(narrationUrl).then(() => {
-        if (isNarrationActive) {
-          playNarration();
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [narrationUrl]);
-
-  // Handle soundscape changes with crossfade
-  const prevSoundscapeUrl = useRef<string | null>(null);
-  useEffect(() => {
-    if (!soundscapeUrl) return;
-
-    if (prevSoundscapeUrl.current && prevSoundscapeUrl.current !== soundscapeUrl && isSoundscapeActive) {
-      crossfadeSoundscape(soundscapeUrl);
-    } else if (!prevSoundscapeUrl.current || prevSoundscapeUrl.current !== soundscapeUrl) {
-      loadSoundscape(soundscapeUrl).then(() => {
-        if (isSoundscapeActive) playSoundscape();
-      });
-    }
-    prevSoundscapeUrl.current = soundscapeUrl;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [soundscapeUrl]);
-
-  // Intro-only mode: fade out after 10 seconds
-  useEffect(() => {
-    if (introFadeTimerRef.current) {
-      clearTimeout(introFadeTimerRef.current);
-      introFadeTimerRef.current = null;
-    }
-
-    if (
-      preferences.soundscapeMode === 'intro-only' &&
-      isSoundscapeActive &&
-      soundscapeUrl &&
-      !introFadedPages.current.has(currentPage)
-    ) {
-      introFadeTimerRef.current = setTimeout(() => {
-        introFadedPages.current.add(currentPage);
-        fadeOutSoundscape(3000).then(() => {
-          setIsSoundscapeActive(false);
-        });
-      }, 10000);
-    }
-
-    return () => {
-      if (introFadeTimerRef.current) clearTimeout(introFadeTimerRef.current);
-    };
-  }, [currentPage, preferences.soundscapeMode, isSoundscapeActive, soundscapeUrl, fadeOutSoundscape]);
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => cleanup();
+    return () => {
+      cleanup();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Audio toggles
-  const toggleNarration = useCallback(async () => {
-    if (isNarrationActive) {
-      await pauseNarration();
-      setIsNarrationActive(false);
-    } else if (narrationUrl) {
-      await playNarration();
-      setIsNarrationActive(true);
-    }
-  }, [isNarrationActive, narrationUrl, playNarration, pauseNarration]);
-
-  const toggleSoundscape = useCallback(async () => {
-    if (isSoundscapeActive) {
-      await pauseSoundscape();
-      setIsSoundscapeActive(false);
-    } else if (soundscapeUrl) {
-      await playSoundscape();
-      setIsSoundscapeActive(true);
-    }
-  }, [isSoundscapeActive, soundscapeUrl, playSoundscape, pauseSoundscape]);
 
   const handleClose = useCallback(() => {
     cleanup();
@@ -261,10 +175,17 @@ export default function ReaderScreen() {
 
   // ═══════════════════════════════════════════════════════════════
   // VISIBLE PAGES (virtualization window of ±1)
+  // Optimized: O(1) slice instead of O(n) filter + indexOf
   // ═══════════════════════════════════════════════════════════════
 
   const visiblePages = useMemo(() => {
-    return pages.filter((_, i) => Math.abs(i - activeIndex) <= 1);
+    const start = Math.max(0, activeIndex - 1);
+    const end = Math.min(pages.length - 1, activeIndex + 1);
+    const result: { page: typeof pages[0]; index: number }[] = [];
+    for (let i = start; i <= end; i++) {
+      result.push({ page: pages[i], index: i });
+    }
+    return result;
   }, [pages, activeIndex]);
 
   // ═══════════════════════════════════════════════════════════════
@@ -296,21 +217,18 @@ export default function ReaderScreen() {
     <View style={[styles.container, { backgroundColor: colors.readerBg }]}>
       <GestureDetector gesture={panGesture}>
         <View style={styles.pagerContainer}>
-          {visiblePages.map((page) => {
-            const pageIndex = pages.indexOf(page);
-            return (
-              <PageLayer
-                key={page.id}
-                page={page}
-                pageIndex={pageIndex}
-                activeIndex={activeIndex}
-                narrationTimestamps={page.narrationTimestamps ?? null}
-                currentPositionMs={narrationState.positionMs}
-                isNarrationPlaying={isNarrationActive && narrationState.isPlaying}
-                usePageAnimatedStyle={getPageAnimatedStyle}
-              />
-            );
-          })}
+          {visiblePages.map(({ page, index }) => (
+            <PageLayer
+              key={page.id}
+              page={page}
+              pageIndex={index}
+              activeIndex={activeIndex}
+              narrationTimestamps={page.narrationTimestamps ?? null}
+              currentPositionMs={narrationState.positionMs}
+              isNarrationPlaying={isNarrationActive && narrationState.isPlaying}
+              usePageAnimatedStyle={getPageAnimatedStyle}
+            />
+          ))}
         </View>
       </GestureDetector>
 

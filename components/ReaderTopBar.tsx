@@ -16,7 +16,7 @@ type Props = {
   onSettings: () => void;
 };
 
-export function ReaderTopBar({
+export const ReaderTopBar = React.memo(function ReaderTopBar({
   progressPercent,
   currentPage,
   totalPages,
@@ -63,7 +63,7 @@ export function ReaderTopBar({
       </TouchableOpacity>
     </BlurView>
   );
-}
+});
 
 export const TOP_BAR_HEIGHT = 56;
 

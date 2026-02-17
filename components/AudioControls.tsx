@@ -16,7 +16,7 @@ type Props = {
   onToggleSoundscape: () => void;
 };
 
-export function AudioControls({
+export const AudioControls = React.memo(function AudioControls({
   hasNarration,
   hasSoundscape,
   isNarrationPlaying,
@@ -94,7 +94,7 @@ export function AudioControls({
       </View>
     </Animated.View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

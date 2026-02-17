@@ -20,7 +20,7 @@ type Props = {
   onWordTap?: (index: number) => void;
 };
 
-export function PageRenderer({
+export const PageRenderer = React.memo(function PageRenderer({
   page,
   isActive,
   animatedStyle,
@@ -75,7 +75,7 @@ export function PageRenderer({
       )}
     </Animated.View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   page: {
