@@ -44,7 +44,7 @@ export function SwipePageIndicator({ visible }: Props) {
   return (
     <Animated.View style={[styles.container, containerStyle]} pointerEvents="none">
       <Animated.Text style={styles.label}>Swipe up for next page</Animated.Text>
-      <Animated.Text style={[styles.chevron, chevronStyle]}>{'\u2304'}</Animated.Text>
+      <Animated.Text style={[styles.chevron, chevronStyle]}>{'\u2303'}</Animated.Text>
     </Animated.View>
   );
 }

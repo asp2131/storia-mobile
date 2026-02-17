@@ -25,6 +25,8 @@ import { ReaderTopBar } from '@/components/ReaderTopBar';
 import { AudioControls } from '@/components/AudioControls';
 import { PageRenderer } from '@/components/PageRenderer';
 import { SwipePageIndicator } from '@/components/SwipePageIndicator';
+import { PageLayer } from '@/components/reader/PageLayer';
+import { usePageAnimatedStyle } from '@/hooks/useReaderAnimations';
 import type { PageData } from '@/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -96,6 +98,7 @@ export default function ReaderScreen() {
 
   const translateY = useSharedValue(0);
   const activeIndexShared = useSharedValue(0);
+  const getPageAnimatedStyle = usePageAnimatedStyle(translateY, activeIndexShared);
 
   const updateActiveIndex = useCallback(
     (newIndex: number) => {
@@ -140,50 +143,6 @@ export default function ReaderScreen() {
         translateY.value = withSpring(0, SPRING_CONFIG);
       }
     });
-
-  // Animated styles for each page in the visible window
-  const usePageAnimatedStyle = (pageIndex: number) => {
-    return useAnimatedStyle(() => {
-      const idx = activeIndexShared.value;
-      const diff = pageIndex - idx;
-
-      if (diff === 0) {
-        // Active page
-        return {
-          transform: [{ translateY: translateY.value }],
-          opacity: 1,
-          zIndex: 2,
-        };
-      } else if (diff === 1) {
-        // Next page (below, slides up)
-        const progress = Math.min(Math.max(-translateY.value / SCREEN_HEIGHT, 0), 1);
-        return {
-          transform: [
-            { translateY: SCREEN_HEIGHT * (1 - progress) },
-          ],
-          opacity: 1,
-          zIndex: 3,
-        };
-      } else if (diff === -1) {
-        // Previous page (above, drifts up when swiping down)
-        const progress = Math.min(Math.max(translateY.value / SCREEN_HEIGHT, 0), 1);
-        return {
-          transform: [
-            { translateY: -SCREEN_HEIGHT * 0.2 * (1 - progress) },
-          ],
-          opacity: 0.4 + 0.6 * progress,
-          zIndex: 1,
-        };
-      }
-
-      // Off-screen
-      return {
-        transform: [{ translateY: diff > 0 ? SCREEN_HEIGHT : -SCREEN_HEIGHT }],
-        opacity: 0,
-        zIndex: 0,
-      };
-    });
-  };
 
   // ═══════════════════════════════════════════════════════════════
   // PROGRESS
@@ -348,7 +307,7 @@ export default function ReaderScreen() {
                 narrationTimestamps={page.narrationTimestamps ?? null}
                 currentPositionMs={narrationState.positionMs}
                 isNarrationPlaying={isNarrationActive && narrationState.isPlaying}
-                usePageAnimatedStyle={usePageAnimatedStyle}
+                usePageAnimatedStyle={getPageAnimatedStyle}
               />
             );
           })}
@@ -375,39 +334,6 @@ export default function ReaderScreen() {
 
       <SwipePageIndicator visible={activeIndex === 0 && totalPages > 1} />
     </View>
-  );
-}
-
-// Separate component to use hook per page
-function PageLayer({
-  page,
-  pageIndex,
-  activeIndex,
-  narrationTimestamps,
-  currentPositionMs,
-  isNarrationPlaying,
-  usePageAnimatedStyle,
-}: {
-  page: PageData;
-  pageIndex: number;
-  activeIndex: number;
-  narrationTimestamps: import('@/types').WordTimestamp[] | null;
-  currentPositionMs: number;
-  isNarrationPlaying: boolean;
-  usePageAnimatedStyle: (index: number) => ReturnType<typeof useAnimatedStyle>;
-}) {
-  const animatedStyle = usePageAnimatedStyle(pageIndex);
-
-  return (
-    <PageRenderer
-      page={page}
-      activeWordIndex={-1}
-      isActive={pageIndex === activeIndex}
-      animatedStyle={animatedStyle}
-      narrationTimestamps={narrationTimestamps}
-      currentPositionMs={currentPositionMs}
-      isNarrationPlaying={isNarrationPlaying}
-    />
   );
 }
 

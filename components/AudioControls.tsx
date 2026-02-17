@@ -37,7 +37,7 @@ export function AudioControls({
     >
       <View style={styles.pillRow}>
         {hasNarration && (
-          <TouchableOpacity onPress={onToggleNarration} activeOpacity={0.7}>
+          <TouchableOpacity onPress={onToggleNarration} activeOpacity={0.7} hitSlop={16}>
             <BlurView
               intensity={40}
               tint="dark"
@@ -65,7 +65,7 @@ export function AudioControls({
         )}
 
         {hasSoundscape && (
-          <TouchableOpacity onPress={onToggleSoundscape} activeOpacity={0.7}>
+          <TouchableOpacity onPress={onToggleSoundscape} activeOpacity={0.7} hitSlop={16}>
             <BlurView
               intensity={40}
               tint="dark"
@@ -113,12 +113,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 28,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
+    minHeight: 56,
   },
   pillActiveNarration: {
     backgroundColor: 'rgba(249, 115, 22, 0.85)',

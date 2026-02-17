@@ -36,7 +36,7 @@ export function ReaderTopBar({
       tint="systemChromeMaterialDark"
       style={[styles.container, { paddingTop: insets.top + 4 }]}
     >
-      <TouchableOpacity onPress={onClose} style={styles.closeButton} hitSlop={8}>
+      <TouchableOpacity onPress={onClose} style={styles.closeButton} hitSlop={16}>
         <Text style={[styles.closeIcon, { color: colors.readerCloseColor }]}>
           {'\u2715'}
         </Text>
@@ -56,7 +56,7 @@ export function ReaderTopBar({
         {currentPage}/{totalPages}
       </Text>
 
-      <TouchableOpacity onPress={onSettings} style={styles.settingsButton} hitSlop={8}>
+      <TouchableOpacity onPress={onSettings} style={styles.settingsButton} hitSlop={16}>
         <Text style={[styles.settingsIcon, { color: colors.readerCloseColor }]}>
           {'\u2699'}
         </Text>
@@ -82,7 +82,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   closeButton: {
-    padding: 4,
+    padding: 12,
+    minWidth: 56,
+    minHeight: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   closeIcon: {
     fontSize: 20,
@@ -105,7 +109,11 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   settingsButton: {
-    padding: 4,
+    padding: 12,
+    minWidth: 56,
+    minHeight: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   settingsIcon: {
     fontSize: 20,

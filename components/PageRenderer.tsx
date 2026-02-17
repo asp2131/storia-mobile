@@ -46,11 +46,18 @@ export function PageRenderer({
 
       {/* Gradient scrim for text readability */}
       {page.textContent && (
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
-          locations={[0, 0.4, 1]}
-          style={styles.gradientScrim}
-        />
+        <>
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.85)']}
+            locations={[0, 0.3, 1]}
+            style={styles.gradientScrim}
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.3)']}
+            locations={[0.5, 1]}
+            style={[styles.gradientScrim, { height: SCREEN_HEIGHT * 0.25 }]}
+          />
+        </>
       )}
 
       {/* Overlaid text */}
@@ -86,12 +93,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: SCREEN_HEIGHT * 0.45,
+    height: SCREEN_HEIGHT * 0.55,
   },
   textOverlay: {
     position: 'absolute',
-    bottom: 120,
-    left: 24,
-    right: 24,
+    bottom: 140,
+    left: 28,
+    right: 28,
   },
 });
