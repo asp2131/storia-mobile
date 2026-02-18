@@ -2,9 +2,9 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  ActivityIndicator,
   StyleSheet,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -25,10 +25,13 @@ import { AudioControls } from '@/components/AudioControls';
 import { PageRenderer } from '@/components/PageRenderer';
 import { SwipePageIndicator } from '@/components/SwipePageIndicator';
 import { PageLayer } from '@/components/reader/PageLayer';
+import { EdgeTapZones } from '@/components/reader/EdgeTapZones';
 import { usePageAnimatedStyle } from '@/hooks/useReaderAnimations';
+import { ReaderSkeleton } from '@/components/Skeleton';
+import { GestureTutorial, hasSeenGestureTutorial, markGestureTutorialSeen } from '@/components/reader/GestureTutorial';
 import type { PageData } from '@/types';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_HEIGHT * 0.18;
 const VELOCITY_THRESHOLD = 500;
 
@@ -38,6 +41,8 @@ const SPRING_CONFIG = {
   mass: 1,
 };
 
+const UI_ANIMATION_DURATION = 250;
+
 export default function ReaderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -45,13 +50,16 @@ export default function ReaderScreen() {
   const bookId = id ?? '';
 
   // Data
-  const { data: readerData, isLoading, error } = useReaderData(bookId);
+  const { data: readerData, isLoading, error, refetch } = useReaderData(bookId);
   const { data: savedProgress } = useReadingProgress(bookId);
 
   // State
   const [activeIndex, setActiveIndex] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [isUIVisible, setIsUIVisible] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
   const progressRestoredRef = useRef(false);
+  const tutorialCheckedRef = useRef(false);
 
   // Derived
   const pages = useMemo(
@@ -131,6 +139,24 @@ export default function ReaderScreen() {
       }
     });
 
+  // Tap to toggle UI visibility
+  const tapGesture = Gesture.Tap()
+    .maxDuration(250)
+    .onEnd(() => {
+      runOnJS(toggleUI)();
+    });
+
+  // Combine gestures - Race allows pan to win when swiping, tap to win on tap
+  const composedGesture = Gesture.Race(panGesture, tapGesture);
+
+  const toggleUI = useCallback(() => {
+    setIsUIVisible((prev) => {
+      const newValue = !prev;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      return newValue;
+    });
+  }, []);
+
   // ═══════════════════════════════════════════════════════════════
   // PROGRESS
   // ═══════════════════════════════════════════════════════════════
@@ -157,6 +183,29 @@ export default function ReaderScreen() {
   }, [savedProgress, isLoading, readerData, totalPages, pages, activeIndexShared]);
 
   // ═══════════════════════════════════════════════════════════════
+  // GESTURE TUTORIAL (FTUE)
+  // ═══════════════════════════════════════════════════════════════
+
+  useEffect(() => {
+    if (tutorialCheckedRef.current || isLoading) return;
+    
+    const checkTutorial = async () => {
+      const hasSeen = await hasSeenGestureTutorial();
+      if (!hasSeen) {
+        setShowTutorial(true);
+      }
+      tutorialCheckedRef.current = true;
+    };
+    
+    checkTutorial();
+  }, [isLoading]);
+
+  const handleTutorialComplete = useCallback(() => {
+    setShowTutorial(false);
+    markGestureTutorialSeen();
+  }, []);
+
+  // ═══════════════════════════════════════════════════════════════
   // CLEANUP
   // ═══════════════════════════════════════════════════════════════
 
@@ -172,6 +221,41 @@ export default function ReaderScreen() {
     cleanup();
     router.back();
   }, [router, cleanup]);
+
+  // ═══════════════════════════════════════════════════════════════
+  // EDGE TAP NAVIGATION
+  // ═══════════════════════════════════════════════════════════════
+
+  const goToPreviousPage = useCallback(() => {
+    if (activeIndex > 0) {
+      const newIndex = activeIndex - 1;
+      setActiveIndex(newIndex);
+      activeIndexShared.value = newIndex;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, [activeIndex, activeIndexShared]);
+
+  const goToNextPage = useCallback(() => {
+    if (activeIndex < totalPages - 1) {
+      const newIndex = activeIndex + 1;
+      setActiveIndex(newIndex);
+      activeIndexShared.value = newIndex;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, [activeIndex, totalPages, activeIndexShared]);
+
+  // Animated styles for UI visibility
+  const topBarAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(isUIVisible ? 1 : 0, { duration: UI_ANIMATION_DURATION }),
+  }));
+
+  const audioControlsAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(isUIVisible ? 1 : 0, { duration: UI_ANIMATION_DURATION }),
+  }));
+
+  const tapHintAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(isUIVisible ? 0 : 0.5, { duration: UI_ANIMATION_DURATION }),
+  }));
 
   // ═══════════════════════════════════════════════════════════════
   // VISIBLE PAGES (virtualization window of ±1)
@@ -193,29 +277,45 @@ export default function ReaderScreen() {
   // ═══════════════════════════════════════════════════════════════
 
   if (isLoading) {
-    return (
-      <View style={[styles.centered, { backgroundColor: colors.readerBg }]}>
-        <ActivityIndicator size="large" color={colors.readerProgressBarFill} />
-        <Text style={[styles.loadingText, { color: colors.readerTextSecondary, fontFamily: fonts.sans }]}>
-          Loading book...
-        </Text>
-      </View>
-    );
+    return <ReaderSkeleton />;
   }
 
   if (error || !readerData) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.readerBg }]}>
-        <Text style={[styles.errorText, { color: colors.error, fontFamily: fonts.sans }]}>
+        <Text style={[styles.errorTitle, { color: colors.error, fontFamily: fonts.sans }]}>
+          Oops!
+        </Text>
+        <Text style={[styles.errorText, { color: colors.readerTextSecondary, fontFamily: fonts.sans }]}>
           {error?.message || 'Book not found'}
         </Text>
+        <View style={styles.errorButtonsContainer}>
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: colors.readerProgressBarFill }]}
+            onPress={() => refetch()}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.primaryButtonText, { color: colors.readerBg, fontFamily: fonts.sans }]}>
+              Try Again
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.secondaryButton, { borderColor: colors.readerTextSecondary }]}
+            onPress={() => router.back()}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.secondaryButtonText, { color: colors.readerTextSecondary, fontFamily: fonts.sans }]}>
+              Go Back
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.readerBg }]}>
-      <GestureDetector gesture={panGesture}>
+      <GestureDetector gesture={composedGesture}>
         <View style={styles.pagerContainer}>
           {visiblePages.map(({ page, index }) => (
             <PageLayer
@@ -233,24 +333,55 @@ export default function ReaderScreen() {
       </GestureDetector>
 
       {/* Floating UI */}
-      <ReaderTopBar
-        progressPercent={progressPercent}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onClose={handleClose}
-        onSettings={() => setShowSettings(true)}
-      />
+      <Animated.View
+        style={[styles.topBarContainer, topBarAnimatedStyle]}
+        pointerEvents={isUIVisible ? 'auto' : 'none'}
+      >
+        <ReaderTopBar
+          progressPercent={progressPercent}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onClose={handleClose}
+          onSettings={() => setShowSettings(true)}
+        />
+      </Animated.View>
 
-      <AudioControls
-        hasNarration={!!narrationUrl}
-        hasSoundscape={!!soundscapeUrl}
-        isNarrationPlaying={isNarrationActive && narrationState.isPlaying}
-        isSoundscapePlaying={isSoundscapeActive && soundscapeState.isPlaying}
-        onToggleNarration={toggleNarration}
-        onToggleSoundscape={toggleSoundscape}
-      />
+      <Animated.View
+        style={[styles.audioControlsContainer, audioControlsAnimatedStyle]}
+        pointerEvents={isUIVisible ? 'auto' : 'none'}
+      >
+        <AudioControls
+          hasNarration={!!narrationUrl}
+          hasSoundscape={!!soundscapeUrl}
+          isNarrationPlaying={isNarrationActive && narrationState.isPlaying}
+          isSoundscapePlaying={isSoundscapeActive && soundscapeState.isPlaying}
+          onToggleNarration={toggleNarration}
+          onToggleSoundscape={toggleSoundscape}
+        />
+      </Animated.View>
 
-      <SwipePageIndicator visible={activeIndex === 0 && totalPages > 1} />
+      <SwipePageIndicator visible={isUIVisible && activeIndex === 0 && totalPages > 1} />
+
+      {/* Edge Tap Zones - only visible when UI is hidden */}
+      {!isUIVisible && (
+        <EdgeTapZones
+          onPrevious={goToPreviousPage}
+          onNext={goToNextPage}
+          isVisible={!isUIVisible}
+        />
+      )}
+
+      {/* Tap hint when UI is hidden */}
+      <Animated.View style={[styles.tapHintContainer, tapHintAnimatedStyle]} pointerEvents="none">
+        <Text style={[styles.tapHintText, { color: colors.readerTextSecondary }]}>
+          Tap to show controls
+        </Text>
+      </Animated.View>
+
+      <GestureTutorial
+        visible={showTutorial}
+        onComplete={handleTutorialComplete}
+      />
     </View>
   );
 }
@@ -266,14 +397,77 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
+    paddingHorizontal: 32,
   },
-  loadingText: {
-    fontSize: 15,
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: '700',
   },
   errorText: {
     fontSize: 16,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    lineHeight: 22,
+  },
+  errorButtonsContainer: {
+    marginTop: 24,
+    gap: 12,
+    width: '100%',
+    maxWidth: 280,
+  },
+  primaryButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  topBarContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+  },
+  audioControlsContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    zIndex: 40,
+    pointerEvents: 'none',
+  },
+  tapHintContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 30,
+  },
+  tapHintText: {
+    fontSize: 14,
+    fontFamily: fonts.sans,
+    fontWeight: '500',
+    opacity: 0.7,
   },
 });

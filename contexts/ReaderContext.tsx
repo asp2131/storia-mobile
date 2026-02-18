@@ -29,11 +29,17 @@ interface ReaderContextValue {
   narrationState: AudioPlayerState;
   soundscapeState: AudioPlayerState;
 
+  // UI visibility state
+  isUIVisible: boolean;
+
   // Actions
   goToPage: (index: number) => void;
   toggleNarration: () => void;
   toggleSoundscape: () => void;
   handleClose: () => void;
+  toggleUI: () => void;
+  showUI: () => void;
+  hideUI: () => void;
 
   // Data
   readerData: ReaderResponse | undefined;
@@ -70,6 +76,7 @@ export function ReaderProvider({ bookId, children }: ReaderProviderProps) {
 
   // State
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isUIVisible, setIsUIVisible] = useState(true);
   const progressRestoredRef = useRef(false);
 
   // Shared values for gestures
@@ -249,6 +256,23 @@ export function ReaderProvider({ bookId, children }: ReaderProviderProps) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
+  // UI visibility actions
+  const toggleUI = useCallback(() => {
+    setIsUIVisible((prev) => {
+      const newValue = !prev;
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      return newValue;
+    });
+  }, []);
+
+  const showUI = useCallback(() => {
+    setIsUIVisible(true);
+  }, []);
+
+  const hideUI = useCallback(() => {
+    setIsUIVisible(false);
+  }, []);
+
   const value: ReaderContextValue = {
     // Page state
     activeIndex,
@@ -263,11 +287,17 @@ export function ReaderProvider({ bookId, children }: ReaderProviderProps) {
     narrationState,
     soundscapeState,
 
+    // UI visibility state
+    isUIVisible,
+
     // Actions
     goToPage,
     toggleNarration,
     toggleSoundscape,
     handleClose,
+    toggleUI,
+    showUI,
+    hideUI,
 
     // Data
     readerData,

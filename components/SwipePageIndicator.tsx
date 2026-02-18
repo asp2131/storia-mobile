@@ -12,15 +12,20 @@ import { fonts } from '@/lib/theme';
 
 type Props = {
   visible: boolean;
+  isVisible?: boolean;
 };
 
-export const SwipePageIndicator = React.memo(function SwipePageIndicator({ visible }: Props) {
+export const SwipePageIndicator = React.memo(function SwipePageIndicator({ 
+  visible, 
+  isVisible = true 
+}: Props) {
   const opacity = useSharedValue(visible ? 0.7 : 0);
   const bounceY = useSharedValue(0);
 
   useEffect(() => {
-    opacity.value = withTiming(visible ? 0.7 : 0, { duration: 400 });
-  }, [visible, opacity]);
+    const shouldShow = visible && isVisible;
+    opacity.value = withTiming(shouldShow ? 0.7 : 0, { duration: 400 });
+  }, [visible, isVisible, opacity]);
 
   useEffect(() => {
     bounceY.value = withRepeat(

@@ -14,6 +14,7 @@ type Props = {
   totalPages: number;
   onClose: () => void;
   onSettings: () => void;
+  isVisible?: boolean;
 };
 
 export const ReaderTopBar = React.memo(function ReaderTopBar({
@@ -22,6 +23,7 @@ export const ReaderTopBar = React.memo(function ReaderTopBar({
   totalPages,
   onClose,
   onSettings,
+  isVisible = true,
 }: Props) {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
@@ -30,8 +32,13 @@ export const ReaderTopBar = React.memo(function ReaderTopBar({
     width: `${withTiming(progressPercent, { duration: 300 })}%` as `${number}%`,
   }));
 
+  const containerStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(isVisible ? 1 : 0, { duration: 250 }),
+  }));
+
   return (
-    <BlurView
+    <Animated.View style={containerStyle} pointerEvents={isVisible ? 'auto' : 'none'}>
+      <BlurView
       intensity={60}
       tint="systemChromeMaterialDark"
       style={[styles.container, { paddingTop: insets.top + 4 }]}
@@ -62,6 +69,7 @@ export const ReaderTopBar = React.memo(function ReaderTopBar({
         </Text>
       </TouchableOpacity>
     </BlurView>
+    </Animated.View>
   );
 });
 
