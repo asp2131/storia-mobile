@@ -11,9 +11,9 @@ import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
   runOnJS,
+  Easing,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useReaderData } from '@/hooks/useBookData';
@@ -35,11 +35,11 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_HEIGHT * 0.18;
 const VELOCITY_THRESHOLD = 500;
 
-const SPRING_CONFIG = {
-  damping: 22,
-  stiffness: 200,
-  mass: 1,
-};
+// easeOutExpo bezier — starts fast, decelerates very smoothly (Lenis feel)
+const EASE_OUT_EXPO = Easing.bezier(0.16, 1, 0.3, 1);
+
+// easeOutQuart for snap-back (cancelled swipe) — slightly less dramatic
+const EASE_OUT_QUART = Easing.bezier(0.25, 1, 0.5, 1);
 
 const UI_ANIMATION_DURATION = 300;
 
@@ -194,9 +194,10 @@ export default function ReaderScreen() {
   // REANIMATED GESTURE PAGER
   // ===============================================================
 
-  const translateY = useSharedValue(0);
+  const scrollOffset = useSharedValue(0); // continuous, -pageIndex * SCREEN_HEIGHT at rest
   const activeIndexShared = useSharedValue(0);
-  const getPageAnimatedStyle = usePageAnimatedStyle(translateY, activeIndexShared);
+  const baseScrollOffset = useSharedValue(0); // captures position at gesture start
+  const getPageAnimatedStyle = usePageAnimatedStyle(scrollOffset, activeIndexShared);
 
   const updateActiveIndex = useCallback(
     (newIndex: number) => {
@@ -207,39 +208,62 @@ export default function ReaderScreen() {
   );
 
   const panGesture = Gesture.Pan()
-    .activeOffsetY([-15, 15])
+    .activeOffsetY([-12, 12])
+    .onBegin(() => {
+      // Capture scroll position at gesture start so we can offset from it
+      baseScrollOffset.value = scrollOffset.value;
+    })
     .onUpdate((e) => {
-      // Clamp: don't allow overscroll past first/last page
-      const idx = activeIndexShared.value;
-      if (idx === 0 && e.translationY > 0) {
-        // Rubber band at top
-        translateY.value = e.translationY * 0.3;
-      } else if (idx === totalPages - 1 && e.translationY < 0) {
-        // Rubber band at bottom
-        translateY.value = e.translationY * 0.3;
+      const totalPgs = totalPages; // captured from JS scope via closure
+
+      const rawOffset = baseScrollOffset.value + e.translationY;
+
+      // Rubber band at boundaries
+      const minOffset = -(totalPgs - 1) * SCREEN_HEIGHT; // last page
+      const maxOffset = 0; // first page
+
+      if (rawOffset > maxOffset) {
+        // Rubber band past first page
+        scrollOffset.value = maxOffset + (rawOffset - maxOffset) * 0.15;
+      } else if (rawOffset < minOffset) {
+        // Rubber band past last page
+        scrollOffset.value = minOffset + (rawOffset - minOffset) * 0.15;
       } else {
-        translateY.value = e.translationY;
+        scrollOffset.value = rawOffset;
       }
     })
     .onEnd((e) => {
       const idx = activeIndexShared.value;
+      const totalPgs = totalPages;
+
       const swipedUp = e.translationY < -SWIPE_THRESHOLD || e.velocityY < -VELOCITY_THRESHOLD;
       const swipedDown = e.translationY > SWIPE_THRESHOLD || e.velocityY > VELOCITY_THRESHOLD;
 
-      if (swipedUp && idx < totalPages - 1) {
-        // Go to next page
-        activeIndexShared.value = idx + 1;
-        translateY.value = withSpring(0, SPRING_CONFIG);
-        runOnJS(updateActiveIndex)(idx + 1);
+      let destIndex = idx;
+      if (swipedUp && idx < totalPgs - 1) {
+        destIndex = idx + 1;
       } else if (swipedDown && idx > 0) {
-        // Go to previous page
-        activeIndexShared.value = idx - 1;
-        translateY.value = withSpring(0, SPRING_CONFIG);
-        runOnJS(updateActiveIndex)(idx - 1);
-      } else {
-        // Snap back (dead zone)
-        translateY.value = withSpring(0, SPRING_CONFIG);
+        destIndex = idx - 1;
       }
+
+      const destOffset = -destIndex * SCREEN_HEIGHT;
+
+      // Duration adapts to distance remaining + gesture velocity for natural feel.
+      // Fast swipes arrive quicker; slow/cancelled swipes take standard time.
+      const distance = Math.abs(destOffset - scrollOffset.value);
+      const speed = Math.max(Math.abs(e.velocityY), 100);
+      const duration = Math.min(Math.max((distance / speed) * 1000 * 0.6, 280), 520);
+
+      if (destIndex !== idx) {
+        activeIndexShared.value = destIndex;
+        runOnJS(updateActiveIndex)(destIndex);
+      }
+
+      // Smooth ease-out settle — the Lenis feel
+      scrollOffset.value = withTiming(destOffset, {
+        duration,
+        easing: destIndex !== idx ? EASE_OUT_EXPO : EASE_OUT_QUART,
+      });
     });
 
   // Tap to toggle UI visibility
@@ -280,10 +304,11 @@ export default function ReaderScreen() {
       if (idx > 0) {
         setActiveIndex(idx);
         activeIndexShared.value = idx;
+        scrollOffset.value = -idx * SCREEN_HEIGHT;
       }
     }
     progressRestoredRef.current = true;
-  }, [savedProgress, isLoading, readerData, totalPages, pages, activeIndexShared]);
+  }, [savedProgress, isLoading, readerData, totalPages, pages, activeIndexShared, scrollOffset]);
 
   // ===============================================================
   // GESTURE TUTORIAL (FTUE)
@@ -334,18 +359,26 @@ export default function ReaderScreen() {
       const newIndex = activeIndex - 1;
       setActiveIndex(newIndex);
       activeIndexShared.value = newIndex;
+      scrollOffset.value = withTiming(-newIndex * SCREEN_HEIGHT, {
+        duration: 400,
+        easing: EASE_OUT_EXPO,
+      });
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-  }, [activeIndex, activeIndexShared]);
+  }, [activeIndex, activeIndexShared, scrollOffset]);
 
   const goToNextPage = useCallback(() => {
     if (activeIndex < totalPages - 1) {
       const newIndex = activeIndex + 1;
       setActiveIndex(newIndex);
       activeIndexShared.value = newIndex;
+      scrollOffset.value = withTiming(-newIndex * SCREEN_HEIGHT, {
+        duration: 400,
+        easing: EASE_OUT_EXPO,
+      });
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-  }, [activeIndex, totalPages, activeIndexShared]);
+  }, [activeIndex, totalPages, activeIndexShared, scrollOffset]);
 
   // Animated styles for UI visibility
   const topBarAnimatedStyle = useAnimatedStyle(() => ({
