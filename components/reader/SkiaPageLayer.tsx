@@ -4,12 +4,30 @@ import {
   useAnimatedStyle,
   useAnimatedReaction,
   runOnJS,
+  interpolate,
+  interpolateColor,
+  Extrapolation,
+  Easing,
   type SharedValue,
 } from 'react-native-reanimated';
 import { PageRenderer } from '@/components/PageRenderer';
 import type { PageData, WordTimestamp } from '@/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// 3D Card Stack Animation Constants - Tuned for smooth, premium feel
+const SCALE_MIN = 0.92;
+const SCALE_MAX = 1.0;
+const ROTATION_MAX_DEG = 12; // Reduced from 15° for smoother feel
+const SHADOW_OPACITY_MAX = 0.35;
+const SHADOW_OPACITY_MIN = 0.08;
+const PERSPECTIVE = 1200; // Higher = less dramatic 3D effect
+
+// Custom ease-out function for smooth transitions (worklet-safe)
+function easeOutCubic(t: number): number {
+  'worklet';
+  return 1 - Math.pow(1 - t, 3);
+}
 
 interface SkiaPageLayerProps {
   page: PageData;
@@ -20,6 +38,8 @@ interface SkiaPageLayerProps {
   scrollOffset: SharedValue<number>;
   /** Mirrors activeIndex but lives on the UI thread for gesture continuity */
   activeIndexShared: SharedValue<number>;
+  /** Total number of pages for edge case handling */
+  totalPages: number;
   /**
    * Audio playback position synced to a SharedValue in the parent.
    * Allows word-index computation on the UI thread — React only re-renders
@@ -43,6 +63,9 @@ interface SkiaPageLayerProps {
  *    frame, `useAnimatedReaction` computes the active word index on the UI
  *    thread and only calls `runOnJS` when the word actually changes.
  *    A 30 FPS audio tick becomes ~0.3 React renders per second on average.
+ *
+ * 3. **3D Card Stack animations** — smooth scale, rotation, and shadow transitions
+ *    with optimized worklet calculations for 60fps performance.
  */
 export function SkiaPageLayer({
   page,
@@ -50,6 +73,7 @@ export function SkiaPageLayer({
   activeIndex,
   scrollOffset,
   activeIndexShared,
+  totalPages,
   narrationPositionMs,
   isNarrationPlaying,
 }: SkiaPageLayerProps) {
@@ -92,37 +116,153 @@ export function SkiaPageLayer({
     [timestamps, isNarrationPlaying],
   );
 
-  // Page position — inlined from usePageAnimatedStyle, runs entirely on UI thread.
+  // Page position with 3D card stack animations — runs entirely on UI thread.
   const animatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    
     const diff = pageIndex - activeIndexShared.value;
     const baseY = scrollOffset.value + pageIndex * SCREEN_HEIGHT;
-
-    // Active page: tracks scrollOffset directly
+    const isFirstPage = pageIndex === 0;
+    const isLastPage = pageIndex === totalPages - 1;
+    
+    // Normalize progress to 0-1 range for smooth interpolation
+    // progress = 0 when page is centered (active)
+    // progress = 1 when page is fully off-screen
+    const rawProgress = Math.abs(baseY) / SCREEN_HEIGHT;
+    const progress = Math.min(rawProgress, 1);
+    
+    // Apply easing curve for smoother, more natural transitions
+    const easedProgress = easeOutCubic(progress);
+    
+    // Calculate scale with smooth interpolation
+    const scale = interpolate(
+      easedProgress,
+      [0, 1],
+      [SCALE_MAX, SCALE_MIN],
+      Extrapolation.CLAMP
+    );
+    
+    // Calculate rotation based on position relative to active page
+    // Pages above center (diff < 0) rotate away from viewer
+    // Pages below center (diff > 0) rotate toward viewer
+    // Edge case: First page doesn't rotate below (nothing there)
+    // Edge case: Last page doesn't rotate above (nothing there)
+    let rotateX = 0;
+    
     if (diff === 0) {
-      return { transform: [{ translateY: baseY }], opacity: 1, zIndex: 2 };
+      // Active page: subtle rotation when swiping
+      // Only rotate if not first page and swiping up, or not last page and swiping down
+      if (baseY < 0 && !isLastPage) {
+        // Swiping up (moving to next page)
+        rotateX = interpolate(
+          easedProgress,
+          [0, 1],
+          [0, ROTATION_MAX_DEG],
+          Extrapolation.CLAMP
+        );
+      } else if (baseY > 0 && !isFirstPage) {
+        // Swiping down (moving to prev page)
+        rotateX = interpolate(
+          easedProgress,
+          [0, 1],
+          [0, -ROTATION_MAX_DEG],
+          Extrapolation.CLAMP
+        );
+      }
+    } else if (diff === 1) {
+      // Next page: rotates toward viewer as it comes to front
+      rotateX = interpolate(
+        easedProgress,
+        [0, 1],
+        [-ROTATION_MAX_DEG * 0.5, 0],
+        Extrapolation.CLAMP
+      );
+    } else if (diff === -1) {
+      // Previous page: rotates away from viewer
+      // Last page has reduced rotation (nothing below to show)
+      const maxRotation = isLastPage ? ROTATION_MAX_DEG * 0.3 : ROTATION_MAX_DEG;
+      rotateX = interpolate(
+        easedProgress,
+        [0, 1],
+        [0, -maxRotation],
+        Extrapolation.CLAMP
+      );
     }
-
-    // Next page: sits below, slides up as user swipes
-    if (diff === 1) {
-      return { transform: [{ translateY: baseY }], opacity: 1, zIndex: 3 };
+    
+    // Calculate shadow values for depth perception
+    const shadowOpacity = interpolate(
+      easedProgress,
+      [0, 0.5, 1],
+      [SHADOW_OPACITY_MIN, SHADOW_OPACITY_MAX, SHADOW_OPACITY_MAX * 0.8],
+      Extrapolation.CLAMP
+    );
+    
+    const shadowRadius = interpolate(
+      easedProgress,
+      [0, 1],
+      [8, 20],
+      Extrapolation.CLAMP
+    );
+    
+    const shadowOffsetY = interpolate(
+      easedProgress,
+      [0, 1],
+      [2, 10],
+      Extrapolation.CLAMP
+    );
+    
+    const elevation = interpolate(
+      easedProgress,
+      [0, 1],
+      [2, 8],
+      Extrapolation.CLAMP
+    );
+    
+    // Background color shifts slightly for depth
+    const backgroundColor = interpolateColor(
+      easedProgress,
+      [0, 1],
+      ['#ffffff', '#f0f0f0']
+    );
+    
+    // Opacity fades for non-active pages
+    const opacity = diff === 0 ? 1 : interpolate(
+      easedProgress,
+      [0, 1],
+      [0.95, 0.7],
+      Extrapolation.CLAMP
+    );
+    
+    // Z-index based on distance from active page
+    // Active page is always on top (zIndex 10)
+    const zIndex = 10 - Math.abs(diff);
+    
+    // Build transform array with proper order for 3D effect
+    // Order: perspective -> translateY -> scale -> rotateX
+    const transforms: any[] = [
+      { perspective: PERSPECTIVE },
+      { translateY: baseY },
+      { scale },
+    ];
+    
+    // Only add rotation if there's actual rotation
+    if (rotateX !== 0) {
+      transforms.push({ rotateX: `${rotateX}deg` });
     }
-
-    // Previous page: parallax at 70% speed + fade
-    if (diff === -1) {
-      const parallaxY = baseY < 0 ? baseY * 0.7 : baseY;
-      const progress = Math.min(Math.max(-baseY / SCREEN_HEIGHT, 0), 1);
-      return {
-        transform: [{ translateY: parallaxY }],
-        opacity: 1 - progress * 0.75,
-        zIndex: 1,
-      };
-    }
-
-    // Off-screen: hidden
+    
     return {
-      transform: [{ translateY: diff > 0 ? SCREEN_HEIGHT : -SCREEN_HEIGHT }],
-      opacity: 0,
-      zIndex: 0,
+      transform: transforms,
+      opacity,
+      zIndex,
+      shadowColor: '#000000',
+      shadowOpacity,
+      shadowRadius,
+      shadowOffset: {
+        width: 0,
+        height: shadowOffsetY,
+      },
+      elevation,
+      backgroundColor,
     };
   });
 

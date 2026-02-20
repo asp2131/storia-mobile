@@ -365,6 +365,7 @@ export default function ReaderScreen() {
               activeIndexShared={activeIndexShared}
               narrationPositionMs={narrationPositionShared}
               isNarrationPlaying={isNarrationPlaying}
+              totalPages={pages.length}
             />
           ))}
         </View>
