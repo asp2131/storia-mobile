@@ -15,6 +15,7 @@ import Animated, {
   runOnJS,
   Easing,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useReaderData } from '@/hooks/useBookData';
 import { useReadingProgress, useAutoSaveProgress } from '@/hooks/useReadingProgress';
@@ -22,11 +23,10 @@ import { useReaderAudio } from '@/hooks/useReaderAudio';
 import { useThemeColors, fonts } from '@/lib/theme';
 import { ReaderTopBar } from '@/components/ReaderTopBar';
 import { AudioControls } from '@/components/AudioControls';
-import { PageRenderer } from '@/components/PageRenderer';
 import { SwipePageIndicator } from '@/components/SwipePageIndicator';
-import { PageLayer } from '@/components/reader/PageLayer';
+import { SkiaPageLayer } from '@/components/reader/SkiaPageLayer';
+import { LiquidPageIndicator } from '@/components/reader/LiquidPageIndicator';
 import { EdgeTapZones } from '@/components/reader/EdgeTapZones';
-import { usePageAnimatedStyle } from '@/hooks/useReaderAnimations';
 import { ReaderSkeleton } from '@/components/Skeleton';
 import { GestureTutorial, hasSeenGestureTutorial, markGestureTutorialSeen } from '@/components/reader/GestureTutorial';
 import type { PageData } from '@/types';
@@ -42,109 +42,6 @@ const EASE_OUT_EXPO = Easing.bezier(0.16, 1, 0.3, 1);
 const EASE_OUT_QUART = Easing.bezier(0.25, 1, 0.5, 1);
 
 const UI_ANIMATION_DURATION = 300;
-
-// Maximum number of dots to show before collapsing
-const MAX_VISIBLE_DOTS = 7;
-
-/**
- * Vertical page indicator dots that appear on the right edge.
- * Shows a window of dots around the active page for long books.
- */
-function PageDots({
-  totalPages,
-  activeIndex,
-  isVisible,
-}: {
-  totalPages: number;
-  activeIndex: number;
-  isVisible: boolean;
-}) {
-  const containerStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(isVisible ? 1 : 0, { duration: UI_ANIMATION_DURATION }),
-    transform: [
-      { translateX: withTiming(isVisible ? 0 : 8, { duration: UI_ANIMATION_DURATION }) },
-    ],
-  }));
-
-  if (totalPages <= 1) return null;
-
-  // For books with many pages, show a sliding window of dots
-  const showAllDots = totalPages <= MAX_VISIBLE_DOTS;
-  let startIndex = 0;
-  let endIndex = totalPages - 1;
-
-  if (!showAllDots) {
-    const halfWindow = Math.floor(MAX_VISIBLE_DOTS / 2);
-    startIndex = Math.max(0, activeIndex - halfWindow);
-    endIndex = startIndex + MAX_VISIBLE_DOTS - 1;
-    if (endIndex >= totalPages) {
-      endIndex = totalPages - 1;
-      startIndex = Math.max(0, endIndex - MAX_VISIBLE_DOTS + 1);
-    }
-  }
-
-  const dots = [];
-  for (let i = startIndex; i <= endIndex; i++) {
-    const isActive = i === activeIndex;
-    // Scale dots at the edges smaller for a nice fade effect
-    const distFromActive = Math.abs(i - activeIndex);
-    const isEdgeDot = !showAllDots && (i === startIndex || i === endIndex) && distFromActive > 2;
-
-    dots.push(
-      <View
-        key={i}
-        style={[
-          dotStyles.dot,
-          isActive && dotStyles.dotActive,
-          isEdgeDot && dotStyles.dotSmall,
-        ]}
-      />
-    );
-  }
-
-  return (
-    <Animated.View
-      style={[dotStyles.container, containerStyle]}
-      pointerEvents="none"
-    >
-      {dots}
-    </Animated.View>
-  );
-}
-
-const dotStyles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    right: 12,
-    top: '50%',
-    transform: [{ translateY: -50 }],
-    alignItems: 'center',
-    gap: 6,
-    zIndex: 35,
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-  },
-  dotActive: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: 'rgba(255,255,255,0.85)',
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-  },
-  dotSmall: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    opacity: 0.4,
-  },
-});
 
 export default function ReaderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -191,14 +88,26 @@ export default function ReaderScreen() {
   const soundscapeUrl = soundscapeAssignment?.audioUrl;
 
   // ===============================================================
+  // NARRATION POSITION — SharedValue bridge
+  // Sync positionMs from the JS audio hook into a SharedValue so
+  // SkiaPageLayer can compute word indices on the UI thread.
+  // ===============================================================
+
+  const narrationPositionShared = useSharedValue(0);
+
+  useEffect(() => {
+    narrationPositionShared.value = narrationState.positionMs;
+  }, [narrationState.positionMs, narrationPositionShared]);
+
+  // ===============================================================
   // REANIMATED GESTURE PAGER
   // ===============================================================
 
   const scrollOffset = useSharedValue(0); // continuous, -pageIndex * SCREEN_HEIGHT at rest
   const activeIndexShared = useSharedValue(0);
   const baseScrollOffset = useSharedValue(0); // captures position at gesture start
-  const getPageAnimatedStyle = usePageAnimatedStyle(scrollOffset, activeIndexShared);
 
+  // scheduleOnRN replaces runOnJS — the Reanimated v4 / worklets API
   const updateActiveIndex = useCallback(
     (newIndex: number) => {
       setActiveIndex(newIndex);
@@ -207,26 +116,26 @@ export default function ReaderScreen() {
     []
   );
 
+  const toggleUI = useCallback(() => {
+    setIsUIVisible((prev) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      return !prev;
+    });
+  }, []);
+
   const panGesture = Gesture.Pan()
     .activeOffsetY([-12, 12])
     .onBegin(() => {
-      // Capture scroll position at gesture start so we can offset from it
       baseScrollOffset.value = scrollOffset.value;
     })
     .onUpdate((e) => {
-      const totalPgs = totalPages; // captured from JS scope via closure
-
       const rawOffset = baseScrollOffset.value + e.translationY;
-
-      // Rubber band at boundaries
-      const minOffset = -(totalPgs - 1) * SCREEN_HEIGHT; // last page
-      const maxOffset = 0; // first page
+      const minOffset = -(totalPages - 1) * SCREEN_HEIGHT;
+      const maxOffset = 0;
 
       if (rawOffset > maxOffset) {
-        // Rubber band past first page
         scrollOffset.value = maxOffset + (rawOffset - maxOffset) * 0.15;
       } else if (rawOffset < minOffset) {
-        // Rubber band past last page
         scrollOffset.value = minOffset + (rawOffset - minOffset) * 0.15;
       } else {
         scrollOffset.value = rawOffset;
@@ -248,41 +157,29 @@ export default function ReaderScreen() {
 
       const destOffset = -destIndex * SCREEN_HEIGHT;
 
-      // Duration adapts to distance remaining + gesture velocity for natural feel.
-      // Fast swipes arrive quicker; slow/cancelled swipes take standard time.
       const distance = Math.abs(destOffset - scrollOffset.value);
       const speed = Math.max(Math.abs(e.velocityY), 100);
       const duration = Math.min(Math.max((distance / speed) * 1000 * 0.6, 280), 520);
 
       if (destIndex !== idx) {
         activeIndexShared.value = destIndex;
-        runOnJS(updateActiveIndex)(destIndex);
+        // v4 worklets API: scheduleOnRN(fn, ...args) replaces runOnJS(fn)(args)
+        scheduleOnRN(updateActiveIndex, destIndex);
       }
 
-      // Smooth ease-out settle — the Lenis feel
       scrollOffset.value = withTiming(destOffset, {
         duration,
         easing: destIndex !== idx ? EASE_OUT_EXPO : EASE_OUT_QUART,
       });
     });
 
-  // Tap to toggle UI visibility
   const tapGesture = Gesture.Tap()
     .maxDuration(250)
     .onEnd(() => {
-      runOnJS(toggleUI)();
+      scheduleOnRN(toggleUI);
     });
 
-  // Combine gestures - Race allows pan to win when swiping, tap to win on tap
   const composedGesture = Gesture.Race(panGesture, tapGesture);
-
-  const toggleUI = useCallback(() => {
-    setIsUIVisible((prev) => {
-      const newValue = !prev;
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      return newValue;
-    });
-  }, []);
 
   // ===============================================================
   // PROGRESS
@@ -337,7 +234,6 @@ export default function ReaderScreen() {
   // CLEANUP
   // ===============================================================
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       cleanup();
@@ -380,7 +276,12 @@ export default function ReaderScreen() {
     }
   }, [activeIndex, totalPages, activeIndexShared, scrollOffset]);
 
-  // Animated styles for UI visibility
+  // ===============================================================
+  // UI VISIBILITY — Reanimated v4 CSS-style transitions
+  // These replace the useAnimatedStyle + withTiming pattern for
+  // state-driven show/hide. Fabric animates the style diff natively.
+  // ===============================================================
+
   const topBarAnimatedStyle = useAnimatedStyle(() => ({
     opacity: withTiming(isUIVisible ? 1 : 0, { duration: UI_ANIMATION_DURATION }),
   }));
@@ -395,7 +296,6 @@ export default function ReaderScreen() {
 
   // ===============================================================
   // VISIBLE PAGES (virtualization window of +/-1)
-  // Optimized: O(1) slice instead of O(n) filter + indexOf
   // ===============================================================
 
   const visiblePages = useMemo(() => {
@@ -407,6 +307,8 @@ export default function ReaderScreen() {
     }
     return result;
   }, [pages, activeIndex]);
+
+  const isNarrationPlaying = isNarrationActive && narrationState.isPlaying;
 
   // ===============================================================
   // RENDER
@@ -454,24 +356,24 @@ export default function ReaderScreen() {
       <GestureDetector gesture={composedGesture}>
         <View style={styles.pagerContainer}>
           {visiblePages.map(({ page, index }) => (
-            <PageLayer
+            <SkiaPageLayer
               key={page.id}
               page={page}
               pageIndex={index}
               activeIndex={activeIndex}
-              narrationTimestamps={page.narrationTimestamps ?? null}
-              currentPositionMs={narrationState.positionMs}
-              isNarrationPlaying={isNarrationActive && narrationState.isPlaying}
-              usePageAnimatedStyle={getPageAnimatedStyle}
+              scrollOffset={scrollOffset}
+              activeIndexShared={activeIndexShared}
+              narrationPositionMs={narrationPositionShared}
+              isNarrationPlaying={isNarrationPlaying}
             />
           ))}
         </View>
       </GestureDetector>
 
-      {/* Vertical page dots - right edge */}
-      <PageDots
+      {/* Liquid Skia pagination — right edge, driven from scrollOffset SharedValue */}
+      <LiquidPageIndicator
         totalPages={totalPages}
-        activeIndex={activeIndex}
+        scrollOffset={scrollOffset}
         isVisible={isUIVisible}
       />
 
