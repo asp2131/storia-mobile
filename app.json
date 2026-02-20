@@ -17,7 +17,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.storia.mobile",
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": [
+          "audio"
+        ]
       }
     },
     "android": {
@@ -38,7 +40,8 @@
         {
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-audio"
     ]
   }
 }

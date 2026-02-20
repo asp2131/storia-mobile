@@ -94,5 +94,21 @@
     "hook_event_name": "Notification",
     "message": "Claude is waiting for your input",
     "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
   }
 ]

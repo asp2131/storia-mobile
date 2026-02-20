@@ -1,0 +1,38 @@
+[
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "ad9e766",
+    "agent_type": "Explore",
+    "logged_at": "2026-02-19T21:22:56.475855"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a3a63ec",
+    "agent_type": "Bash",
+    "logged_at": "2026-02-19T21:24:50.706397"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a58545f",
+    "agent_type": "builder",
+    "logged_at": "2026-02-19T21:25:10.300659"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a3d7ab7",
+    "agent_type": "builder",
+    "logged_at": "2026-02-19T21:25:28.581899"
+  }
+]

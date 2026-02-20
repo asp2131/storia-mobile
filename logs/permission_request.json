@@ -185,5 +185,79 @@
       "description": "Check worklets dep and babel config"
     },
     "permission_suggestions": []
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "npx tsc --noEmit hooks/useAudioPlayer.ts 2>&1 | head -30",
+      "timeout": 30000,
+      "description": "Type-check the rewritten file"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Bash",
+            "ruleContent": "npx tsc:*"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "localSettings"
+      }
+    ]
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "npx tsc --noEmit --pretty 2>&1 | head -80",
+      "timeout": 30000
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Bash",
+            "ruleContent": "npx tsc:*"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "localSettings"
+      }
+    ]
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "mcp__ide__getDiagnostics",
+    "tool_input": {
+      "uri": "file:///Users/akinpound/Documents/experiments/storia-mobile/components/ReaderTopBar.tsx"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "mcp__ide__getDiagnostics"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "localSettings"
+      }
+    ]
   }
 ]

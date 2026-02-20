@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, {
   useAnimatedStyle,
+  useSharedValue,
   withTiming,
+  withRepeat,
+  withSequence,
+  Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fonts } from '@/lib/theme';
+
+// Accent colors
+const NARRATION_COLOR = '#F59E0B'; // Warm amber
+const NARRATION_GLOW = 'rgba(245, 158, 11, 0.25)';
+const SOUNDSCAPE_COLOR = '#14B8A6'; // Teal
+const SOUNDSCAPE_GLOW = 'rgba(20, 184, 166, 0.25)';
 
 type Props = {
   hasNarration: boolean;
@@ -17,6 +27,114 @@ type Props = {
   onToggleSoundscape: () => void;
   isVisible?: boolean;
 };
+
+/**
+ * Pulsing dot indicator that shows when audio is playing.
+ */
+function PulsingDot({ color, isActive }: { color: string; isActive: boolean }) {
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    if (isActive) {
+      pulse.value = withRepeat(
+        withSequence(
+          withTiming(0.4, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    } else {
+      pulse.value = withTiming(0, { duration: 200 });
+    }
+  }, [isActive, pulse]);
+
+  const dotStyle = useAnimatedStyle(() => ({
+    opacity: pulse.value,
+    transform: [{ scale: 0.6 + pulse.value * 0.4 }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        {
+          position: 'absolute',
+          top: 6,
+          right: 6,
+          width: 6,
+          height: 6,
+          borderRadius: 3,
+          backgroundColor: color,
+        },
+        dotStyle,
+      ]}
+    />
+  );
+}
+
+/**
+ * A single circular icon button for audio control.
+ */
+function AudioIconButton({
+  icon,
+  accentColor,
+  glowColor,
+  isPlaying,
+  onPress,
+}: {
+  icon: string;
+  accentColor: string;
+  glowColor: string;
+  isPlaying: boolean;
+  onPress: () => void;
+}) {
+  const glowOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    glowOpacity.value = withTiming(isPlaying ? 1 : 0, { duration: 300 });
+  }, [isPlaying, glowOpacity]);
+
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: glowOpacity.value,
+  }));
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      hitSlop={12}
+      style={styles.iconButtonWrapper}
+    >
+      {/* Glow ring behind button when active */}
+      <Animated.View
+        style={[
+          styles.glowRing,
+          { backgroundColor: glowColor },
+          glowStyle,
+        ]}
+      />
+      <View
+        style={[
+          styles.iconButton,
+          isPlaying && {
+            borderColor: accentColor,
+            borderWidth: 1.5,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.iconText,
+            { color: isPlaying ? accentColor : 'rgba(255,255,255,0.7)' },
+          ]}
+        >
+          {icon}
+        </Text>
+        <PulsingDot color={accentColor} isActive={isPlaying} />
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 export const AudioControls = React.memo(function AudioControls({
   hasNarration,
@@ -32,79 +150,45 @@ export const AudioControls = React.memo(function AudioControls({
   const shouldShow = hasAudio && isVisible;
 
   const containerStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(shouldShow ? 1 : 0, { duration: 250 }),
-    transform: [{ translateY: withTiming(shouldShow ? 0 : 20, { duration: 250 }) }],
+    opacity: withTiming(shouldShow ? 1 : 0, { duration: 300 }),
+    transform: [{ translateY: withTiming(shouldShow ? 0 : 16, { duration: 300 }) }],
   }));
+
+  if (!hasAudio) return null;
 
   return (
     <Animated.View
       style={[
         styles.container,
-        { bottom: Math.max(24, insets.bottom + 8) },
+        { bottom: Math.max(28, insets.bottom + 12) },
         containerStyle,
       ]}
       pointerEvents={shouldShow ? 'auto' : 'none'}
     >
       <BlurView
-        intensity={50}
+        intensity={35}
         tint="dark"
-        style={styles.backgroundBlur}
+        style={styles.pillContainer}
       >
-        <View style={styles.pillRow}>
+        <View style={styles.buttonsRow}>
           {hasNarration && (
-            <TouchableOpacity onPress={onToggleNarration} activeOpacity={0.7} hitSlop={20}>
-              <BlurView
-                intensity={30}
-                tint="dark"
-                style={[
-                  styles.pill,
-                  isNarrationPlaying && styles.pillActiveNarration,
-                ]}
-              >
-                <Text style={styles.pillEmoji}>
-                  {isNarrationPlaying ? '\u{23F8}' : '\u{1F3A4}'}
-                </Text>
-                <Text
-                  style={[
-                    styles.pillText,
-                    {
-                      color: isNarrationPlaying ? '#ffffff' : 'rgba(255,255,255,0.85)',
-                      fontFamily: fonts.sans,
-                    },
-                  ]}
-                >
-                  {isNarrationPlaying ? 'Pause' : 'Read'}
-                </Text>
-              </BlurView>
-            </TouchableOpacity>
+            <AudioIconButton
+              icon={isNarrationPlaying ? '\u23F8' : '\uD83C\uDFA4'}
+              accentColor={NARRATION_COLOR}
+              glowColor={NARRATION_GLOW}
+              isPlaying={isNarrationPlaying}
+              onPress={onToggleNarration}
+            />
           )}
-
+          {hasNarration && hasSoundscape && <View style={styles.divider} />}
           {hasSoundscape && (
-            <TouchableOpacity onPress={onToggleSoundscape} activeOpacity={0.7} hitSlop={20}>
-              <BlurView
-                intensity={30}
-                tint="dark"
-                style={[
-                  styles.pill,
-                  isSoundscapePlaying && styles.pillActiveSoundscape,
-                ]}
-              >
-                <Text style={styles.pillEmoji}>
-                  {isSoundscapePlaying ? '\u{1F50A}' : '\u{1F3B5}'}
-                </Text>
-                <Text
-                  style={[
-                    styles.pillText,
-                    {
-                      color: isSoundscapePlaying ? '#ffffff' : 'rgba(255,255,255,0.85)',
-                      fontFamily: fonts.sans,
-                    },
-                  ]}
-                >
-                  {isSoundscapePlaying ? 'Mute' : 'Sound'}
-                </Text>
-              </BlurView>
-            </TouchableOpacity>
+            <AudioIconButton
+              icon={isSoundscapePlaying ? '\uD83D\uDD0A' : '\uD83C\uDFB5'}
+              accentColor={SOUNDSCAPE_COLOR}
+              glowColor={SOUNDSCAPE_GLOW}
+              isPlaying={isSoundscapePlaying}
+              onPress={onToggleSoundscape}
+            />
           )}
         </View>
       </BlurView>
@@ -119,50 +203,52 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 40,
     alignItems: 'center',
-    paddingHorizontal: 16,
   },
-  backgroundBlur: {
+  pillContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 32,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderRadius: 28,
     overflow: 'hidden',
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  pillRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  pill: {
+  buttonsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    overflow: 'hidden',
-    minHeight: 52,
-    minWidth: 100,
+    gap: 4,
+  },
+  divider: {
+    width: StyleSheet.hairlineWidth,
+    height: 24,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    marginHorizontal: 4,
+  },
+  iconButtonWrapper: {
+    position: 'relative',
+    width: 48,
+    height: 48,
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  pillActiveNarration: {
-    backgroundColor: 'rgba(249, 115, 22, 0.9)',
-    borderColor: 'rgba(251, 146, 60, 0.7)',
+  glowRing: {
+    position: 'absolute',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
-  pillActiveSoundscape: {
-    backgroundColor: 'rgba(20, 184, 166, 0.9)',
-    borderColor: 'rgba(45, 212, 191, 0.7)',
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  pillEmoji: {
-    fontSize: 18,
-  },
-  pillText: {
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 0.3,
+  iconText: {
+    fontSize: 20,
   },
 });

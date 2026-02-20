@@ -948,5 +948,705 @@
       "description": "Get actool error details"
     },
     "tool_use_id": "toolu_014HcCJWSDts7EKh6sNNT1TC"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Task",
+    "tool_input": {
+      "description": "Explore reader codebase",
+      "prompt": "Explore the codebase at /Users/akinpound/Documents/experiments/storia-mobile focusing on:\n1. All files related to audio (expo-av, expo-audio usage)\n2. The Reader component and related files\n3. Package.json to understand current dependencies\n4. Any audio management/hooks\n\nReturn a comprehensive summary of:\n- File paths and their roles\n- How expo-av is currently used (sound playback, audio modes, etc.)\n- The Reader UI component structure\n- Any state management for audio\n- Current dependencies in package.json",
+      "subagent_type": "Explore",
+      "run_in_background": false
+    },
+    "tool_use_id": "toolu_011a3mD51oLLi2La2fMLpQrt"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -type f -name \"*.json\" -o -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.js\" -o -name \"*.jsx\" | head -50"
+    },
+    "tool_use_id": "toolu_01QwvjWB56pxuwzPAvaz9xR5"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile"
+    },
+    "tool_use_id": "toolu_018tm5m63ykHw7QgxwjcVV7L"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la /Users/akinpound/Documents/experiments/storia-mobile"
+    },
+    "tool_use_id": "toolu_01AYmFZ1WEPLYbg2rVEjxJvP"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/package.json"
+    },
+    "tool_use_id": "toolu_01HL4Fo5bLhRRy6hoH76Ejrb"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "{hooks,components,lib}/**/*.{ts,tsx}",
+      "path": "/Users/akinpound/Documents/experiments/storia-mobile"
+    },
+    "tool_use_id": "toolu_0164CJEZ8LFsB1gSG8hs9gUM"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "expo-av|expo-audio",
+      "path": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "type": "ts"
+    },
+    "tool_use_id": "toolu_01TWvAx11HCZXmi4tZwAEV8j"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -type f \\( -name \"*Reader*\" -o -name \"*reader*\" -o -name \"*audio*\" -o -name \"*Audio*\" \\) \\( -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.js\" -o -name \"*.jsx\" \\)"
+    },
+    "tool_use_id": "toolu_0165Xjfhaq3eroSsK1wdhJuM"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useAudioPlayer.ts"
+    },
+    "tool_use_id": "toolu_01DWbQM44BoqJ4f8HYLPTXVz"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useReaderAudio.ts"
+    },
+    "tool_use_id": "toolu_013hz999sT7rmWiD5kp3bdq7"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/AudioControls.tsx"
+    },
+    "tool_use_id": "toolu_01S48DEaa4ebZzybXime3a5P"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/contexts/ReaderContext.tsx"
+    },
+    "tool_use_id": "toolu_0155zZySYGn6TF6Dzn5hWkBS"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/reader/ReaderContainer.tsx"
+    },
+    "tool_use_id": "toolu_011PH6AmBwq9FxwTURHgFqsV"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/app/reader/[id].tsx"
+    },
+    "tool_use_id": "toolu_01R6fpixtQQYhBz5BkLoq1Lv"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/types/index.ts"
+    },
+    "tool_use_id": "toolu_014vVQcfnR3QGRKzshSQkppg"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/reader/PageLayer.tsx"
+    },
+    "tool_use_id": "toolu_01V3iqqo45A23Xp7QgAYRB1j"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useLocalPreferences.ts"
+    },
+    "tool_use_id": "toolu_01UG2e518u9Ha568oyhb3D8q"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la /Users/akinpound/Documents/experiments/storia-mobile/hooks/"
+    },
+    "tool_use_id": "toolu_01PGcLZtbCRug7TtMpvMvaEw"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useReaderAnimations.ts"
+    },
+    "tool_use_id": "toolu_01CkQ2gj2p3mN9A4LCLqPY7U"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/PageRenderer.tsx"
+    },
+    "tool_use_id": "toolu_01Bkmgrf1Vs5TN4eNvKizzn4"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile/components -type f -name \"*.tsx\" -o -name \"*.ts\" | sort"
+    },
+    "tool_use_id": "toolu_012Vcc4ccojDLLssqamXc1kJ"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Install expo-audio and remove expo-av",
+      "description": "Update package.json to add expo-audio and remove expo-av. Run install with npx expo install expo-audio.",
+      "activeForm": "Installing expo-audio dependency"
+    },
+    "tool_use_id": "toolu_01GwwBfb2Km9Cd73NUs8eXnU"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Refactor useAudioPlayer.ts from expo-av to expo-audio",
+      "description": "Rewrite hooks/useAudioPlayer.ts to use expo-audio instead of expo-av. Must support simultaneous BGM (soundscape) + narration playback. Key API changes: createAudioPlayer() instead of Audio.Sound.createAsync(), player.play()/pause() instead of sound.playAsync(), seekTo(seconds) not setPositionAsync(ms), volume as property not method, loop as property, addListener for status updates, setAudioModeAsync from expo-audio.",
+      "activeForm": "Refactoring audio hook to expo-audio"
+    },
+    "tool_use_id": "toolu_01V4bTb45xHmeyie2HHpPQ5n"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Redesign Reader UI layout",
+      "description": "Redesign the Reader UI with a professional UX approach. Files: app/reader/[id].tsx, components/AudioControls.tsx, components/ReaderTopBar.tsx, components/PageRenderer.tsx. Create a polished immersive reading experience.",
+      "activeForm": "Redesigning Reader UI layout"
+    },
+    "tool_use_id": "toolu_013r3qeYc2qqVpCJCdNV413D"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Task",
+    "tool_input": {
+      "description": "Install expo-audio package",
+      "prompt": "In the project at /Users/akinpound/Documents/experiments/storia-mobile, run:\n`npx expo install expo-audio`\n\nThen confirm expo-audio was added to package.json. Return the exact version added.",
+      "subagent_type": "Bash",
+      "run_in_background": false
+    },
+    "tool_use_id": "toolu_012TQ6mW7hxap3h6X6dHDh44"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "npx expo install expo-audio",
+      "timeout": 60000,
+      "description": "Install expo-audio using expo's install command"
+    },
+    "tool_use_id": "toolu_01VDGobcDVMdzb8LwnFxAfhL"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep \"expo-audio\" /Users/akinpound/Documents/experiments/storia-mobile/package.json",
+      "description": "Confirm expo-audio entry in package.json"
+    },
+    "tool_use_id": "toolu_01C9AvXbTWKbXfPaFWSQvvxj"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Task",
+    "tool_input": {
+      "description": "Refactor audio hook to expo-audio",
+      "prompt": "You are an expert React Native / Expo audio engineer. Rewrite the file `/Users/akinpound/Documents/experiments/storia-mobile/hooks/useAudioPlayer.ts` to use `expo-audio` instead of `expo-av`.\n\n## Current Implementation Summary\nThe hook manages TWO simultaneous audio streams:\n1. **Narration** - Story voice-over (play/pause/seek, volume, word-sync via 50ms status updates)\n2. **Soundscape** - Ambient loop (looping, 0.6 default volume, fade-out, crossfade between pages)\n\nKey current features:\n- `Audio.setAudioModeAsync({ playsInSilentModeIOS: true, staysActiveInBackground: true, shouldDuckAndroid: true })`\n- Separate Sound refs for narration and soundscape\n- `progressUpdateIntervalMillis: 50` for word highlighting\n- `fadeOutSoundscape()` - 3-second fade (20 steps via setInterval)\n- `crossfadeSoundscape(newUri)` - 1.5-second crossfade transition\n- Cleanup on unmount (unload both sounds, clear intervals)\n\n## expo-audio API (NEW)\n\n```typescript\nimport { createAudioPlayer, setAudioModeAsync, AudioPlayer } from 'expo-audio';\n\n// Create a player\nconst player = createAudioPlayer({ uri: 'https://...' });\n// or for local\nconst player = createAudioPlayer(require('./file.mp3'));\n\n// Playback\nplayer.play();\nplayer.pause();\nplayer.seekTo(positionInSeconds); // NOTE: SECONDS not milliseconds!\n\n// Properties (not methods)\nplayer.volume = 0.6; // 0 to 1\nplayer.loop = true;\n\n// Remove a player when done\nplayer.remove();\n\n// Status updates - use addListener\nconst sub = player.addListener('playbackStatusUpdate', (status) => {\n  // status.currentTime (seconds), status.duration (seconds), status.playing (boolean)\n  // status.didJustFinish (boolean)\n});\nsub.remove(); // cleanup\n\n// Audio mode\nawait setAudioModeAsync({\n  playsInSilentModeIOS: true,\n  staysActiveInBackground: true,\n  shouldDuckAndroid: true,\n});\n```\n\n## Requirements for the rewrite:\n1. Replace all `expo-av` imports with `expo-audio`\n2. Replace `Audio.Sound.createAsync()` with `createAudioPlayer()`\n3. Replace `sound.playAsync()` with `player.play()`, `pauseAsync()` with `player.pause()`\n4. Replace `setPositionAsync(ms)` with `seekTo(ms / 1000)` (convert ms to seconds)\n5. Replace `setVolumeAsync(v)` with `player.volume = v`\n6. Replace `setIsLoopingAsync(true)` with `player.loop = true`\n7. Replace `setOnPlaybackStatusUpdate(cb)` with `player.addListener('playbackStatusUpdate', cb)` and track subscription for cleanup\n8. Replace `sound.unloadAsync()` with `player.remove()`\n9. Replace `Audio.setAudioModeAsync` with `setAudioModeAsync` from expo-audio\n10. Preserve ALL existing functionality: dual streams, fade-out, crossfade, 50ms position updates\n11. **CRITICAL: Both narration and soundscape MUST play simultaneously** - expo-audio natively supports this\n\n## Return value interface (keep exactly the same):\n```typescript\n{\n  isNarrationActive, isSoundscapeActive,\n  narrationState, soundscapeState,\n  loadNarration, playNarration, pauseNarration, seekNarration, setNarrationVolume,\n  loadSoundscape, playSoundscape, pauseSoundscape, setSoundscapeVolume,\n  cleanupAudio, fadeOutSoundscape, crossfadeSoundscape\n}\n```\n\nFirst READ the current file at /Users/akinpound/Documents/experiments/storia-mobile/hooks/useAudioPlayer.ts, then WRITE the complete rewritten version.\n\nAlso check if any other files import from 'expo-av' and update those imports too. Search in:\n- hooks/useReaderAudio.ts\n- contexts/ReaderContext.tsx\n- Any other .ts/.tsx files\n\nWrite the complete rewritten useAudioPlayer.ts file and update any other files that import from expo-av.",
+      "subagent_type": "builder",
+      "run_in_background": true
+    },
+    "tool_use_id": "toolu_01Ho8QAFJpFoKnSZfCGcE7am"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useAudioPlayer.ts"
+    },
+    "tool_use_id": "toolu_01NZCSwTboQemF4jgAtHpDoM"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "expo-av",
+      "path": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "glob": "*.{ts,tsx}",
+      "output_mode": "content"
+    },
+    "tool_use_id": "toolu_01WDJh6aKfLSr8mJM34pnWfp"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Task",
+    "tool_input": {
+      "description": "Redesign Reader UI layout",
+      "prompt": "You are an expert mobile UI/UX designer and React Native engineer. You need to redesign the reader UI for a children's illustrated story app called \"Storia\". The reader should feel like a premium, immersive, book-reading experience on mobile.\n\n## Current Codebase Location\n`/Users/akinpound/Documents/experiments/storia-mobile`\n\n## Key Files to Read First\n1. `app/reader/[id].tsx` - Main reader screen\n2. `components/AudioControls.tsx` - Audio toggle buttons\n3. `components/ReaderTopBar.tsx` - Top navigation bar\n4. `components/PageRenderer.tsx` - Page content renderer\n5. `components/reader/EdgeTapZones.tsx` - Edge tap navigation\n6. `components/SwipePageIndicator.tsx` - Swipe hint\n\n## Current UI Architecture\n- **Full-screen vertical swipe** to navigate pages (like TikTok but for story pages)\n- **Tap center** toggles UI visibility (immersive mode)\n- **Top bar**: progress bar + page count + close + settings buttons (slides down from top)\n- **Audio controls**: narration + soundscape toggle buttons at bottom (slides up)\n- **Edge tap zones**: semi-transparent left/right tap zones for page nav when UI hidden\n\n## Design Direction\nCreate a **premium, immersive, minimal** reader experience:\n\n### Top Bar Redesign:\n- Make it a subtle, elegant bar at the top\n- Left: clean \"X\" close button (not too large)\n- Center: thin progress bar (full-width, glowing accent color)\n- Right: page counter \"4 / 12\" in small elegant font\n- Semi-transparent frosted glass background (not opaque)\n- Smooth slide-in from top animation\n\n### Audio Controls Redesign:\n- Move away from big pill buttons\n- Use a **horizontal row** of icon-only buttons at the bottom center\n- Narration button: microphone icon with subtle glow when active (orange/amber accent)\n- BGM/Soundscape button: music note icon with subtle glow when active (teal accent)\n- Container: minimal frosted glass pill, centered at bottom\n- Add a **thin waveform animation** or **pulsing dot** when audio is playing\n- Buttons should be ~48x48 circular with glass background\n\n### Page Navigation:\n- Keep swipe gesture but add **subtle dot indicators** on the side (like a vertical page dots)\n- Dots appear when UI is visible, fade with UI\n\n### Overall Feel:\n- Dark overlay controls (semi-transparent dark glass)\n- Warm accent: amber/orange for narration, teal for soundscape\n- Smooth 300ms transitions everywhere\n- Everything should feel \"floating\" above the full-bleed story art\n\n## Your Task\nREAD all the key files first, then REWRITE:\n1. `components/AudioControls.tsx` - Complete redesign to icon-only minimal controls\n2. `components/ReaderTopBar.tsx` - Redesign to elegant minimal top bar\n3. `app/reader/[id].tsx` - Update layout to add page dots, refine spacing (be careful to preserve all existing gesture logic)\n\nUse React Native Reanimated for animations where appropriate. Use the existing BlurView from expo-blur. Keep all existing functionality - just improve the visual design and layout.\n\nReturn a summary of all changes made.",
+      "subagent_type": "builder",
+      "run_in_background": true
+    },
+    "tool_use_id": "toolu_015LKHpP6ks5QRFMhwiFA1Vq"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/app/reader/[id].tsx"
+    },
+    "tool_use_id": "toolu_01WwGgekPy7JoBYpJJAQoHC2"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/AudioControls.tsx"
+    },
+    "tool_use_id": "toolu_0179rNaSGdGqV8Gh5CLErqcB"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/ReaderTopBar.tsx"
+    },
+    "tool_use_id": "toolu_01PVpSQLSXYKHxUK6o2oAAX4"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/PageRenderer.tsx"
+    },
+    "tool_use_id": "toolu_01WzXpggiuDmohWecN2UMEUW"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/reader/EdgeTapZones.tsx"
+    },
+    "tool_use_id": "toolu_01Ska3GqwdbFHtWGSJLx6QT4"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/SwipePageIndicator.tsx"
+    },
+    "tool_use_id": "toolu_01Ppa2kD8Ztgimc1k1jUeqK2"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/theme.ts"
+    },
+    "tool_use_id": "toolu_01Hd6dtwj92CosxuuZCfWVEe"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/reader/PageLayer.tsx"
+    },
+    "tool_use_id": "toolu_0189rpjLEKUEz5yLjrFKowkE"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useAudioPlayer.ts",
+      "content": "import { useRef, useCallback, useEffect, useState } from 'react';\nimport { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';\n\nexport type AudioPlayerState = {\n  isPlaying: boolean;\n  positionMs: number;\n  durationMs: number;\n};\n\ntype UseAudioPlayerReturn = {\n  // Narration\n  narrationState: AudioPlayerState;\n  loadNarration: (uri: string) => Promise<void>;\n  playNarration: () => Promise<void>;\n  pauseNarration: () => Promise<void>;\n  seekNarration: (positionMs: number) => Promise<void>;\n  setNarrationVolume: (volume: number) => Promise<void>;\n  // Soundscape\n  soundscapeState: AudioPlayerState;\n  loadSoundscape: (uri: string) => Promise<void>;\n  playSoundscape: () => Promise<void>;\n  pauseSoundscape: () => Promise<void>;\n  setSoundscapeVolume: (volume: number) => Promise<void>;\n  // Crossfade\n  crossfadeSoundscape: (newUri: string, duration?: number) => Promise<void>;\n  fadeOutSoundscape: (duration?: number) => Promise<void>;\n  // Cleanup\n  cleanup: () => Promise<void>;\n};\n\nexport function useAudioPlayer(): UseAudioPlayerReturn {\n  const narrationRef = useRef<AudioPlayer | null>(null);\n  const soundscapeRef = useRef<AudioPlayer | null>(null);\n  const narrationSubRef = useRef<ReturnType<AudioPlayer['addListener']> | null>(null);\n  const soundscapeSubRef = useRef<ReturnType<AudioPlayer['addListener']> | null>(null);\n  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);\n  // Track the current soundscape volume for fade calculations\n  const soundscapeVolumeRef = useRef<number>(0.6);\n\n  const [narrationState, setNarrationState] = useState<AudioPlayerState>({\n    isPlaying: false,\n    positionMs: 0,\n    durationMs: 0,\n  });\n\n  const [soundscapeState, setSoundscapeState] = useState<AudioPlayerState>({\n    isPlaying: false,\n    positionMs: 0,\n    durationMs: 0,\n  });\n\n  // Configure audio mode for background playback\n  useEffect(() => {\n    setAudioModeAsync({\n      playsInSilentModeIOS: true,\n      staysActiveInBackground: true,\n      shouldDuckAndroid: true,\n    });\n  }, []);\n\n  // Narration controls\n  const loadNarration = useCallback(async (uri: string) => {\n    // Clean up previous narration player\n    if (narrationSubRef.current) {\n      narrationSubRef.current.remove();\n      narrationSubRef.current = null;\n    }\n    if (narrationRef.current) {\n      narrationRef.current.remove();\n      narrationRef.current = null;\n    }\n\n    const player = createAudioPlayer({ uri });\n\n    // Subscribe to status updates for word-sync (high frequency)\n    narrationSubRef.current = player.addListener('playbackStatusUpdate', (status) => {\n      setNarrationState({\n        isPlaying: status.playing,\n        positionMs: (status.currentTime ?? 0) * 1000,\n        durationMs: (status.duration ?? 0) * 1000,\n      });\n    });\n\n    narrationRef.current = player;\n  }, []);\n\n  const playNarration = useCallback(async () => {\n    narrationRef.current?.play();\n  }, []);\n\n  const pauseNarration = useCallback(async () => {\n    narrationRef.current?.pause();\n  }, []);\n\n  const seekNarration = useCallback(async (positionMs: number) => {\n    narrationRef.current?.seekTo(positionMs / 1000);\n  }, []);\n\n  const setNarrationVolume = useCallback(async (volume: number) => {\n    if (narrationRef.current) {\n      narrationRef.current.volume = volume;\n    }\n  }, []);\n\n  // Soundscape controls\n  const loadSoundscape = useCallback(async (uri: string) => {\n    // Clean up previous soundscape player\n    if (soundscapeSubRef.current) {\n      soundscapeSubRef.current.remove();\n      soundscapeSubRef.current = null;\n    }\n    if (soundscapeRef.current) {\n      soundscapeRef.current.remove();\n      soundscapeRef.current = null;\n    }\n\n    const player = createAudioPlayer({ uri });\n    player.loop = true;\n    player.volume = 0.6;\n    soundscapeVolumeRef.current = 0.6;\n\n    soundscapeSubRef.current = player.addListener('playbackStatusUpdate', (status) => {\n      setSoundscapeState({\n        isPlaying: status.playing,\n        positionMs: (status.currentTime ?? 0) * 1000,\n        durationMs: (status.duration ?? 0) * 1000,\n      });\n    });\n\n    soundscapeRef.current = player;\n  }, []);\n\n  const playSoundscape = useCallback(async () => {\n    soundscapeRef.current?.play();\n  }, []);\n\n  const pauseSoundscape = useCallback(async () => {\n    soundscapeRef.current?.pause();\n  }, []);\n\n  const setSoundscapeVolume = useCallback(async (volume: number) => {\n    if (soundscapeRef.current) {\n      soundscapeRef.current.volume = volume;\n      soundscapeVolumeRef.current = volume;\n    }\n  }, []);\n\n  // Fade out over duration\n  const fadeOutSoundscape = useCallback(async (duration: number = 3000) => {\n    const player = soundscapeRef.current;\n    if (!player) return;\n\n    const startVolume = soundscapeVolumeRef.current;\n    const steps = 20;\n    const stepDuration = duration / steps;\n    const volumeStep = startVolume / steps;\n    let currentStep = 0;\n\n    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);\n\n    return new Promise<void>((resolve) => {\n      fadeIntervalRef.current = setInterval(() => {\n        currentStep++;\n        const newVolume = Math.max(0, startVolume - volumeStep * currentStep);\n        player.volume = newVolume;\n        soundscapeVolumeRef.current = newVolume;\n\n        if (currentStep >= steps) {\n          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);\n          player.pause();\n          resolve();\n        }\n      }, stepDuration);\n    });\n  }, []);\n\n  // Crossfade: fade out current, load new, fade in\n  const crossfadeSoundscape = useCallback(async (newUri: string, duration: number = 1500) => {\n    const oldPlayer = soundscapeRef.current;\n    const oldSub = soundscapeSubRef.current;\n\n    // Create new player at volume 0\n    const newPlayer = createAudioPlayer({ uri: newUri });\n    newPlayer.loop = true;\n    newPlayer.volume = 0;\n\n    // Subscribe new player to status updates\n    soundscapeSubRef.current = newPlayer.addListener('playbackStatusUpdate', (status) => {\n      setSoundscapeState({\n        isPlaying: status.playing,\n        positionMs: (status.currentTime ?? 0) * 1000,\n        durationMs: (status.duration ?? 0) * 1000,\n      });\n    });\n\n    // Start playing new sound\n    newPlayer.play();\n\n    // Fade out old, fade in new simultaneously\n    const steps = 15;\n    const stepDuration = duration / steps;\n    let currentStep = 0;\n\n    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);\n\n    return new Promise<void>((resolve) => {\n      fadeIntervalRef.current = setInterval(() => {\n        currentStep++;\n        const progress = currentStep / steps;\n\n        // Fade in new\n        newPlayer.volume = 0.6 * progress;\n\n        // Fade out old\n        if (oldPlayer) {\n          try {\n            oldPlayer.volume = 0.6 * (1 - progress);\n          } catch {\n            // Old player may already be removed\n          }\n        }\n\n        if (currentStep >= steps) {\n          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);\n\n          // Cleanup old\n          if (oldSub) {\n            try { oldSub.remove(); } catch { /* ignore */ }\n          }\n          if (oldPlayer) {\n            try { oldPlayer.remove(); } catch { /* ignore */ }\n          }\n\n          soundscapeRef.current = newPlayer;\n          soundscapeVolumeRef.current = 0.6;\n          resolve();\n        }\n      }, stepDuration);\n    });\n  }, []);\n\n  // Cleanup all audio\n  const cleanup = useCallback(async () => {\n    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);\n\n    if (narrationSubRef.current) {\n      try { narrationSubRef.current.remove(); } catch { /* ignore */ }\n      narrationSubRef.current = null;\n    }\n    if (narrationRef.current) {\n      try { narrationRef.current.remove(); } catch { /* ignore */ }\n      narrationRef.current = null;\n    }\n\n    if (soundscapeSubRef.current) {\n      try { soundscapeSubRef.current.remove(); } catch { /* ignore */ }\n      soundscapeSubRef.current = null;\n    }\n    if (soundscapeRef.current) {\n      try { soundscapeRef.current.remove(); } catch { /* ignore */ }\n      soundscapeRef.current = null;\n    }\n\n    setNarrationState({ isPlaying: false, positionMs: 0, durationMs: 0 });\n    setSoundscapeState({ isPlaying: false, positionMs: 0, durationMs: 0 });\n  }, []);\n\n  // Cleanup on unmount\n  useEffect(() => {\n    return () => {\n      cleanup();\n    };\n  }, [cleanup]);\n\n  return {\n    narrationState,\n    loadNarration,\n    playNarration,\n    pauseNarration,\n    seekNarration,\n    setNarrationVolume,\n    soundscapeState,\n    loadSoundscape,\n    playSoundscape,\n    pauseSoundscape,\n    setSoundscapeVolume,\n    crossfadeSoundscape,\n    fadeOutSoundscape,\n    cleanup,\n  };\n}\n"
+    },
+    "tool_use_id": "toolu_01N69SKvuqzBHZeEuPhH2ng8"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "@expo/vector-icons|ionicons|MaterialIcons",
+      "path": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "output_mode": "files_with_matches"
+    },
+    "tool_use_id": "toolu_017FXJz439wPVCnVnNm3HP3z"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "npx tsc --noEmit hooks/useAudioPlayer.ts 2>&1 | head -30",
+      "timeout": 30000,
+      "description": "Type-check the rewritten file"
+    },
+    "tool_use_id": "toolu_018ZG4xAqvhJpAk1c4mVpdRY"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cat package.json | grep -i icon"
+    },
+    "tool_use_id": "toolu_01B3iwKQnBWK1GkEMuWcv5oB"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useAudioPlayer.ts"
+    },
+    "tool_use_id": "toolu_01XjebqHByMNvJvj5axnVGwg"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/package.json",
+      "limit": 50
+    },
+    "tool_use_id": "toolu_018K2Y5A8JGYAC7rYiAmHMk4"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "1",
+      "status": "completed"
+    },
+    "tool_use_id": "toolu_01XpsHNBHyLtNtJdc4MLsgro"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "2",
+      "status": "completed"
+    },
+    "tool_use_id": "toolu_01V7nEPteNdpAmsD4Ffi3EnH"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/ReaderTopBar.tsx",
+      "content": "import React from 'react';\nimport { View, TouchableOpacity, Text, StyleSheet } from 'react-native';\nimport { useSafeAreaInsets } from 'react-native-safe-area-context';\nimport { BlurView } from 'expo-blur';\nimport Animated, {\n  useAnimatedStyle,\n  withTiming,\n} from 'react-native-reanimated';\nimport { fonts } from '@/lib/theme';\n\ntype Props = {\n  progressPercent: number;\n  currentPage: number;\n  totalPages: number;\n  onClose: () => void;\n  onSettings: () => void;\n  isVisible?: boolean;\n};\n\nexport const ReaderTopBar = React.memo(function ReaderTopBar({\n  progressPercent,\n  currentPage,\n  totalPages,\n  onClose,\n  onSettings,\n  isVisible = true,\n}: Props) {\n  const insets = useSafeAreaInsets();\n\n  const progressStyle = useAnimatedStyle(() => ({\n    width: `${withTiming(progressPercent, { duration: 400 })}%` as `${number}%`,\n  }));\n\n  const containerStyle = useAnimatedStyle(() => ({\n    opacity: withTiming(isVisible ? 1 : 0, { duration: 300 }),\n    transform: [\n      { translateY: withTiming(isVisible ? 0 : -20, { duration: 300 }) },\n    ],\n  }));\n\n  return (\n    <Animated.View style={containerStyle} pointerEvents={isVisible ? 'auto' : 'none'}>\n      <BlurView\n        intensity={40}\n        tint=\"dark\"\n        style={[styles.container, { paddingTop: insets.top + 2 }]}\n      >\n        {/* Close button - left */}\n        <TouchableOpacity onPress={onClose} style={styles.closeButton} hitSlop={12}>\n          <View style={styles.closeIconContainer}>\n            <Text style={styles.closeIcon}>{'\\u2715'}</Text>\n          </View>\n        </TouchableOpacity>\n\n        {/* Center section: progress bar */}\n        <View style={styles.centerSection}>\n          <View style={styles.progressTrack}>\n            <Animated.View style={[styles.progressFill, progressStyle]}>\n              <View style={styles.progressGlow} />\n            </Animated.View>\n          </View>\n        </View>\n\n        {/* Page counter - right */}\n        <Text style={styles.pageCounter}>\n          {currentPage}\n          <Text style={styles.pageCounterSeparator}> / </Text>\n          {totalPages}\n        </Text>\n      </BlurView>\n    </Animated.View>\n  );\n});\n\nexport const TOP_BAR_HEIGHT = 48;\n\nconst styles = StyleSheet.create({\n  container: {\n    position: 'absolute',\n    top: 0,\n    left: 0,\n    right: 0,\n    zIndex: 50,\n    flexDirection: 'row',\n    alignItems: 'center',\n    paddingHorizontal: 12,\n    paddingBottom: 10,\n    overflow: 'hidden',\n    borderBottomWidth: StyleSheet.hairlineWidth,\n    borderBottomColor: 'rgba(255,255,255,0.06)',\n  },\n  closeButton: {\n    width: 36,\n    height: 36,\n    justifyContent: 'center',\n    alignItems: 'center',\n    marginRight: 12,\n  },\n  closeIconContainer: {\n    width: 28,\n    height: 28,\n    borderRadius: 14,\n    backgroundColor: 'rgba(255,255,255,0.08)',\n    justifyContent: 'center',\n    alignItems: 'center',\n  },\n  closeIcon: {\n    fontSize: 12,\n    fontWeight: '600',\n    color: 'rgba(255,255,255,0.7)',\n  },\n  centerSection: {\n    flex: 1,\n    justifyContent: 'center',\n  },\n  progressTrack: {\n    height: 3,\n    borderRadius: 1.5,\n    backgroundColor: 'rgba(255,255,255,0.08)',\n    overflow: 'hidden',\n  },\n  progressFill: {\n    height: '100%',\n    borderRadius: 1.5,\n    backgroundColor: '#F59E0B',\n    position: 'relative',\n  },\n  progressGlow: {\n    position: 'absolute',\n    right: 0,\n    top: -1,\n    bottom: -1,\n    width: 12,\n    borderRadius: 6,\n    backgroundColor: 'rgba(245, 158, 11, 0.5)',\n  },\n  pageCounter: {\n    fontSize: 12,\n    fontWeight: '500',\n    fontFamily: fonts.sans,\n    fontVariant: ['tabular-nums'],\n    color: 'rgba(255,255,255,0.5)',\n    marginLeft: 12,\n    letterSpacing: 0.5,\n  },\n  pageCounterSeparator: {\n    color: 'rgba(255,255,255,0.25)',\n    fontWeight: '300',\n  },\n});\n"
+    },
+    "tool_use_id": "toolu_013dWW4H9ZoEPBi3hduwycxD"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/AudioControls.tsx",
+      "content": "import React, { useEffect } from 'react';\nimport { View, Text, TouchableOpacity, StyleSheet } from 'react-native';\nimport { BlurView } from 'expo-blur';\nimport Animated, {\n  useAnimatedStyle,\n  useSharedValue,\n  withTiming,\n  withRepeat,\n  withSequence,\n  Easing,\n} from 'react-native-reanimated';\nimport { useSafeAreaInsets } from 'react-native-safe-area-context';\nimport { fonts } from '@/lib/theme';\n\n// Accent colors\nconst NARRATION_COLOR = '#F59E0B'; // Warm amber\nconst NARRATION_GLOW = 'rgba(245, 158, 11, 0.25)';\nconst SOUNDSCAPE_COLOR = '#14B8A6'; // Teal\nconst SOUNDSCAPE_GLOW = 'rgba(20, 184, 166, 0.25)';\n\ntype Props = {\n  hasNarration: boolean;\n  hasSoundscape: boolean;\n  isNarrationPlaying: boolean;\n  isSoundscapePlaying: boolean;\n  onToggleNarration: () => void;\n  onToggleSoundscape: () => void;\n  isVisible?: boolean;\n};\n\n/**\n * Pulsing dot indicator that shows when audio is playing.\n */\nfunction PulsingDot({ color, isActive }: { color: string; isActive: boolean }) {\n  const pulse = useSharedValue(1);\n\n  useEffect(() => {\n    if (isActive) {\n      pulse.value = withRepeat(\n        withSequence(\n          withTiming(0.4, { duration: 800, easing: Easing.inOut(Easing.ease) }),\n          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })\n        ),\n        -1,\n        true\n      );\n    } else {\n      pulse.value = withTiming(0, { duration: 200 });\n    }\n  }, [isActive, pulse]);\n\n  const dotStyle = useAnimatedStyle(() => ({\n    opacity: pulse.value,\n    transform: [{ scale: 0.6 + pulse.value * 0.4 }],\n  }));\n\n  return (\n    <Animated.View\n      style={[\n        {\n          position: 'absolute',\n          top: 6,\n          right: 6,\n          width: 6,\n          height: 6,\n          borderRadius: 3,\n          backgroundColor: color,\n        },\n        dotStyle,\n      ]}\n    />\n  );\n}\n\n/**\n * A single circular icon button for audio control.\n */\nfunction AudioIconButton({\n  icon,\n  accentColor,\n  glowColor,\n  isPlaying,\n  onPress,\n}: {\n  icon: string;\n  accentColor: string;\n  glowColor: string;\n  isPlaying: boolean;\n  onPress: () => void;\n}) {\n  const glowOpacity = useSharedValue(0);\n\n  useEffect(() => {\n    glowOpacity.value = withTiming(isPlaying ? 1 : 0, { duration: 300 });\n  }, [isPlaying, glowOpacity]);\n\n  const glowStyle = useAnimatedStyle(() => ({\n    opacity: glowOpacity.value,\n  }));\n\n  return (\n    <TouchableOpacity\n      onPress={onPress}\n      activeOpacity={0.7}\n      hitSlop={12}\n      style={styles.iconButtonWrapper}\n    >\n      {/* Glow ring behind button when active */}\n      <Animated.View\n        style={[\n          styles.glowRing,\n          { backgroundColor: glowColor },\n          glowStyle,\n        ]}\n      />\n      <View\n        style={[\n          styles.iconButton,\n          isPlaying && {\n            borderColor: accentColor,\n            borderWidth: 1.5,\n          },\n        ]}\n      >\n        <Text\n          style={[\n            styles.iconText,\n            { color: isPlaying ? accentColor : 'rgba(255,255,255,0.7)' },\n          ]}\n        >\n          {icon}\n        </Text>\n        <PulsingDot color={accentColor} isActive={isPlaying} />\n      </View>\n    </TouchableOpacity>\n  );\n}\n\nexport const AudioControls = React.memo(function AudioControls({\n  hasNarration,\n  hasSoundscape,\n  isNarrationPlaying,\n  isSoundscapePlaying,\n  onToggleNarration,\n  onToggleSoundscape,\n  isVisible = true,\n}: Props) {\n  const insets = useSafeAreaInsets();\n  const hasAudio = hasNarration || hasSoundscape;\n  const shouldShow = hasAudio && isVisible;\n\n  const containerStyle = useAnimatedStyle(() => ({\n    opacity: withTiming(shouldShow ? 1 : 0, { duration: 300 }),\n    transform: [{ translateY: withTiming(shouldShow ? 0 : 16, { duration: 300 }) }],\n  }));\n\n  if (!hasAudio) return null;\n\n  return (\n    <Animated.View\n      style={[\n        styles.container,\n        { bottom: Math.max(28, insets.bottom + 12) },\n        containerStyle,\n      ]}\n      pointerEvents={shouldShow ? 'auto' : 'none'}\n    >\n      <BlurView\n        intensity={35}\n        tint=\"dark\"\n        style={styles.pillContainer}\n      >\n        <View style={styles.buttonsRow}>\n          {hasNarration && (\n            <AudioIconButton\n              icon={isNarrationPlaying ? '\\u23F8' : '\\uD83C\\uDFA4'}\n              accentColor={NARRATION_COLOR}\n              glowColor={NARRATION_GLOW}\n              isPlaying={isNarrationPlaying}\n              onPress={onToggleNarration}\n            />\n          )}\n          {hasNarration && hasSoundscape && <View style={styles.divider} />}\n          {hasSoundscape && (\n            <AudioIconButton\n              icon={isSoundscapePlaying ? '\\uD83D\\uDD0A' : '\\uD83C\\uDFB5'}\n              accentColor={SOUNDSCAPE_COLOR}\n              glowColor={SOUNDSCAPE_GLOW}\n              isPlaying={isSoundscapePlaying}\n              onPress={onToggleSoundscape}\n            />\n          )}\n        </View>\n      </BlurView>\n    </Animated.View>\n  );\n});\n\nconst styles = StyleSheet.create({\n  container: {\n    position: 'absolute',\n    left: 0,\n    right: 0,\n    zIndex: 40,\n    alignItems: 'center',\n  },\n  pillContainer: {\n    flexDirection: 'row',\n    alignItems: 'center',\n    paddingHorizontal: 8,\n    paddingVertical: 8,\n    borderRadius: 28,\n    overflow: 'hidden',\n    borderWidth: StyleSheet.hairlineWidth,\n    borderColor: 'rgba(255,255,255,0.1)',\n  },\n  buttonsRow: {\n    flexDirection: 'row',\n    alignItems: 'center',\n    gap: 4,\n  },\n  divider: {\n    width: StyleSheet.hairlineWidth,\n    height: 24,\n    backgroundColor: 'rgba(255,255,255,0.12)',\n    marginHorizontal: 4,\n  },\n  iconButtonWrapper: {\n    position: 'relative',\n    width: 48,\n    height: 48,\n    justifyContent: 'center',\n    alignItems: 'center',\n  },\n  glowRing: {\n    position: 'absolute',\n    width: 48,\n    height: 48,\n    borderRadius: 24,\n  },\n  iconButton: {\n    width: 44,\n    height: 44,\n    borderRadius: 22,\n    backgroundColor: 'rgba(255,255,255,0.06)',\n    justifyContent: 'center',\n    alignItems: 'center',\n    borderWidth: StyleSheet.hairlineWidth,\n    borderColor: 'rgba(255,255,255,0.08)',\n  },\n  iconText: {\n    fontSize: 20,\n  },\n});\n"
+    },
+    "tool_use_id": "toolu_01VWJe5P8oktpc8FqUUqtvNb"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/app/reader/[id].tsx",
+      "content": "import { useEffect, useState, useRef, useCallback, useMemo } from 'react';\nimport {\n  View,\n  Text,\n  StyleSheet,\n  Dimensions,\n  TouchableOpacity,\n} from 'react-native';\nimport { useLocalSearchParams, useRouter } from 'expo-router';\nimport * as Haptics from 'expo-haptics';\nimport Animated, {\n  useSharedValue,\n  useAnimatedStyle,\n  withSpring,\n  withTiming,\n  runOnJS,\n} from 'react-native-reanimated';\nimport { Gesture, GestureDetector } from 'react-native-gesture-handler';\nimport { useReaderData } from '@/hooks/useBookData';\nimport { useReadingProgress, useAutoSaveProgress } from '@/hooks/useReadingProgress';\nimport { useReaderAudio } from '@/hooks/useReaderAudio';\nimport { useThemeColors, fonts } from '@/lib/theme';\nimport { ReaderTopBar } from '@/components/ReaderTopBar';\nimport { AudioControls } from '@/components/AudioControls';\nimport { PageRenderer } from '@/components/PageRenderer';\nimport { SwipePageIndicator } from '@/components/SwipePageIndicator';\nimport { PageLayer } from '@/components/reader/PageLayer';\nimport { EdgeTapZones } from '@/components/reader/EdgeTapZones';\nimport { usePageAnimatedStyle } from '@/hooks/useReaderAnimations';\nimport { ReaderSkeleton } from '@/components/Skeleton';\nimport { GestureTutorial, hasSeenGestureTutorial, markGestureTutorialSeen } from '@/components/reader/GestureTutorial';\nimport type { PageData } from '@/types';\n\nconst { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');\nconst SWIPE_THRESHOLD = SCREEN_HEIGHT * 0.18;\nconst VELOCITY_THRESHOLD = 500;\n\nconst SPRING_CONFIG = {\n  damping: 22,\n  stiffness: 200,\n  mass: 1,\n};\n\nconst UI_ANIMATION_DURATION = 300;\n\n// Maximum number of dots to show before collapsing\nconst MAX_VISIBLE_DOTS = 7;\n\n/**\n * Vertical page indicator dots that appear on the right edge.\n * Shows a window of dots around the active page for long books.\n */\nfunction PageDots({\n  totalPages,\n  activeIndex,\n  isVisible,\n}: {\n  totalPages: number;\n  activeIndex: number;\n  isVisible: boolean;\n}) {\n  const containerStyle = useAnimatedStyle(() => ({\n    opacity: withTiming(isVisible ? 1 : 0, { duration: UI_ANIMATION_DURATION }),\n    transform: [\n      { translateX: withTiming(isVisible ? 0 : 8, { duration: UI_ANIMATION_DURATION }) },\n    ],\n  }));\n\n  if (totalPages <= 1) return null;\n\n  // For books with many pages, show a sliding window of dots\n  const showAllDots = totalPages <= MAX_VISIBLE_DOTS;\n  let startIndex = 0;\n  let endIndex = totalPages - 1;\n\n  if (!showAllDots) {\n    const halfWindow = Math.floor(MAX_VISIBLE_DOTS / 2);\n    startIndex = Math.max(0, activeIndex - halfWindow);\n    endIndex = startIndex + MAX_VISIBLE_DOTS - 1;\n    if (endIndex >= totalPages) {\n      endIndex = totalPages - 1;\n      startIndex = Math.max(0, endIndex - MAX_VISIBLE_DOTS + 1);\n    }\n  }\n\n  const dots = [];\n  for (let i = startIndex; i <= endIndex; i++) {\n    const isActive = i === activeIndex;\n    // Scale dots at the edges smaller for a nice fade effect\n    const distFromActive = Math.abs(i - activeIndex);\n    const isEdgeDot = !showAllDots && (i === startIndex || i === endIndex) && distFromActive > 2;\n\n    dots.push(\n      <View\n        key={i}\n        style={[\n          dotStyles.dot,\n          isActive && dotStyles.dotActive,\n          isEdgeDot && dotStyles.dotSmall,\n        ]}\n      />\n    );\n  }\n\n  return (\n    <Animated.View\n      style={[dotStyles.container, containerStyle]}\n      pointerEvents=\"none\"\n    >\n      {dots}\n    </Animated.View>\n  );\n}\n\nconst dotStyles = StyleSheet.create({\n  container: {\n    position: 'absolute',\n    right: 12,\n    top: '50%',\n    transform: [{ translateY: -50 }],\n    alignItems: 'center',\n    gap: 6,\n    zIndex: 35,\n  },\n  dot: {\n    width: 4,\n    height: 4,\n    borderRadius: 2,\n    backgroundColor: 'rgba(255,255,255,0.25)',\n  },\n  dotActive: {\n    width: 5,\n    height: 5,\n    borderRadius: 2.5,\n    backgroundColor: 'rgba(255,255,255,0.85)',\n    shadowColor: '#fff',\n    shadowOffset: { width: 0, height: 0 },\n    shadowOpacity: 0.4,\n    shadowRadius: 4,\n  },\n  dotSmall: {\n    width: 3,\n    height: 3,\n    borderRadius: 1.5,\n    opacity: 0.4,\n  },\n});\n\nexport default function ReaderScreen() {\n  const { id } = useLocalSearchParams<{ id: string }>();\n  const router = useRouter();\n  const colors = useThemeColors();\n  const bookId = id ?? '';\n\n  // Data\n  const { data: readerData, isLoading, error, refetch } = useReaderData(bookId);\n  const { data: savedProgress } = useReadingProgress(bookId);\n\n  // State\n  const [activeIndex, setActiveIndex] = useState(0);\n  const [showSettings, setShowSettings] = useState(false);\n  const [isUIVisible, setIsUIVisible] = useState(true);\n  const [showTutorial, setShowTutorial] = useState(false);\n  const progressRestoredRef = useRef(false);\n  const tutorialCheckedRef = useRef(false);\n\n  // Derived\n  const pages = useMemo(\n    () => [...(readerData?.pages ?? [])].sort((a, b) => a.pageNumber - b.pageNumber),\n    [readerData?.pages]\n  );\n  const totalPages = pages.length;\n  const currentPage = pages[activeIndex]?.pageNumber ?? 1;\n  const pageData: PageData | undefined = pages[activeIndex];\n  const progressPercent = totalPages > 0 ? ((activeIndex + 1) / totalPages) * 100 : 0;\n\n  // Audio\n  const {\n    isNarrationActive,\n    isSoundscapeActive,\n    narrationState,\n    soundscapeState,\n    toggleNarration,\n    toggleSoundscape,\n    cleanup,\n  } = useReaderAudio({ pageData, bookId });\n\n  const narrationAssignment = pageData?.assignments?.find((a) => a.audioType === 'narration');\n  const soundscapeAssignment = pageData?.assignments?.find((a) => a.audioType === 'soundscape');\n  const narrationUrl = narrationAssignment?.audioUrl || pageData?.narrationUrl;\n  const soundscapeUrl = soundscapeAssignment?.audioUrl;\n\n  // ===============================================================\n  // REANIMATED GESTURE PAGER\n  // ===============================================================\n\n  const translateY = useSharedValue(0);\n  const activeIndexShared = useSharedValue(0);\n  const getPageAnimatedStyle = usePageAnimatedStyle(translateY, activeIndexShared);\n\n  const updateActiveIndex = useCallback(\n    (newIndex: number) => {\n      setActiveIndex(newIndex);\n      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);\n    },\n    []\n  );\n\n  const panGesture = Gesture.Pan()\n    .activeOffsetY([-15, 15])\n    .onUpdate((e) => {\n      // Clamp: don't allow overscroll past first/last page\n      const idx = activeIndexShared.value;\n      if (idx === 0 && e.translationY > 0) {\n        // Rubber band at top\n        translateY.value = e.translationY * 0.3;\n      } else if (idx === totalPages - 1 && e.translationY < 0) {\n        // Rubber band at bottom\n        translateY.value = e.translationY * 0.3;\n      } else {\n        translateY.value = e.translationY;\n      }\n    })\n    .onEnd((e) => {\n      const idx = activeIndexShared.value;\n      const swipedUp = e.translationY < -SWIPE_THRESHOLD || e.velocityY < -VELOCITY_THRESHOLD;\n      const swipedDown = e.translationY > SWIPE_THRESHOLD || e.velocityY > VELOCITY_THRESHOLD;\n\n      if (swipedUp && idx < totalPages - 1) {\n        // Go to next page\n        activeIndexShared.value = idx + 1;\n        translateY.value = withSpring(0, SPRING_CONFIG);\n        runOnJS(updateActiveIndex)(idx + 1);\n      } else if (swipedDown && idx > 0) {\n        // Go to previous page\n        activeIndexShared.value = idx - 1;\n        translateY.value = withSpring(0, SPRING_CONFIG);\n        runOnJS(updateActiveIndex)(idx - 1);\n      } else {\n        // Snap back (dead zone)\n        translateY.value = withSpring(0, SPRING_CONFIG);\n      }\n    });\n\n  // Tap to toggle UI visibility\n  const tapGesture = Gesture.Tap()\n    .maxDuration(250)\n    .onEnd(() => {\n      runOnJS(toggleUI)();\n    });\n\n  // Combine gestures - Race allows pan to win when swiping, tap to win on tap\n  const composedGesture = Gesture.Race(panGesture, tapGesture);\n\n  const toggleUI = useCallback(() => {\n    setIsUIVisible((prev) => {\n      const newValue = !prev;\n      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);\n      return newValue;\n    });\n  }, []);\n\n  // ===============================================================\n  // PROGRESS\n  // ===============================================================\n\n  useAutoSaveProgress({\n    bookId,\n    currentPage,\n    totalPages,\n    enabled: !isLoading && totalPages > 0,\n  });\n\n  // Restore reading progress\n  useEffect(() => {\n    if (progressRestoredRef.current || isLoading || !readerData) return;\n\n    if (savedProgress?.currentPage && savedProgress.currentPage > 1 && savedProgress.currentPage <= totalPages) {\n      const idx = pages.findIndex((p) => p.pageNumber === savedProgress.currentPage);\n      if (idx > 0) {\n        setActiveIndex(idx);\n        activeIndexShared.value = idx;\n      }\n    }\n    progressRestoredRef.current = true;\n  }, [savedProgress, isLoading, readerData, totalPages, pages, activeIndexShared]);\n\n  // ===============================================================\n  // GESTURE TUTORIAL (FTUE)\n  // ===============================================================\n\n  useEffect(() => {\n    if (tutorialCheckedRef.current || isLoading) return;\n\n    const checkTutorial = async () => {\n      const hasSeen = await hasSeenGestureTutorial();\n      if (!hasSeen) {\n        setShowTutorial(true);\n      }\n      tutorialCheckedRef.current = true;\n    };\n\n    checkTutorial();\n  }, [isLoading]);\n\n  const handleTutorialComplete = useCallback(() => {\n    setShowTutorial(false);\n    markGestureTutorialSeen();\n  }, []);\n\n  // ===============================================================\n  // CLEANUP\n  // ===============================================================\n\n  // Cleanup on unmount\n  useEffect(() => {\n    return () => {\n      cleanup();\n    };\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, []);\n\n  const handleClose = useCallback(() => {\n    cleanup();\n    router.back();\n  }, [router, cleanup]);\n\n  // ===============================================================\n  // EDGE TAP NAVIGATION\n  // ===============================================================\n\n  const goToPreviousPage = useCallback(() => {\n    if (activeIndex > 0) {\n      const newIndex = activeIndex - 1;\n      setActiveIndex(newIndex);\n      activeIndexShared.value = newIndex;\n      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);\n    }\n  }, [activeIndex, activeIndexShared]);\n\n  const goToNextPage = useCallback(() => {\n    if (activeIndex < totalPages - 1) {\n      const newIndex = activeIndex + 1;\n      setActiveIndex(newIndex);\n      activeIndexShared.value = newIndex;\n      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);\n    }\n  }, [activeIndex, totalPages, activeIndexShared]);\n\n  // Animated styles for UI visibility\n  const topBarAnimatedStyle = useAnimatedStyle(() => ({\n    opacity: withTiming(isUIVisible ? 1 : 0, { duration: UI_ANIMATION_DURATION }),\n  }));\n\n  const audioControlsAnimatedStyle = useAnimatedStyle(() => ({\n    opacity: withTiming(isUIVisible ? 1 : 0, { duration: UI_ANIMATION_DURATION }),\n  }));\n\n  const tapHintAnimatedStyle = useAnimatedStyle(() => ({\n    opacity: withTiming(isUIVisible ? 0 : 0.4, { duration: UI_ANIMATION_DURATION }),\n  }));\n\n  // ===============================================================\n  // VISIBLE PAGES (virtualization window of +/-1)\n  // Optimized: O(1) slice instead of O(n) filter + indexOf\n  // ===============================================================\n\n  const visiblePages = useMemo(() => {\n    const start = Math.max(0, activeIndex - 1);\n    const end = Math.min(pages.length - 1, activeIndex + 1);\n    const result: { page: typeof pages[0]; index: number }[] = [];\n    for (let i = start; i <= end; i++) {\n      result.push({ page: pages[i], index: i });\n    }\n    return result;\n  }, [pages, activeIndex]);\n\n  // ===============================================================\n  // RENDER\n  // ===============================================================\n\n  if (isLoading) {\n    return <ReaderSkeleton />;\n  }\n\n  if (error || !readerData) {\n    return (\n      <View style={[styles.centered, { backgroundColor: colors.readerBg }]}>\n        <Text style={[styles.errorTitle, { color: colors.error, fontFamily: fonts.sans }]}>\n          Oops!\n        </Text>\n        <Text style={[styles.errorText, { color: colors.readerTextSecondary, fontFamily: fonts.sans }]}>\n          {error?.message || 'Book not found'}\n        </Text>\n        <View style={styles.errorButtonsContainer}>\n          <TouchableOpacity\n            style={[styles.primaryButton, { backgroundColor: colors.readerProgressBarFill }]}\n            onPress={() => refetch()}\n            activeOpacity={0.8}\n          >\n            <Text style={[styles.primaryButtonText, { color: colors.readerBg, fontFamily: fonts.sans }]}>\n              Try Again\n            </Text>\n          </TouchableOpacity>\n          <TouchableOpacity\n            style={[styles.secondaryButton, { borderColor: colors.readerTextSecondary }]}\n            onPress={() => router.back()}\n            activeOpacity={0.8}\n          >\n            <Text style={[styles.secondaryButtonText, { color: colors.readerTextSecondary, fontFamily: fonts.sans }]}>\n              Go Back\n            </Text>\n          </TouchableOpacity>\n        </View>\n      </View>\n    );\n  }\n\n  return (\n    <View style={[styles.container, { backgroundColor: colors.readerBg }]}>\n      <GestureDetector gesture={composedGesture}>\n        <View style={styles.pagerContainer}>\n          {visiblePages.map(({ page, index }) => (\n            <PageLayer\n              key={page.id}\n              page={page}\n              pageIndex={index}\n              activeIndex={activeIndex}\n              narrationTimestamps={page.narrationTimestamps ?? null}\n              currentPositionMs={narrationState.positionMs}\n              isNarrationPlaying={isNarrationActive && narrationState.isPlaying}\n              usePageAnimatedStyle={getPageAnimatedStyle}\n            />\n          ))}\n        </View>\n      </GestureDetector>\n\n      {/* Vertical page dots - right edge */}\n      <PageDots\n        totalPages={totalPages}\n        activeIndex={activeIndex}\n        isVisible={isUIVisible}\n      />\n\n      {/* Floating UI - Top bar */}\n      <Animated.View\n        style={[styles.topBarContainer, topBarAnimatedStyle]}\n        pointerEvents={isUIVisible ? 'auto' : 'none'}\n      >\n        <ReaderTopBar\n          progressPercent={progressPercent}\n          currentPage={currentPage}\n          totalPages={totalPages}\n          onClose={handleClose}\n          onSettings={() => setShowSettings(true)}\n        />\n      </Animated.View>\n\n      {/* Floating UI - Audio controls */}\n      <Animated.View\n        style={[styles.audioControlsContainer, audioControlsAnimatedStyle]}\n        pointerEvents={isUIVisible ? 'auto' : 'none'}\n      >\n        <AudioControls\n          hasNarration={!!narrationUrl}\n          hasSoundscape={!!soundscapeUrl}\n          isNarrationPlaying={isNarrationActive && narrationState.isPlaying}\n          isSoundscapePlaying={isSoundscapeActive && soundscapeState.isPlaying}\n          onToggleNarration={toggleNarration}\n          onToggleSoundscape={toggleSoundscape}\n        />\n      </Animated.View>\n\n      <SwipePageIndicator visible={isUIVisible && activeIndex === 0 && totalPages > 1} />\n\n      {/* Edge Tap Zones - only visible when UI is hidden */}\n      {!isUIVisible && (\n        <EdgeTapZones\n          onPrevious={goToPreviousPage}\n          onNext={goToNextPage}\n          isVisible={!isUIVisible}\n        />\n      )}\n\n      {/* Tap hint when UI is hidden */}\n      <Animated.View style={[styles.tapHintContainer, tapHintAnimatedStyle]} pointerEvents=\"none\">\n        <View style={styles.tapHintPill}>\n          <Text style={styles.tapHintText}>\n            Tap to show controls\n          </Text>\n        </View>\n      </Animated.View>\n\n      <GestureTutorial\n        visible={showTutorial}\n        onComplete={handleTutorialComplete}\n      />\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n  },\n  pagerContainer: {\n    flex: 1,\n  },\n  centered: {\n    flex: 1,\n    justifyContent: 'center',\n    alignItems: 'center',\n    gap: 12,\n    paddingHorizontal: 32,\n  },\n  errorTitle: {\n    fontSize: 24,\n    fontWeight: '700',\n  },\n  errorText: {\n    fontSize: 16,\n    textAlign: 'center',\n    lineHeight: 22,\n  },\n  errorButtonsContainer: {\n    marginTop: 24,\n    gap: 12,\n    width: '100%',\n    maxWidth: 280,\n  },\n  primaryButton: {\n    paddingVertical: 14,\n    paddingHorizontal: 24,\n    borderRadius: 10,\n    alignItems: 'center',\n    justifyContent: 'center',\n  },\n  primaryButtonText: {\n    fontSize: 16,\n    fontWeight: '600',\n  },\n  secondaryButton: {\n    paddingVertical: 14,\n    paddingHorizontal: 24,\n    borderRadius: 10,\n    borderWidth: 1,\n    alignItems: 'center',\n    justifyContent: 'center',\n  },\n  secondaryButtonText: {\n    fontSize: 16,\n    fontWeight: '500',\n  },\n  topBarContainer: {\n    position: 'absolute',\n    top: 0,\n    left: 0,\n    right: 0,\n    zIndex: 50,\n  },\n  audioControlsContainer: {\n    position: 'absolute',\n    bottom: 0,\n    left: 0,\n    right: 0,\n    height: 120,\n    zIndex: 40,\n    pointerEvents: 'none',\n  },\n  tapHintContainer: {\n    position: 'absolute',\n    bottom: 48,\n    left: 0,\n    right: 0,\n    alignItems: 'center',\n    zIndex: 30,\n  },\n  tapHintPill: {\n    backgroundColor: 'rgba(0,0,0,0.4)',\n    paddingHorizontal: 16,\n    paddingVertical: 8,\n    borderRadius: 20,\n    borderWidth: StyleSheet.hairlineWidth,\n    borderColor: 'rgba(255,255,255,0.08)',\n  },\n  tapHintText: {\n    fontSize: 12,\n    fontFamily: fonts.sans,\n    fontWeight: '500',\n    color: 'rgba(255,255,255,0.5)',\n    letterSpacing: 0.3,\n  },\n});\n"
+    },
+    "tool_use_id": "toolu_01QPdhB1NBMjzHQWV3QQwoFJ"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "npx tsc --noEmit --pretty 2>&1 | head -80",
+      "timeout": 30000
+    },
+    "tool_use_id": "toolu_01XfkbhadNV7jRBZqNJhN8hw"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "mcp__ide__getDiagnostics",
+    "tool_input": {
+      "uri": "file:///Users/akinpound/Documents/experiments/storia-mobile/components/ReaderTopBar.tsx"
+    },
+    "tool_use_id": "toolu_016oCNK3zvnzmS7EStpKHVJj"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/ReaderTopBar.tsx"
+    },
+    "tool_use_id": "toolu_012zWK811UcTDnrz92sLuKXe"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/components/AudioControls.tsx"
+    },
+    "tool_use_id": "toolu_01Qzpkq5HocUZvrKPHEti184"
+  },
+  {
+    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "3",
+      "status": "completed"
+    },
+    "tool_use_id": "toolu_012ochW1FWvMBL7vkeXSA3Mr"
   }
 ]

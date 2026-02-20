@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
-import { Audio, type AVPlaybackStatus } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 
 export type AudioPlayerState = {
   isPlaying: boolean;
@@ -29,9 +29,13 @@ type UseAudioPlayerReturn = {
 };
 
 export function useAudioPlayer(): UseAudioPlayerReturn {
-  const narrationRef = useRef<Audio.Sound | null>(null);
-  const soundscapeRef = useRef<Audio.Sound | null>(null);
+  const narrationRef = useRef<AudioPlayer | null>(null);
+  const soundscapeRef = useRef<AudioPlayer | null>(null);
+  const narrationSubRef = useRef<ReturnType<AudioPlayer['addListener']> | null>(null);
+  const soundscapeSubRef = useRef<ReturnType<AudioPlayer['addListener']> | null>(null);
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Track the current soundscape volume for fade calculations
+  const soundscapeVolumeRef = useRef<number>(0.6);
 
   const [narrationState, setNarrationState] = useState<AudioPlayerState>({
     isPlaying: false,
@@ -47,94 +51,106 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
 
   // Configure audio mode for background playback
   useEffect(() => {
-    Audio.setAudioModeAsync({
+    setAudioModeAsync({
       playsInSilentModeIOS: true,
       staysActiveInBackground: true,
       shouldDuckAndroid: true,
     });
   }, []);
 
-  const handleNarrationStatus = useCallback((status: AVPlaybackStatus) => {
-    if (!status.isLoaded) return;
-    setNarrationState({
-      isPlaying: status.isPlaying,
-      positionMs: status.positionMillis,
-      durationMs: status.durationMillis ?? 0,
-    });
-  }, []);
-
-  const handleSoundscapeStatus = useCallback((status: AVPlaybackStatus) => {
-    if (!status.isLoaded) return;
-    setSoundscapeState({
-      isPlaying: status.isPlaying,
-      positionMs: status.positionMillis,
-      durationMs: status.durationMillis ?? 0,
-    });
-  }, []);
-
   // Narration controls
   const loadNarration = useCallback(async (uri: string) => {
-    if (narrationRef.current) {
-      await narrationRef.current.unloadAsync();
+    // Clean up previous narration player
+    if (narrationSubRef.current) {
+      narrationSubRef.current.remove();
+      narrationSubRef.current = null;
     }
-    const { sound } = await Audio.Sound.createAsync(
-      { uri },
-      { shouldPlay: false, progressUpdateIntervalMillis: 50 },
-      handleNarrationStatus
-    );
-    narrationRef.current = sound;
-  }, [handleNarrationStatus]);
+    if (narrationRef.current) {
+      narrationRef.current.remove();
+      narrationRef.current = null;
+    }
+
+    const player = createAudioPlayer({ uri });
+
+    // Subscribe to status updates for word-sync (high frequency)
+    narrationSubRef.current = player.addListener('playbackStatusUpdate', (status) => {
+      setNarrationState({
+        isPlaying: status.playing,
+        positionMs: (status.currentTime ?? 0) * 1000,
+        durationMs: (status.duration ?? 0) * 1000,
+      });
+    });
+
+    narrationRef.current = player;
+  }, []);
 
   const playNarration = useCallback(async () => {
-    await narrationRef.current?.playAsync();
+    narrationRef.current?.play();
   }, []);
 
   const pauseNarration = useCallback(async () => {
-    await narrationRef.current?.pauseAsync();
+    narrationRef.current?.pause();
   }, []);
 
   const seekNarration = useCallback(async (positionMs: number) => {
-    await narrationRef.current?.setPositionAsync(positionMs);
+    narrationRef.current?.seekTo(positionMs / 1000);
   }, []);
 
   const setNarrationVolume = useCallback(async (volume: number) => {
-    await narrationRef.current?.setVolumeAsync(volume);
+    if (narrationRef.current) {
+      narrationRef.current.volume = volume;
+    }
   }, []);
 
   // Soundscape controls
   const loadSoundscape = useCallback(async (uri: string) => {
-    if (soundscapeRef.current) {
-      await soundscapeRef.current.unloadAsync();
+    // Clean up previous soundscape player
+    if (soundscapeSubRef.current) {
+      soundscapeSubRef.current.remove();
+      soundscapeSubRef.current = null;
     }
-    const { sound } = await Audio.Sound.createAsync(
-      { uri },
-      { shouldPlay: false, isLooping: true, volume: 0.6 },
-      handleSoundscapeStatus
-    );
-    soundscapeRef.current = sound;
-  }, [handleSoundscapeStatus]);
+    if (soundscapeRef.current) {
+      soundscapeRef.current.remove();
+      soundscapeRef.current = null;
+    }
+
+    const player = createAudioPlayer({ uri });
+    player.loop = true;
+    player.volume = 0.6;
+    soundscapeVolumeRef.current = 0.6;
+
+    soundscapeSubRef.current = player.addListener('playbackStatusUpdate', (status) => {
+      setSoundscapeState({
+        isPlaying: status.playing,
+        positionMs: (status.currentTime ?? 0) * 1000,
+        durationMs: (status.duration ?? 0) * 1000,
+      });
+    });
+
+    soundscapeRef.current = player;
+  }, []);
 
   const playSoundscape = useCallback(async () => {
-    await soundscapeRef.current?.playAsync();
+    soundscapeRef.current?.play();
   }, []);
 
   const pauseSoundscape = useCallback(async () => {
-    await soundscapeRef.current?.pauseAsync();
+    soundscapeRef.current?.pause();
   }, []);
 
   const setSoundscapeVolume = useCallback(async (volume: number) => {
-    await soundscapeRef.current?.setVolumeAsync(volume);
+    if (soundscapeRef.current) {
+      soundscapeRef.current.volume = volume;
+      soundscapeVolumeRef.current = volume;
+    }
   }, []);
 
   // Fade out over duration
   const fadeOutSoundscape = useCallback(async (duration: number = 3000) => {
-    const sound = soundscapeRef.current;
-    if (!sound) return;
+    const player = soundscapeRef.current;
+    if (!player) return;
 
-    const status = await sound.getStatusAsync();
-    if (!status.isLoaded) return;
-
-    const startVolume = status.volume;
+    const startVolume = soundscapeVolumeRef.current;
     const steps = 20;
     const stepDuration = duration / steps;
     const volumeStep = startVolume / steps;
@@ -143,14 +159,15 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
     return new Promise<void>((resolve) => {
-      fadeIntervalRef.current = setInterval(async () => {
+      fadeIntervalRef.current = setInterval(() => {
         currentStep++;
         const newVolume = Math.max(0, startVolume - volumeStep * currentStep);
-        await sound.setVolumeAsync(newVolume);
+        player.volume = newVolume;
+        soundscapeVolumeRef.current = newVolume;
 
         if (currentStep >= steps) {
           if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
-          await sound.pauseAsync();
+          player.pause();
           resolve();
         }
       }, stepDuration);
@@ -159,14 +176,25 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
 
   // Crossfade: fade out current, load new, fade in
   const crossfadeSoundscape = useCallback(async (newUri: string, duration: number = 1500) => {
-    const oldSound = soundscapeRef.current;
+    const oldPlayer = soundscapeRef.current;
+    const oldSub = soundscapeSubRef.current;
 
-    // Load new sound at volume 0
-    const { sound: newSound } = await Audio.Sound.createAsync(
-      { uri: newUri },
-      { shouldPlay: true, isLooping: true, volume: 0 },
-      handleSoundscapeStatus
-    );
+    // Create new player at volume 0
+    const newPlayer = createAudioPlayer({ uri: newUri });
+    newPlayer.loop = true;
+    newPlayer.volume = 0;
+
+    // Subscribe new player to status updates
+    soundscapeSubRef.current = newPlayer.addListener('playbackStatusUpdate', (status) => {
+      setSoundscapeState({
+        isPlaying: status.playing,
+        positionMs: (status.currentTime ?? 0) * 1000,
+        durationMs: (status.duration ?? 0) * 1000,
+      });
+    });
+
+    // Start playing new sound
+    newPlayer.play();
 
     // Fade out old, fade in new simultaneously
     const steps = 15;
@@ -176,19 +204,19 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
     return new Promise<void>((resolve) => {
-      fadeIntervalRef.current = setInterval(async () => {
+      fadeIntervalRef.current = setInterval(() => {
         currentStep++;
         const progress = currentStep / steps;
 
         // Fade in new
-        await newSound.setVolumeAsync(0.6 * progress);
+        newPlayer.volume = 0.6 * progress;
 
         // Fade out old
-        if (oldSound) {
+        if (oldPlayer) {
           try {
-            await oldSound.setVolumeAsync(0.6 * (1 - progress));
+            oldPlayer.volume = 0.6 * (1 - progress);
           } catch {
-            // Old sound may already be unloaded
+            // Old player may already be removed
           }
         }
 
@@ -196,36 +224,40 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
           if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
           // Cleanup old
-          if (oldSound) {
-            try {
-              await oldSound.unloadAsync();
-            } catch {
-              // Ignore
-            }
+          if (oldSub) {
+            try { oldSub.remove(); } catch { /* ignore */ }
+          }
+          if (oldPlayer) {
+            try { oldPlayer.remove(); } catch { /* ignore */ }
           }
 
-          soundscapeRef.current = newSound;
+          soundscapeRef.current = newPlayer;
+          soundscapeVolumeRef.current = 0.6;
           resolve();
         }
       }, stepDuration);
     });
-  }, [handleSoundscapeStatus]);
+  }, []);
 
   // Cleanup all audio
   const cleanup = useCallback(async () => {
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
+    if (narrationSubRef.current) {
+      try { narrationSubRef.current.remove(); } catch { /* ignore */ }
+      narrationSubRef.current = null;
+    }
     if (narrationRef.current) {
-      try {
-        await narrationRef.current.unloadAsync();
-      } catch { /* ignore */ }
+      try { narrationRef.current.remove(); } catch { /* ignore */ }
       narrationRef.current = null;
     }
 
+    if (soundscapeSubRef.current) {
+      try { soundscapeSubRef.current.remove(); } catch { /* ignore */ }
+      soundscapeSubRef.current = null;
+    }
     if (soundscapeRef.current) {
-      try {
-        await soundscapeRef.current.unloadAsync();
-      } catch { /* ignore */ }
+      try { soundscapeRef.current.remove(); } catch { /* ignore */ }
       soundscapeRef.current = null;
     }
 

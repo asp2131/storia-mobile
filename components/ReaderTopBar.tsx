@@ -6,7 +6,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import { useThemeColors, fonts } from '@/lib/theme';
+import { fonts } from '@/lib/theme';
 
 type Props = {
   progressPercent: number;
@@ -26,54 +26,53 @@ export const ReaderTopBar = React.memo(function ReaderTopBar({
   isVisible = true,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const colors = useThemeColors();
 
   const progressStyle = useAnimatedStyle(() => ({
-    width: `${withTiming(progressPercent, { duration: 300 })}%` as `${number}%`,
+    width: `${withTiming(progressPercent, { duration: 400 })}%` as `${number}%`,
   }));
 
   const containerStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(isVisible ? 1 : 0, { duration: 250 }),
+    opacity: withTiming(isVisible ? 1 : 0, { duration: 300 }),
+    transform: [
+      { translateY: withTiming(isVisible ? 0 : -20, { duration: 300 }) },
+    ],
   }));
 
   return (
     <Animated.View style={containerStyle} pointerEvents={isVisible ? 'auto' : 'none'}>
       <BlurView
-      intensity={60}
-      tint="systemChromeMaterialDark"
-      style={[styles.container, { paddingTop: insets.top + 4 }]}
-    >
-      <TouchableOpacity onPress={onClose} style={styles.closeButton} hitSlop={16}>
-        <Text style={[styles.closeIcon, { color: colors.readerCloseColor }]}>
-          {'\u2715'}
+        intensity={40}
+        tint="dark"
+        style={[styles.container, { paddingTop: insets.top + 2 }]}
+      >
+        {/* Close button - left */}
+        <TouchableOpacity onPress={onClose} style={styles.closeButton} hitSlop={12}>
+          <View style={styles.closeIconContainer}>
+            <Text style={styles.closeIcon}>{'\u2715'}</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* Center section: progress bar */}
+        <View style={styles.centerSection}>
+          <View style={styles.progressTrack}>
+            <Animated.View style={[styles.progressFill, progressStyle]}>
+              <View style={styles.progressGlow} />
+            </Animated.View>
+          </View>
+        </View>
+
+        {/* Page counter - right */}
+        <Text style={styles.pageCounter}>
+          {currentPage}
+          <Text style={styles.pageCounterSeparator}> / </Text>
+          {totalPages}
         </Text>
-      </TouchableOpacity>
-
-      <View style={[styles.progressTrack, { backgroundColor: colors.readerProgressBarBg }]}>
-        <Animated.View
-          style={[
-            styles.progressFill,
-            { backgroundColor: colors.readerProgressBarFill },
-            progressStyle,
-          ]}
-        />
-      </View>
-
-      <Text style={[styles.pageCounter, { color: colors.readerTextSecondary }]}>
-        {currentPage}/{totalPages}
-      </Text>
-
-      <TouchableOpacity onPress={onSettings} style={styles.settingsButton} hitSlop={16}>
-        <Text style={[styles.settingsIcon, { color: colors.readerCloseColor }]}>
-          {'\u2699'}
-        </Text>
-      </TouchableOpacity>
-    </BlurView>
+      </BlurView>
     </Animated.View>
   );
 });
 
-export const TOP_BAR_HEIGHT = 56;
+export const TOP_BAR_HEIGHT = 48;
 
 const styles = StyleSheet.create({
   container: {
@@ -84,46 +83,68 @@ const styles = StyleSheet.create({
     zIndex: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 10,
+    paddingHorizontal: 12,
+    paddingBottom: 10,
     overflow: 'hidden',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
   },
   closeButton: {
-    padding: 12,
-    minWidth: 56,
-    minHeight: 56,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  closeIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeIcon: {
-    fontSize: 20,
+    fontSize: 12,
     fontWeight: '600',
+    color: 'rgba(255,255,255,0.7)',
+  },
+  centerSection: {
+    flex: 1,
+    justifyContent: 'center',
   },
   progressTrack: {
-    flex: 1,
-    height: 12,
-    borderRadius: 6,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
+    borderRadius: 1.5,
+    backgroundColor: '#F59E0B',
+    position: 'relative',
+  },
+  progressGlow: {
+    position: 'absolute',
+    right: 0,
+    top: -1,
+    bottom: -1,
+    width: 12,
     borderRadius: 6,
+    backgroundColor: 'rgba(245, 158, 11, 0.5)',
   },
   pageCounter: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter',
+    fontFamily: fonts.sans,
     fontVariant: ['tabular-nums'],
+    color: 'rgba(255,255,255,0.5)',
+    marginLeft: 12,
+    letterSpacing: 0.5,
   },
-  settingsButton: {
-    padding: 12,
-    minWidth: 56,
-    minHeight: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  settingsIcon: {
-    fontSize: 20,
+  pageCounterSeparator: {
+    color: 'rgba(255,255,255,0.25)',
+    fontWeight: '300',
   },
 });

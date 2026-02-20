@@ -41,7 +41,110 @@ const SPRING_CONFIG = {
   mass: 1,
 };
 
-const UI_ANIMATION_DURATION = 250;
+const UI_ANIMATION_DURATION = 300;
+
+// Maximum number of dots to show before collapsing
+const MAX_VISIBLE_DOTS = 7;
+
+/**
+ * Vertical page indicator dots that appear on the right edge.
+ * Shows a window of dots around the active page for long books.
+ */
+function PageDots({
+  totalPages,
+  activeIndex,
+  isVisible,
+}: {
+  totalPages: number;
+  activeIndex: number;
+  isVisible: boolean;
+}) {
+  const containerStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(isVisible ? 1 : 0, { duration: UI_ANIMATION_DURATION }),
+    transform: [
+      { translateX: withTiming(isVisible ? 0 : 8, { duration: UI_ANIMATION_DURATION }) },
+    ],
+  }));
+
+  if (totalPages <= 1) return null;
+
+  // For books with many pages, show a sliding window of dots
+  const showAllDots = totalPages <= MAX_VISIBLE_DOTS;
+  let startIndex = 0;
+  let endIndex = totalPages - 1;
+
+  if (!showAllDots) {
+    const halfWindow = Math.floor(MAX_VISIBLE_DOTS / 2);
+    startIndex = Math.max(0, activeIndex - halfWindow);
+    endIndex = startIndex + MAX_VISIBLE_DOTS - 1;
+    if (endIndex >= totalPages) {
+      endIndex = totalPages - 1;
+      startIndex = Math.max(0, endIndex - MAX_VISIBLE_DOTS + 1);
+    }
+  }
+
+  const dots = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    const isActive = i === activeIndex;
+    // Scale dots at the edges smaller for a nice fade effect
+    const distFromActive = Math.abs(i - activeIndex);
+    const isEdgeDot = !showAllDots && (i === startIndex || i === endIndex) && distFromActive > 2;
+
+    dots.push(
+      <View
+        key={i}
+        style={[
+          dotStyles.dot,
+          isActive && dotStyles.dotActive,
+          isEdgeDot && dotStyles.dotSmall,
+        ]}
+      />
+    );
+  }
+
+  return (
+    <Animated.View
+      style={[dotStyles.container, containerStyle]}
+      pointerEvents="none"
+    >
+      {dots}
+    </Animated.View>
+  );
+}
+
+const dotStyles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: [{ translateY: -50 }],
+    alignItems: 'center',
+    gap: 6,
+    zIndex: 35,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+  },
+  dotActive: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+  },
+  dotSmall: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    opacity: 0.4,
+  },
+});
 
 export default function ReaderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -87,9 +190,9 @@ export default function ReaderScreen() {
   const narrationUrl = narrationAssignment?.audioUrl || pageData?.narrationUrl;
   const soundscapeUrl = soundscapeAssignment?.audioUrl;
 
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
   // REANIMATED GESTURE PAGER
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
 
   const translateY = useSharedValue(0);
   const activeIndexShared = useSharedValue(0);
@@ -157,9 +260,9 @@ export default function ReaderScreen() {
     });
   }, []);
 
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
   // PROGRESS
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
 
   useAutoSaveProgress({
     bookId,
@@ -182,13 +285,13 @@ export default function ReaderScreen() {
     progressRestoredRef.current = true;
   }, [savedProgress, isLoading, readerData, totalPages, pages, activeIndexShared]);
 
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
   // GESTURE TUTORIAL (FTUE)
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
 
   useEffect(() => {
     if (tutorialCheckedRef.current || isLoading) return;
-    
+
     const checkTutorial = async () => {
       const hasSeen = await hasSeenGestureTutorial();
       if (!hasSeen) {
@@ -196,7 +299,7 @@ export default function ReaderScreen() {
       }
       tutorialCheckedRef.current = true;
     };
-    
+
     checkTutorial();
   }, [isLoading]);
 
@@ -205,9 +308,9 @@ export default function ReaderScreen() {
     markGestureTutorialSeen();
   }, []);
 
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
   // CLEANUP
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
 
   // Cleanup on unmount
   useEffect(() => {
@@ -222,9 +325,9 @@ export default function ReaderScreen() {
     router.back();
   }, [router, cleanup]);
 
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
   // EDGE TAP NAVIGATION
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
 
   const goToPreviousPage = useCallback(() => {
     if (activeIndex > 0) {
@@ -254,13 +357,13 @@ export default function ReaderScreen() {
   }));
 
   const tapHintAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(isUIVisible ? 0 : 0.5, { duration: UI_ANIMATION_DURATION }),
+    opacity: withTiming(isUIVisible ? 0 : 0.4, { duration: UI_ANIMATION_DURATION }),
   }));
 
-  // ═══════════════════════════════════════════════════════════════
-  // VISIBLE PAGES (virtualization window of ±1)
+  // ===============================================================
+  // VISIBLE PAGES (virtualization window of +/-1)
   // Optimized: O(1) slice instead of O(n) filter + indexOf
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
 
   const visiblePages = useMemo(() => {
     const start = Math.max(0, activeIndex - 1);
@@ -272,9 +375,9 @@ export default function ReaderScreen() {
     return result;
   }, [pages, activeIndex]);
 
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
   // RENDER
-  // ═══════════════════════════════════════════════════════════════
+  // ===============================================================
 
   if (isLoading) {
     return <ReaderSkeleton />;
@@ -332,7 +435,14 @@ export default function ReaderScreen() {
         </View>
       </GestureDetector>
 
-      {/* Floating UI */}
+      {/* Vertical page dots - right edge */}
+      <PageDots
+        totalPages={totalPages}
+        activeIndex={activeIndex}
+        isVisible={isUIVisible}
+      />
+
+      {/* Floating UI - Top bar */}
       <Animated.View
         style={[styles.topBarContainer, topBarAnimatedStyle]}
         pointerEvents={isUIVisible ? 'auto' : 'none'}
@@ -346,6 +456,7 @@ export default function ReaderScreen() {
         />
       </Animated.View>
 
+      {/* Floating UI - Audio controls */}
       <Animated.View
         style={[styles.audioControlsContainer, audioControlsAnimatedStyle]}
         pointerEvents={isUIVisible ? 'auto' : 'none'}
@@ -373,9 +484,11 @@ export default function ReaderScreen() {
 
       {/* Tap hint when UI is hidden */}
       <Animated.View style={[styles.tapHintContainer, tapHintAnimatedStyle]} pointerEvents="none">
-        <Text style={[styles.tapHintText, { color: colors.readerTextSecondary }]}>
-          Tap to show controls
-        </Text>
+        <View style={styles.tapHintPill}>
+          <Text style={styles.tapHintText}>
+            Tap to show controls
+          </Text>
+        </View>
       </Animated.View>
 
       <GestureTutorial
@@ -456,18 +569,25 @@ const styles = StyleSheet.create({
   },
   tapHintContainer: {
     position: 'absolute',
-    top: 0,
+    bottom: 48,
     left: 0,
     right: 0,
-    bottom: 0,
-    justifyContent: 'center',
     alignItems: 'center',
     zIndex: 30,
   },
+  tapHintPill: {
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
   tapHintText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: fonts.sans,
     fontWeight: '500',
-    opacity: 0.7,
+    color: 'rgba(255,255,255,0.5)',
+    letterSpacing: 0.3,
   },
 });
