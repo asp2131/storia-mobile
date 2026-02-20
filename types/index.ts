@@ -6,6 +6,45 @@ export type WordTimestamp = {
   end: number;
 };
 
+// Text Overlay Types
+
+export interface TextShadow {
+  color: string;
+  blur: number;
+  x: number;
+  y: number;
+}
+
+export interface TextBackground {
+  color: string;
+  padding?: number;
+  borderRadius?: number;
+}
+
+export interface TextElement {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: number;
+  color: string;
+  textAlign: 'left' | 'center' | 'right';
+  rotation: number;
+  shadow?: TextShadow;
+  background?: TextBackground;
+}
+
+export interface TextOverlayConfig {
+  version: number;
+  elements: TextElement[];
+}
+
+// Deprecated: Use TextOverlayConfig instead
+export type TextOverlayData = TextOverlayConfig;
+
 export type AudioAssignment = {
   id: string;
   audioUrl: string;
@@ -20,6 +59,7 @@ export type PageData = {
   id: string;
   pageNumber: number;
   textContent: string | null;
+  overlay: TextOverlayConfig | null;
   imageUrl: string | null;
   narrationUrl: string | null;
   narrationTimestamps: WordTimestamp[] | null;
