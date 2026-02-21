@@ -19,7 +19,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useReaderData } from '@/hooks/useBookData';
 import { useReadingProgress, useAutoSaveProgress } from '@/hooks/useReadingProgress';
-import { useReaderAudio } from '@/hooks/useReaderAudio';
+import { useAudioManager } from '@/hooks/useAudioManager';
 import { useThemeColors, fonts } from '@/lib/theme';
 import { ReaderTopBar } from '@/components/ReaderTopBar';
 import { AudioControls } from '@/components/AudioControls';
@@ -77,10 +77,15 @@ export default function ReaderScreen() {
     isSoundscapeActive,
     narrationState,
     soundscapeState,
+    isTransitioning,
     toggleNarration,
     toggleSoundscape,
     cleanup,
-  } = useReaderAudio({ pageData, bookId });
+  } = useAudioManager({ 
+    pageData, 
+    bookId,
+    pageNumber: currentPage 
+  });
 
   const narrationAssignment = pageData?.assignments?.find((a) => a.audioType === 'narration');
   const soundscapeAssignment = pageData?.assignments?.find((a) => a.audioType === 'soundscape');
@@ -241,8 +246,8 @@ export default function ReaderScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleClose = useCallback(() => {
-    cleanup();
+  const handleClose = useCallback(async () => {
+    await cleanup();
     router.back();
   }, [router, cleanup]);
 

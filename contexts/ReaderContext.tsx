@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { useSharedValue } from 'react-native-reanimated';
 import { useReaderData } from '@/hooks/useBookData';
 import { useReadingProgress, useAutoSaveProgress } from '@/hooks/useReadingProgress';
-import { useAudioPlayer } from '@/hooks/useAudioPlayer';
+import { useAudioManager } from '@/hooks/useAudioManager';
 import { useLocalPreferences } from '@/hooks/useLocalPreferences';
 import { usePageAnimatedStyle } from '@/hooks/useReaderAnimations';
 import type { PageData, ReaderResponse } from '@/types';
@@ -84,30 +84,7 @@ export function ReaderProvider({ bookId, children }: ReaderProviderProps) {
   const activeIndexShared = useSharedValue(0);
   const getPageAnimatedStyle = usePageAnimatedStyle(translateY, activeIndexShared);
 
-  // Audio
-  const {
-    narrationState,
-    loadNarration,
-    playNarration,
-    pauseNarration,
-    soundscapeState,
-    loadSoundscape,
-    playSoundscape,
-    pauseSoundscape,
-    crossfadeSoundscape,
-    fadeOutSoundscape,
-    cleanup,
-  } = useAudioPlayer();
-
-  const [isNarrationActive, setIsNarrationActive] = useState(false);
-  const [isSoundscapeActive, setIsSoundscapeActive] = useState(false);
-
-  // Preferences
-  const { preferences } = useLocalPreferences();
-  const introFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const introFadedPages = useRef(new Set<number>());
-
-  // Derived
+  // Derived data (must be before useAudioManager)
   const pages = useMemo(
     () => [...(readerData?.pages ?? [])].sort((a, b) => a.pageNumber - b.pageNumber),
     [readerData?.pages]
@@ -121,6 +98,22 @@ export function ReaderProvider({ bookId, children }: ReaderProviderProps) {
   const soundscapeAssignment = pageData?.assignments?.find((a) => a.audioType === 'soundscape');
   const narrationUrl = narrationAssignment?.audioUrl || pageData?.narrationUrl || null;
   const soundscapeUrl = soundscapeAssignment?.audioUrl || null;
+
+  // Audio - using useAudioManager for simplified audio management
+  const {
+    isNarrationActive,
+    isSoundscapeActive,
+    narrationState,
+    soundscapeState,
+    isTransitioning,
+    toggleNarration,
+    toggleSoundscape,
+    cleanup,
+  } = useAudioManager({
+    pageData,
+    bookId,
+    pageNumber: currentPage,
+  });
 
   // Visible pages (virtualization window of ±1)
   const visiblePageIndices = useMemo(() => {
@@ -153,68 +146,6 @@ export function ReaderProvider({ bookId, children }: ReaderProviderProps) {
     progressRestoredRef.current = true;
   }, [savedProgress, isLoading, readerData, totalPages, pages, activeIndexShared]);
 
-  // Load narration audio when page changes
-  useEffect(() => {
-    if (narrationUrl) {
-      loadNarration(narrationUrl).then(() => {
-        if (isNarrationActive) {
-          playNarration();
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [narrationUrl]);
-
-  // Handle soundscape changes with crossfade
-  const prevSoundscapeUrl = useRef<string | null>(null);
-  useEffect(() => {
-    if (!soundscapeUrl) return;
-
-    if (prevSoundscapeUrl.current && prevSoundscapeUrl.current !== soundscapeUrl && isSoundscapeActive) {
-      crossfadeSoundscape(soundscapeUrl);
-    } else if (!prevSoundscapeUrl.current || prevSoundscapeUrl.current !== soundscapeUrl) {
-      loadSoundscape(soundscapeUrl).then(() => {
-        if (isSoundscapeActive) playSoundscape();
-      });
-    }
-    prevSoundscapeUrl.current = soundscapeUrl;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [soundscapeUrl]);
-
-  // Intro-only mode: fade out after 10 seconds
-  useEffect(() => {
-    if (introFadeTimerRef.current) {
-      clearTimeout(introFadeTimerRef.current);
-      introFadeTimerRef.current = null;
-    }
-
-    if (
-      preferences.soundscapeMode === 'intro-only' &&
-      isSoundscapeActive &&
-      soundscapeUrl &&
-      !introFadedPages.current.has(currentPage)
-    ) {
-      introFadeTimerRef.current = setTimeout(() => {
-        introFadedPages.current.add(currentPage);
-        fadeOutSoundscape(3000).then(() => {
-          setIsSoundscapeActive(false);
-        });
-      }, 10000);
-    }
-
-    return () => {
-      if (introFadeTimerRef.current) clearTimeout(introFadeTimerRef.current);
-    };
-  }, [currentPage, preferences.soundscapeMode, isSoundscapeActive, soundscapeUrl, fadeOutSoundscape]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      cleanup();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Actions
   const goToPage = useCallback((index: number) => {
     if (index >= 0 && index < totalPages) {
@@ -225,28 +156,8 @@ export function ReaderProvider({ bookId, children }: ReaderProviderProps) {
     }
   }, [totalPages, activeIndexShared, translateY]);
 
-  const toggleNarration = useCallback(async () => {
-    if (isNarrationActive) {
-      await pauseNarration();
-      setIsNarrationActive(false);
-    } else if (narrationUrl) {
-      await playNarration();
-      setIsNarrationActive(true);
-    }
-  }, [isNarrationActive, narrationUrl, playNarration, pauseNarration]);
-
-  const toggleSoundscape = useCallback(async () => {
-    if (isSoundscapeActive) {
-      await pauseSoundscape();
-      setIsSoundscapeActive(false);
-    } else if (soundscapeUrl) {
-      await playSoundscape();
-      setIsSoundscapeActive(true);
-    }
-  }, [isSoundscapeActive, soundscapeUrl, playSoundscape, pauseSoundscape]);
-
-  const handleClose = useCallback(() => {
-    cleanup();
+  const handleClose = useCallback(async () => {
+    await cleanup();
     router.back();
   }, [router, cleanup]);
 

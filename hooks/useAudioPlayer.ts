@@ -52,9 +52,9 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
   // Configure audio mode for background playback
   useEffect(() => {
     setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: true,
-      shouldDuckAndroid: true,
+      playsInSilentMode: true,
+      interruptionMode: 'mixWithOthers',
+      allowsRecording: false,
     });
   }, []);
 

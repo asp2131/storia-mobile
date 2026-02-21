@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useAudioPlayer, type AudioPlayerState } from './useAudioPlayer';
-import { useLocalPreferences } from './useLocalPreferences';
+import { useAudioPlayer, type AudioPlayerState } from '../useAudioPlayer';
+import { useLocalPreferences } from '../useLocalPreferences';
 import type { PageData } from '@/types';
 
 type UseReaderAudioProps = {

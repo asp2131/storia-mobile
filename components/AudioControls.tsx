@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, {
   useAnimatedStyle,
@@ -26,6 +26,7 @@ type Props = {
   onToggleNarration: () => void;
   onToggleSoundscape: () => void;
   isVisible?: boolean;
+  isTransitioning?: boolean;
 };
 
 /**
@@ -144,6 +145,7 @@ export const AudioControls = React.memo(function AudioControls({
   onToggleNarration,
   onToggleSoundscape,
   isVisible = true,
+  isTransitioning = false,
 }: Props) {
   const insets = useSafeAreaInsets();
   const hasAudio = hasNarration || hasSoundscape;
@@ -155,6 +157,28 @@ export const AudioControls = React.memo(function AudioControls({
   }));
 
   if (!hasAudio) return null;
+
+  // Show loading state during audio transitions
+  if (isTransitioning) {
+    return (
+      <Animated.View
+        style={[
+          styles.container,
+          { bottom: Math.max(28, insets.bottom + 12) },
+          containerStyle,
+        ]}
+      >
+        <BlurView
+          intensity={35}
+          tint="dark"
+          style={styles.loadingContainer}
+        >
+          <ActivityIndicator size="small" color="rgba(255,255,255,0.8)" />
+          <Text style={styles.loadingText}>Loading audio...</Text>
+        </BlurView>
+      </Animated.View>
+    );
+  }
 
   return (
     <Animated.View
@@ -213,6 +237,22 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(255,255,255,0.1)',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 28,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.1)',
+    gap: 8,
+  },
+  loadingText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.7)',
+    fontFamily: fonts.sans,
   },
   buttonsRow: {
     flexDirection: 'row',
