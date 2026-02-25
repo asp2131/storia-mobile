@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -10,8 +8,6 @@ class AudioEngine {
   final AudioPlayer _soundscape = AudioPlayer();
 
   bool _initialized = false;
-  Timer? _crossfadeTimer;
-  String? _currentSoundscapeUrl;
 
   /// Whether the user has toggled narration on (independent of player state).
   bool _narrationActive = false;
@@ -52,10 +48,8 @@ class AudioEngine {
 
     if (page.soundscapeUrl != null && page.soundscapeUrl!.isNotEmpty) {
       futures.add(_soundscape.setUrl(page.soundscapeUrl!).then((_) {}));
-      _currentSoundscapeUrl = page.soundscapeUrl;
     } else {
       futures.add(_soundscape.stop());
-      _currentSoundscapeUrl = null;
     }
 
     await Future.wait(futures);
@@ -116,53 +110,23 @@ class AudioEngine {
 
     final nextNarrationUrl = nextPage.narrationUrl;
     final nextSoundscapeUrl = nextPage.soundscapeUrl;
+    // Fully stop both channels while transitioning so no overlap leaks
+    // between pages.
+    await Future.wait([_narration.stop(), _soundscape.stop()]);
 
-    // --- Narration transition ---
     if (nextNarrationUrl != null && nextNarrationUrl.isNotEmpty) {
-      await _narration.stop();
       await _narration.setUrl(nextNarrationUrl);
       if (_narrationActive) {
         await _narration.play();
       }
-    } else {
-      await _narration.stop();
     }
 
-    // --- Soundscape transition ---
-    if (nextSoundscapeUrl == null || nextSoundscapeUrl.isEmpty) {
-      await _soundscape.stop();
-      _currentSoundscapeUrl = null;
-      return;
-    }
-
-    // Same soundscape – keep playing, nothing to do.
-    if (_currentSoundscapeUrl == nextSoundscapeUrl) {
-      return;
-    }
-
-    // Different soundscape – crossfade.
-    _crossfadeTimer?.cancel();
-    await _soundscape.setVolume(0);
-    await _soundscape.setUrl(nextSoundscapeUrl);
-    _currentSoundscapeUrl = nextSoundscapeUrl;
-
-    if (_soundscapeActive) {
-      await _soundscape.play();
-
-      const steps = 15;
-      const duration = Duration(milliseconds: 1500);
-      final targetVolume = _soundscapeTargetVolume;
-      final tick = duration ~/ steps;
-      var currentStep = 0;
-
-      _crossfadeTimer = Timer.periodic(tick, (timer) async {
-        currentStep += 1;
-        final progress = currentStep / steps;
-        await _soundscape.setVolume(targetVolume * progress);
-        if (currentStep >= steps) {
-          timer.cancel();
-        }
-      });
+    if (nextSoundscapeUrl != null && nextSoundscapeUrl.isNotEmpty) {
+      await _soundscape.setVolume(_soundscapeTargetVolume);
+      await _soundscape.setUrl(nextSoundscapeUrl);
+      if (_soundscapeActive) {
+        await _soundscape.play();
+      }
     }
   }
 
@@ -194,7 +158,6 @@ class AudioEngine {
   // ---------------------------------------------------------------------------
 
   Future<void> dispose() async {
-    _crossfadeTimer?.cancel();
     await _narration.dispose();
     await _soundscape.dispose();
   }
