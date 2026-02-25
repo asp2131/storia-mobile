@@ -10,6 +10,8 @@ class AudioEngine {
   final AudioPlayer _soundscape = AudioPlayer();
 
   bool _initialized = false;
+  int _pageAudioRequestId = 0;
+  String? _currentSoundscapeUrl;
 
   /// Whether the user has toggled narration on (independent of player state).
   bool _narrationActive = false;
@@ -39,22 +41,38 @@ class AudioEngine {
 
   Future<void> loadPage(PageData page) async {
     await ensureInitialized();
+    final requestId = ++_pageAudioRequestId;
 
-    final futures = <Future<void>>[];
-
-    if (page.narrationUrl != null && page.narrationUrl!.isNotEmpty) {
-      futures.add(_narration.setUrl(page.narrationUrl!).then((_) {}));
-    } else {
-      futures.add(_narration.stop());
+    await Future.wait([_narration.stop(), _soundscape.stop()]);
+    if (requestId != _pageAudioRequestId) {
+      return;
     }
 
-    if (page.soundscapeUrl != null && page.soundscapeUrl!.isNotEmpty) {
-      futures.add(_soundscape.setUrl(page.soundscapeUrl!).then((_) {}));
-    } else {
-      futures.add(_soundscape.stop());
+    final narrationUrl = page.narrationUrl;
+    if (narrationUrl != null && narrationUrl.isNotEmpty) {
+      await _narration.setUrl(narrationUrl);
+      if (requestId != _pageAudioRequestId) {
+        return;
+      }
+      if (_narrationActive) {
+        await _narration.play();
+      }
     }
 
-    await Future.wait(futures);
+    final soundscapeUrl = page.soundscapeUrl;
+    if (soundscapeUrl != null && soundscapeUrl.isNotEmpty) {
+      await _soundscape.setVolume(_soundscapeTargetVolume);
+      await _soundscape.setUrl(soundscapeUrl);
+      _currentSoundscapeUrl = soundscapeUrl;
+      if (requestId != _pageAudioRequestId) {
+        return;
+      }
+      if (_soundscapeActive) {
+        await _soundscape.play();
+      }
+    } else {
+      _currentSoundscapeUrl = null;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -111,26 +129,52 @@ class AudioEngine {
 
   Future<void> transitionToPage(PageData nextPage) async {
     await ensureInitialized();
+    final requestId = ++_pageAudioRequestId;
 
     final nextNarrationUrl = nextPage.narrationUrl;
     final nextSoundscapeUrl = nextPage.soundscapeUrl;
-    // Fully stop both channels while transitioning so no overlap leaks
-    // between pages.
-    await Future.wait([_narration.stop(), _soundscape.stop()]);
+
+    await _narration.stop();
+    if (requestId != _pageAudioRequestId) {
+      return;
+    }
 
     if (nextNarrationUrl != null && nextNarrationUrl.isNotEmpty) {
       await _narration.setUrl(nextNarrationUrl);
+      if (requestId != _pageAudioRequestId) {
+        return;
+      }
       if (_narrationActive) {
         await _narration.play();
       }
     }
 
+    final hasSoundscape =
+        nextSoundscapeUrl != null && nextSoundscapeUrl.isNotEmpty;
+    final isSameSoundscape =
+        hasSoundscape && nextSoundscapeUrl == _currentSoundscapeUrl;
+
+    if (isSameSoundscape) {
+      return;
+    }
+
+    await _soundscape.stop();
+    if (requestId != _pageAudioRequestId) {
+      return;
+    }
+
     if (nextSoundscapeUrl != null && nextSoundscapeUrl.isNotEmpty) {
       await _soundscape.setVolume(_soundscapeTargetVolume);
       await _soundscape.setUrl(nextSoundscapeUrl);
+      _currentSoundscapeUrl = nextSoundscapeUrl;
+      if (requestId != _pageAudioRequestId) {
+        return;
+      }
       if (_soundscapeActive) {
         await _soundscape.play();
       }
+    } else {
+      _currentSoundscapeUrl = null;
     }
   }
 

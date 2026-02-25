@@ -155,6 +155,20 @@ class PageData {
     this.narrationTimestamps,
   });
 
+  PageData copyWith({String? soundscapeUrl}) {
+    return PageData(
+      id: id,
+      pageNumber: pageNumber,
+      textContent: textContent,
+      overlay: overlay,
+      imageUrl: imageUrl,
+      narrationUrl: narrationUrl,
+      soundscapeUrl: soundscapeUrl ?? this.soundscapeUrl,
+      compositedImageUrl: compositedImageUrl,
+      narrationTimestamps: narrationTimestamps,
+    );
+  }
+
   factory PageData.fromJson(Map<String, dynamic> json) {
     final rawTimestamps =
         json['narration_timestamps'] ?? json['narrationTimestamps'];
@@ -191,13 +205,15 @@ class PageData {
       if (scenesData is Map<String, dynamic>) {
         final rawSoundscapes = scenesData['soundscapes'];
         if (rawSoundscapes is List && rawSoundscapes.isNotEmpty) {
-          final soundscapes =
-              rawSoundscapes.whereType<Map<String, dynamic>>().toList();
+          final soundscapes = rawSoundscapes
+              .whereType<Map<String, dynamic>>()
+              .toList();
           final approved = soundscapes
               .where((s) => s['admin_approved'] == true)
               .toList();
-          final chosen =
-              approved.isNotEmpty ? approved.first : soundscapes.first;
+          final chosen = approved.isNotEmpty
+              ? approved.first
+              : soundscapes.first;
           soundscapeUrl = chosen['audio_url'] as String?;
         }
       }
@@ -239,12 +255,21 @@ class Book {
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
-    final parsedPages = (json['pages'] as List<dynamic>? ?? <dynamic>[])
+    final rawPages = (json['pages'] as List<dynamic>? ?? <dynamic>[])
+        .whereType<Map<String, dynamic>>()
+        .toList(growable: false);
+
+    final parsedPages = rawPages
         .whereType<Map<String, dynamic>>()
         .map(PageData.fromJson)
         .toList();
 
     final pages = _sortedPages(parsedPages);
+    final soundscapeAssignments = _extractSoundscapeAssignments(rawPages);
+    final pagesWithResolvedSoundscapes = _applyResolvedSoundscapes(
+      pages,
+      soundscapeAssignments,
+    );
     assert(() {
       if (_isDifferentOrder(parsedPages, pages)) {
         debugPrint(
@@ -260,9 +285,23 @@ class Book {
       title: json['title'] as String? ?? '',
       author: json['author'] as String?,
       coverUrl: json['cover_url'] as String? ?? json['coverUrl'] as String?,
-      pages: pages,
+      pages: pagesWithResolvedSoundscapes,
     );
   }
+}
+
+class _SoundscapeAssignment {
+  final int id;
+  final String audioUrl;
+  final int rangeStart;
+  final int rangeEnd;
+
+  const _SoundscapeAssignment({
+    required this.id,
+    required this.audioUrl,
+    required this.rangeStart,
+    required this.rangeEnd,
+  });
 }
 
 const int _invalidPageNumber = 1 << 30;
@@ -315,4 +354,129 @@ bool _isDifferentOrder(List<PageData> original, List<PageData> sorted) {
     }
   }
   return false;
+}
+
+List<_SoundscapeAssignment> _extractSoundscapeAssignments(
+  List<Map<String, dynamic>> rawPages,
+) {
+  final assignments = <_SoundscapeAssignment>[];
+
+  for (final rawPage in rawPages) {
+    final rawAssignments = rawPage['page_audio_assignments'];
+    if (rawAssignments is! List) {
+      continue;
+    }
+
+    final sourcePageNumber = _parsePageNumber(rawPage);
+    for (final rawAssignment
+        in rawAssignments.whereType<Map<String, dynamic>>()) {
+      if (rawAssignment['audio_type'] != 'soundscape') {
+        continue;
+      }
+
+      final audioUrl = rawAssignment['audio_url'] as String?;
+      if (audioUrl == null || audioUrl.isEmpty) {
+        continue;
+      }
+
+      final assignmentId = _parseOptionalPositiveInt(rawAssignment['id']) ?? 0;
+      final scope =
+          (rawAssignment['scope'] as String?)?.toLowerCase() ?? 'single';
+      final start =
+          _parseOptionalPositiveInt(rawAssignment['range_start']) ??
+          _parseOptionalPositiveInt(rawAssignment['rangeStart']);
+      final end =
+          _parseOptionalPositiveInt(rawAssignment['range_end']) ??
+          _parseOptionalPositiveInt(rawAssignment['rangeEnd']);
+
+      final effectiveStart = scope == 'range'
+          ? (start ?? sourcePageNumber)
+          : sourcePageNumber;
+      final effectiveEnd = scope == 'range'
+          ? (end ?? effectiveStart)
+          : effectiveStart;
+      if (effectiveStart <= 0 || effectiveStart >= _invalidPageNumber) {
+        continue;
+      }
+
+      final normalizedStart = effectiveStart < effectiveEnd
+          ? effectiveStart
+          : effectiveEnd;
+      final normalizedEnd = effectiveStart > effectiveEnd
+          ? effectiveStart
+          : effectiveEnd;
+
+      assignments.add(
+        _SoundscapeAssignment(
+          id: assignmentId,
+          audioUrl: audioUrl,
+          rangeStart: normalizedStart,
+          rangeEnd: normalizedEnd,
+        ),
+      );
+    }
+  }
+
+  return assignments;
+}
+
+List<PageData> _applyResolvedSoundscapes(
+  List<PageData> pages,
+  List<_SoundscapeAssignment> assignments,
+) {
+  if (assignments.isEmpty) {
+    return pages;
+  }
+
+  return pages
+      .map((page) {
+        final resolvedUrl = _resolveRangeSoundscapeForPage(
+          page.pageNumber,
+          assignments,
+        );
+        if (resolvedUrl == null || resolvedUrl == page.soundscapeUrl) {
+          return page;
+        }
+        return page.copyWith(soundscapeUrl: resolvedUrl);
+      })
+      .toList(growable: false);
+}
+
+String? _resolveRangeSoundscapeForPage(
+  int pageNumber,
+  List<_SoundscapeAssignment> assignments,
+) {
+  _SoundscapeAssignment? best;
+  for (final assignment in assignments) {
+    if (pageNumber < assignment.rangeStart ||
+        pageNumber > assignment.rangeEnd) {
+      continue;
+    }
+
+    if (best == null) {
+      best = assignment;
+      continue;
+    }
+
+    if (assignment.id > best.id) {
+      best = assignment;
+    }
+  }
+
+  return best?.audioUrl;
+}
+
+int? _parseOptionalPositiveInt(dynamic value) {
+  if (value is num) {
+    final intValue = value.toInt();
+    return intValue > 0 ? intValue : null;
+  }
+  if (value is String) {
+    final intValue = int.tryParse(value);
+    if (intValue == null || intValue <= 0) {
+      return null;
+    }
+    return intValue;
+  }
+  return null;
 }
