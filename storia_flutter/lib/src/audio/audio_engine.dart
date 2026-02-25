@@ -25,7 +25,7 @@ class AudioEngine {
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.music());
 
-    _soundscape.setLoopMode(LoopMode.one);
+    _soundscape.setLoopMode(LoopMode.off);
     await _soundscape.setVolume(_soundscapeTargetVolume);
 
     _initialized = true;
