@@ -4,6 +4,8 @@ import 'package:just_audio/just_audio.dart';
 import '../data/models.dart';
 
 class AudioEngine {
+  static const Duration _restartThreshold = Duration(milliseconds: 250);
+
   final AudioPlayer _narration = AudioPlayer();
   final AudioPlayer _soundscape = AudioPlayer();
 
@@ -61,6 +63,7 @@ class AudioEngine {
 
   Future<void> playNarration() async {
     await ensureInitialized();
+    await _restartIfCompleted(_narration);
     _narrationActive = true;
     await _narration.play();
   }
@@ -71,7 +74,7 @@ class AudioEngine {
   }
 
   Future<void> toggleNarration() async {
-    if (_narrationActive) {
+    if (_narrationActive && _narration.playing) {
       await pauseNarration();
     } else {
       await playNarration();
@@ -84,6 +87,7 @@ class AudioEngine {
 
   Future<void> playSoundscape() async {
     await ensureInitialized();
+    await _restartIfCompleted(_soundscape);
     _soundscapeActive = true;
     await _soundscape.play();
   }
@@ -94,7 +98,7 @@ class AudioEngine {
   }
 
   Future<void> toggleSoundscape() async {
-    if (_soundscapeActive) {
+    if (_soundscapeActive && _soundscape.playing) {
       await pauseSoundscape();
     } else {
       await playSoundscape();
@@ -160,5 +164,22 @@ class AudioEngine {
   Future<void> dispose() async {
     await _narration.dispose();
     await _soundscape.dispose();
+  }
+
+  Future<void> _restartIfCompleted(AudioPlayer player) async {
+    final duration = player.duration;
+    if (duration == null || duration <= Duration.zero) {
+      return;
+    }
+
+    final restartCutoff = duration > _restartThreshold
+        ? duration - _restartThreshold
+        : Duration.zero;
+    final isNearEnd = player.position >= restartCutoff;
+    final isCompleted = player.processingState == ProcessingState.completed;
+
+    if (isNearEnd || isCompleted) {
+      await player.seek(Duration.zero);
+    }
   }
 }
