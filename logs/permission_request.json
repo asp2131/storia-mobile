@@ -259,5 +259,153 @@
         "destination": "localSettings"
       }
     ]
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "WebSearch",
+    "tool_input": {
+      "query": "Apple App Store submission requirements 2025 2026"
+    }
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "WebSearch",
+    "tool_input": {
+      "query": "Google Play Store submission requirements 2025 2026"
+    }
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "WebFetch",
+    "tool_input": {
+      "url": "https://natively.dev/articles/app-store-requirements",
+      "prompt": "What are the requirements for submitting apps to both Apple App Store and Google Play Store in 2025-2026? Provide the comprehensive checklist."
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "destination": "localSettings",
+        "rules": [
+          {
+            "toolName": "WebFetch",
+            "ruleContent": "domain:natively.dev"
+          }
+        ],
+        "behavior": "allow"
+      }
+    ]
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "WebFetch",
+    "tool_input": {
+      "url": "https://adapty.io/blog/how-to-pass-app-store-review/",
+      "prompt": "What are the App Store review requirements, guidelines, and checklist items for 2025-2026? Provide comprehensive details."
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "destination": "localSettings",
+        "rules": [
+          {
+            "toolName": "WebFetch",
+            "ruleContent": "domain:adapty.io"
+          }
+        ],
+        "behavior": "allow"
+      }
+    ]
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "WebFetch",
+    "tool_input": {
+      "url": "https://support.google.com/googleplay/android-developer/answer/11926878?hl=en",
+      "prompt": "What are the target API level requirements for Google Play apps in 2025 and 2026? List all deadlines and specific requirements."
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "destination": "localSettings",
+        "rules": [
+          {
+            "toolName": "WebFetch",
+            "ruleContent": "domain:support.google.com"
+          }
+        ],
+        "behavior": "allow"
+      }
+    ]
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "WebFetch",
+    "tool_input": {
+      "url": "https://median.co/blog/google-plays-target-api-level-requirement-for-android-apps",
+      "prompt": "What are the Google Play target API level requirements for Android apps? Include all deadlines, minimum versions for new apps and existing apps, and specific requirements."
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "destination": "localSettings",
+        "rules": [
+          {
+            "toolName": "WebFetch",
+            "ruleContent": "domain:median.co"
+          }
+        ],
+        "behavior": "allow"
+      }
+    ]
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "mkdir -p specs",
+      "description": "Create specs directory"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addDirectories",
+        "directories": [
+          "/Users/akinpound/Documents/experiments/storia-mobile"
+        ],
+        "destination": "session"
+      },
+      {
+        "type": "setMode",
+        "mode": "acceptEdits",
+        "destination": "session"
+      }
+    ]
   }
 ]

@@ -1,0 +1,565 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../audio/audio_providers.dart';
+import '../../data/models.dart';
+import '../../data/providers.dart';
+import 'page_renderer.dart';
+
+class ReaderScreen extends ConsumerStatefulWidget {
+  final String bookId;
+
+  const ReaderScreen({super.key, required this.bookId});
+
+  @override
+  ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
+}
+
+class _ReaderScreenState extends ConsumerState<ReaderScreen> {
+  final PageController _pageController = PageController();
+  final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
+    Duration.zero,
+  );
+  int _activePageIndex = 0;
+  bool _isPlaying = false;
+  bool _showChrome = true;
+  bool _loadedInitialAudio = false;
+  double _narrationVolume = 1;
+  double _soundscapeVolume = 0.6;
+  StreamSubscription<Duration>? _positionSubscription;
+  StreamSubscription<bool>? _playingSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    final audioEngine = ref.read(audioEngineProvider);
+    audioEngine.ensureInitialized();
+
+    _positionSubscription = audioEngine.narrationPosition.listen((position) {
+      if (!mounted) {
+        return;
+      }
+      _narrationPositionNotifier.value = position;
+    });
+
+    _playingSubscription = audioEngine.narrationPlaying.listen((playing) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isPlaying = playing;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription?.cancel();
+    _playingSubscription?.cancel();
+    _narrationPositionNotifier.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bookAsync = ref.watch(currentBookProvider(widget.bookId));
+    final audioEngine = ref.watch(audioEngineProvider);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF121A24),
+      body: bookAsync.when(
+        data: (book) {
+          if (book == null) {
+            return const Center(child: Text('Book not found'));
+          }
+
+          if (book.pages.isEmpty) {
+            return const Center(child: Text('No pages in this book'));
+          }
+
+          if (_activePageIndex >= book.pages.length) {
+            _activePageIndex = book.pages.length - 1;
+          }
+
+          final activePage = book.pages[_activePageIndex];
+
+          if (!_loadedInitialAudio) {
+            _loadedInitialAudio = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              await audioEngine.loadPage(book.pages[_activePageIndex]);
+            });
+          }
+
+          return Stack(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => setState(() => _showChrome = !_showChrome),
+                child: PageView.builder(
+                  controller: _pageController,
+                  scrollDirection: Axis.vertical,
+                  itemCount: book.pages.length,
+                  onPageChanged: (index) async {
+                    setState(() {
+                      _activePageIndex = index;
+                    });
+                    await audioEngine.transitionToPage(book.pages[index]);
+                  },
+                  itemBuilder: (context, index) {
+                    final isInVirtualizationWindow =
+                        (index - _activePageIndex).abs() <= 1;
+                    if (!isInVirtualizationWindow) {
+                      return const SizedBox.shrink();
+                    }
+                    final page = book.pages[index];
+                    return ValueListenableBuilder<Duration>(
+                      valueListenable: _narrationPositionNotifier,
+                      builder: (context, narrationPosition, child) {
+                        return PageRenderer(
+                          page: page,
+                          narrationPosition: narrationPosition,
+                          isActive: index == _activePageIndex,
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              IgnorePointer(
+                ignoring: !_showChrome,
+                child: AnimatedOpacity(
+                  opacity: _showChrome ? 1 : 0,
+                  duration: 220.ms,
+                  curve: Curves.easeOut,
+                  child: _ReaderChrome(
+                    book: book,
+                    activePageIndex: _activePageIndex,
+                    activePageNumber: activePage.pageNumber,
+                    isPlaying: _isPlaying,
+                    onClose: () => Navigator.of(context).maybePop(),
+                    onPlayPause: () async {
+                      if (_isPlaying) {
+                        await audioEngine.pause();
+                      } else {
+                        await audioEngine.play();
+                      }
+                    },
+                    onAudioSettingsTap: () =>
+                        _showAudioSettings(context, audioEngine),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const _ReaderLoadingState(),
+        error: (error, _) => _ReaderErrorState(error: '$error'),
+      ),
+    );
+  }
+
+  Future<void> _showAudioSettings(BuildContext context, dynamic audioEngine) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFFF9F8F4),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 46,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD7D7D2),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Audio Mix',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF2E2A3D),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _VolumeRow(
+                    icon: Icons.record_voice_over_rounded,
+                    label: 'Narration',
+                    value: _narrationVolume,
+                    onChanged: (value) async {
+                      setModalState(() => _narrationVolume = value);
+                      setState(() => _narrationVolume = value);
+                      await audioEngine.setNarrationVolume(value);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  _VolumeRow(
+                    icon: Icons.surround_sound_rounded,
+                    label: 'Ambience',
+                    value: _soundscapeVolume,
+                    onChanged: (value) async {
+                      setModalState(() => _soundscapeVolume = value);
+                      setState(() => _soundscapeVolume = value);
+                      await audioEngine.setSoundscapeVolume(value);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _ReaderChrome extends StatelessWidget {
+  final Book book;
+  final int activePageIndex;
+  final int activePageNumber;
+  final bool isPlaying;
+  final VoidCallback onClose;
+  final Future<void> Function() onPlayPause;
+  final VoidCallback onAudioSettingsTap;
+
+  const _ReaderChrome({
+    required this.book,
+    required this.activePageIndex,
+    required this.activePageNumber,
+    required this.isPlaying,
+    required this.onClose,
+    required this.onPlayPause,
+    required this.onAudioSettingsTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final topInset = MediaQuery.paddingOf(context).top;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Stack(
+      children: [
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          child: IgnorePointer(
+            child: Container(
+              height: topInset + 110,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color.fromRGBO(8, 12, 17, 0.75), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: topInset + 10,
+          left: 14,
+          right: 14,
+          child: Row(
+            children: [
+              _ChromeButton(
+                icon: Icons.arrow_back_ios_new_rounded,
+                onTap: onClose,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color.fromRGBO(10, 16, 26, 0.58),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color.fromRGBO(255, 255, 255, 0.2),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        book.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.lora(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Page $activePageNumber of ${book.pages.length}',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFD4D8E0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: Container(
+              height: bottomInset + 160,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Color.fromRGBO(8, 12, 17, 0.8)],
+                ),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          left: 14,
+          right: 14,
+          bottom: bottomInset + 12,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color.fromRGBO(10, 16, 26, 0.62),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color.fromRGBO(255, 255, 255, 0.16),
+              ),
+            ),
+            child: Row(
+              children: [
+                _ChromeButton(
+                  icon: isPlaying
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
+                  onTap: () async => onPlayPause(),
+                  isPrimary: true,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: 220.ms,
+                    child: Text(
+                      key: ValueKey<int>(activePageIndex),
+                      'Now reading page $activePageNumber',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFE7EBF2),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _ChromeButton(
+                  icon: Icons.tune_rounded,
+                  onTap: onAudioSettingsTap,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ChromeButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isPrimary;
+
+  const _ChromeButton({
+    required this.icon,
+    required this.onTap,
+    this.isPrimary = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isPrimary
+          ? const Color(0xFF6F61C7)
+          : const Color.fromRGBO(255, 255, 255, 0.14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: isPrimary
+            ? BorderSide.none
+            : const BorderSide(color: Color.fromRGBO(255, 255, 255, 0.18)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: SizedBox(
+          width: 42,
+          height: 42,
+          child: Icon(icon, color: Colors.white, size: 21),
+        ),
+      ),
+    );
+  }
+}
+
+class _VolumeRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  const _VolumeRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE4E4DE)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: const Color(0xFF585374)),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 72,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF2E2A3D),
+              ),
+            ),
+          ),
+          Expanded(
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 4,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+              ),
+              child: Slider(
+                value: value,
+                min: 0,
+                max: 1,
+                activeColor: const Color(0xFF6F61C7),
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+          Text(
+            '${(value * 100).round()}%',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF6B7280),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReaderLoadingState extends StatelessWidget {
+  const _ReaderLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CircularProgressIndicator(color: Color(0xFF8A80CC)),
+          const SizedBox(height: 14),
+          Text(
+            'Opening your story...',
+            style: GoogleFonts.inter(
+              color: const Color(0xFFC5CBD8),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReaderErrorState extends StatelessWidget {
+  final String error;
+
+  const _ReaderErrorState({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.auto_stories_rounded,
+              color: Color(0xFFC5CBD8),
+              size: 34,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'This story could not be loaded',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFC5CBD8),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

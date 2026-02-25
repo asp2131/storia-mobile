@@ -1,0 +1,38 @@
+[
+  {
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "afbedb4fcebcbbd4c",
+    "agent_type": "builder",
+    "logged_at": "2026-02-24T20:43:50.386915"
+  },
+  {
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a86c2b33fdc837036",
+    "agent_type": "builder",
+    "logged_at": "2026-02-24T20:43:58.795672"
+  },
+  {
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "ad63db2c01a1400cb",
+    "agent_type": "Explore",
+    "logged_at": "2026-02-24T21:40:27.001516"
+  },
+  {
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "ac395c1e1f627e5dd",
+    "agent_type": "Explore",
+    "logged_at": "2026-02-24T21:40:36.317898"
+  }
+]

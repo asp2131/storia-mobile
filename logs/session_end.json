@@ -38,5 +38,13 @@
     "hook_event_name": "SessionEnd",
     "reason": "other",
     "logged_at": "2026-02-17T09:49:55.262082"
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionEnd",
+    "reason": "prompt_input_exit",
+    "logged_at": "2026-02-24T19:43:07.242135"
   }
 ]

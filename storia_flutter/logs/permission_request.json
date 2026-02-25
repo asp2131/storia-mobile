@@ -1,0 +1,54 @@
+[
+  {
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "flutter pub get 2>&1",
+      "timeout": 60000,
+      "description": "Run flutter pub get"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Bash",
+            "ruleContent": "flutter pub get"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "localSettings"
+      }
+    ]
+  },
+  {
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "flutter analyze 2>&1",
+      "timeout": 120000,
+      "description": "Run flutter analyze to check for errors"
+    },
+    "permission_suggestions": [
+      {
+        "type": "addRules",
+        "rules": [
+          {
+            "toolName": "Bash",
+            "ruleContent": "flutter analyze"
+          }
+        ],
+        "behavior": "allow",
+        "destination": "localSettings"
+      }
+    ]
+  }
+]

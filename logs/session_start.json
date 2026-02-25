@@ -46,5 +46,21 @@
     "hook_event_name": "SessionStart",
     "source": "startup",
     "model": "claude-sonnet-4-6"
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionStart",
+    "source": "startup",
+    "model": "claude-sonnet-4-6"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionStart",
+    "source": "startup",
+    "model": "claude-sonnet-4-6"
   }
 ]

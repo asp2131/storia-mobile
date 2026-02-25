@@ -34,5 +34,41 @@
     "agent_id": "a3d7ab7",
     "agent_type": "builder",
     "logged_at": "2026-02-19T21:25:28.581899"
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a32656cdb799f3f99",
+    "agent_type": "Explore",
+    "logged_at": "2026-02-24T11:32:54.822291"
+  },
+  {
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a090eb4e20bf706d0",
+    "agent_type": "general-purpose",
+    "logged_at": "2026-02-24T11:33:01.910990"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a0d1e3f4eba69f2e5",
+    "agent_type": "Explore",
+    "logged_at": "2026-02-24T22:02:24.671175"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a12c90dd688a34bf6",
+    "agent_type": "Explore",
+    "logged_at": "2026-02-24T22:02:26.932045"
   }
 ]

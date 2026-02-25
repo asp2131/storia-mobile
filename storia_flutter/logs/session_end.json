@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "hook_event_name": "SessionEnd",
+    "reason": "prompt_input_exit",
+    "logged_at": "2026-02-24T22:00:15.029430"
+  }
+]

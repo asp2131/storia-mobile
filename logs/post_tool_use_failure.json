@@ -56,5 +56,98 @@
       "is_interrupt": false,
       "logged_at": "2026-02-19T21:22:59.761880"
     }
+  },
+  {
+    "timestamp": "2026-02-24T11:36:28.065882",
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "hook_event_name": "PostToolUseFailure",
+    "tool_name": "Read",
+    "tool_use_id": "toolu_015PuVBdT9wURTymXRbVJsNL",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/types"
+    },
+    "error": "EISDIR: illegal operation on a directory, read '/Users/akinpound/Documents/experiments/storia-mobile/types'",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "raw_input": {
+      "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "permission_mode": "default",
+      "hook_event_name": "PostToolUseFailure",
+      "tool_name": "Read",
+      "tool_input": {
+        "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/types"
+      },
+      "tool_use_id": "toolu_015PuVBdT9wURTymXRbVJsNL",
+      "error": "EISDIR: illegal operation on a directory, read '/Users/akinpound/Documents/experiments/storia-mobile/types'",
+      "is_interrupt": false,
+      "logged_at": "2026-02-24T11:36:28.065882"
+    }
+  },
+  {
+    "timestamp": "2026-02-24T11:37:09.453567",
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "hook_event_name": "PostToolUseFailure",
+    "tool_name": "Read",
+    "tool_use_id": "toolu_01SnEkU6zJWb65owcFDEaMLk",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log",
+      "offset": 25993,
+      "limit": 147
+    },
+    "error": "File content (122790 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "raw_input": {
+      "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "permission_mode": "default",
+      "hook_event_name": "PostToolUseFailure",
+      "tool_name": "Read",
+      "tool_input": {
+        "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log",
+        "offset": 25993,
+        "limit": 147
+      },
+      "tool_use_id": "toolu_01SnEkU6zJWb65owcFDEaMLk",
+      "error": "File content (122790 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.",
+      "is_interrupt": false,
+      "logged_at": "2026-02-24T11:37:09.453567"
+    }
+  },
+  {
+    "timestamp": "2026-02-24T11:37:43.284534",
+    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+    "hook_event_name": "PostToolUseFailure",
+    "tool_name": "WebFetch",
+    "tool_use_id": "toolu_01J7NwpcV5QB11DqU5UVz8Ha",
+    "tool_input": {
+      "url": "https://median.co/blog/google-plays-target-api-level-requirement-for-android-apps",
+      "prompt": "What are the Google Play target API level requirements for Android apps? Include all deadlines, minimum versions for new apps and existing apps, and specific requirements."
+    },
+    "error": "Request failed with status code 403",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+    "raw_input": {
+      "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
+      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
+      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "permission_mode": "default",
+      "hook_event_name": "PostToolUseFailure",
+      "tool_name": "WebFetch",
+      "tool_input": {
+        "url": "https://median.co/blog/google-plays-target-api-level-requirement-for-android-apps",
+        "prompt": "What are the Google Play target API level requirements for Android apps? Include all deadlines, minimum versions for new apps and existing apps, and specific requirements."
+      },
+      "tool_use_id": "toolu_01J7NwpcV5QB11DqU5UVz8Ha",
+      "error": "Request failed with status code 403",
+      "is_interrupt": false,
+      "logged_at": "2026-02-24T11:37:43.284534"
+    }
   }
 ]
