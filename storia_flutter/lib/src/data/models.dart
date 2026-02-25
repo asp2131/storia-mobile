@@ -168,19 +168,37 @@ class PageData {
     final overlayJson = json['text_overlay'];
 
     // Soundscape URL is derived from the nested scenes -> soundscapes relation.
-    // Prefer admin-approved soundscapes, fall back to first available.
+    // Supabase returns scenes as an array (one-to-many). We flatten all
+    // soundscapes across scenes, prefer admin-approved, fall back to first.
     String? soundscapeUrl;
     final scenesData = json['scenes'];
-    if (scenesData is Map<String, dynamic>) {
+    if (scenesData is List && scenesData.isNotEmpty) {
+      final allSoundscapes = <Map<String, dynamic>>[];
+      for (final scene in scenesData.whereType<Map<String, dynamic>>()) {
+        final rawSoundscapes = scene['soundscapes'];
+        if (rawSoundscapes is List) {
+          allSoundscapes.addAll(rawSoundscapes.whereType<Map<String, dynamic>>());
+        }
+      }
+      if (allSoundscapes.isNotEmpty) {
+        final approved = allSoundscapes
+            .where((s) => s['admin_approved'] == true)
+            .toList();
+        final chosen =
+            approved.isNotEmpty ? approved.first : allSoundscapes.first;
+        soundscapeUrl = chosen['audio_url'] as String?;
+      }
+    } else if (scenesData is Map<String, dynamic>) {
+      // Handle single-object relation (1-to-1) as fallback.
       final rawSoundscapes = scenesData['soundscapes'];
       if (rawSoundscapes is List && rawSoundscapes.isNotEmpty) {
-        final soundscapes = rawSoundscapes
-            .whereType<Map<String, dynamic>>()
-            .toList();
+        final soundscapes =
+            rawSoundscapes.whereType<Map<String, dynamic>>().toList();
         final approved = soundscapes
             .where((s) => s['admin_approved'] == true)
             .toList();
-        final chosen = approved.isNotEmpty ? approved.first : soundscapes.first;
+        final chosen =
+            approved.isNotEmpty ? approved.first : soundscapes.first;
         soundscapeUrl = chosen['audio_url'] as String?;
       }
     }

@@ -407,5 +407,17 @@
         "destination": "session"
       }
     ]
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PermissionRequest",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd /Users/akinpound/Documents/experiments/storia-mobile/storia_flutter && grep -r \"AnimatedBuilder\" lib/ 2>/dev/null; echo \"---\"; flutter --version 2>/dev/null | head -1",
+      "description": "Check if AnimatedBuilder is used and Flutter version"
+    }
   }
 ]

@@ -70,5 +70,23 @@
     "agent_id": "a12c90dd688a34bf6",
     "agent_type": "Explore",
     "logged_at": "2026-02-24T22:02:26.932045"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a7b0d4725a11d8843",
+    "agent_type": "Explore",
+    "logged_at": "2026-02-24T22:08:44.927652"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SubagentStart",
+    "agent_id": "a4e5fc409483bbb49",
+    "agent_type": "Explore",
+    "logged_at": "2026-02-24T22:08:48.237546"
   }
 ]

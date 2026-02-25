@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../audio/audio_engine.dart';
 import '../../audio/audio_providers.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
@@ -25,13 +27,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     Duration.zero,
   );
   int _activePageIndex = 0;
-  bool _isPlaying = false;
+  bool _isNarrationPlaying = false;
+  bool _isSoundscapePlaying = false;
   bool _showChrome = true;
   bool _loadedInitialAudio = false;
   double _narrationVolume = 1;
   double _soundscapeVolume = 0.6;
   StreamSubscription<Duration>? _positionSubscription;
-  StreamSubscription<bool>? _playingSubscription;
+  StreamSubscription<bool>? _narrationPlayingSubscription;
+  StreamSubscription<bool>? _soundscapePlayingSubscription;
 
   @override
   void initState() {
@@ -40,26 +44,28 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     audioEngine.ensureInitialized();
 
     _positionSubscription = audioEngine.narrationPosition.listen((position) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       _narrationPositionNotifier.value = position;
     });
 
-    _playingSubscription = audioEngine.narrationPlaying.listen((playing) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isPlaying = playing;
-      });
+    _narrationPlayingSubscription =
+        audioEngine.narrationPlaying.listen((playing) {
+      if (!mounted) return;
+      setState(() => _isNarrationPlaying = playing);
+    });
+
+    _soundscapePlayingSubscription =
+        audioEngine.soundscapePlaying.listen((playing) {
+      if (!mounted) return;
+      setState(() => _isSoundscapePlaying = playing);
     });
   }
 
   @override
   void dispose() {
     _positionSubscription?.cancel();
-    _playingSubscription?.cancel();
+    _narrationPlayingSubscription?.cancel();
+    _soundscapePlayingSubscription?.cancel();
     _narrationPositionNotifier.dispose();
     _pageController.dispose();
     super.dispose();
@@ -87,6 +93,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           }
 
           final activePage = book.pages[_activePageIndex];
+          final hasNarration = (activePage.narrationUrl ?? '').isNotEmpty;
+          final hasSoundscape = (activePage.soundscapeUrl ?? '').isNotEmpty;
 
           if (!_loadedInitialAudio) {
             _loadedInitialAudio = true;
@@ -130,30 +138,33 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   },
                 ),
               ),
+              // Top chrome
               IgnorePointer(
                 ignoring: !_showChrome,
                 child: AnimatedOpacity(
                   opacity: _showChrome ? 1 : 0,
                   duration: 220.ms,
                   curve: Curves.easeOut,
-                  child: _ReaderChrome(
+                  child: _ReaderTopBar(
                     book: book,
-                    activePageIndex: _activePageIndex,
                     activePageNumber: activePage.pageNumber,
-                    isPlaying: _isPlaying,
                     onClose: () => Navigator.of(context).maybePop(),
-                    onPlayPause: () async {
-                      if (_isPlaying) {
-                        await audioEngine.pause();
-                      } else {
-                        await audioEngine.play();
-                      }
-                    },
                     onAudioSettingsTap: () =>
                         _showAudioSettings(context, audioEngine),
                   ),
                 ),
               ),
+              // Bottom audio controls
+              if (hasNarration || hasSoundscape)
+                _AudioControlsPill(
+                  hasNarration: hasNarration,
+                  hasSoundscape: hasSoundscape,
+                  isNarrationPlaying: _isNarrationPlaying,
+                  isSoundscapePlaying: _isSoundscapePlaying,
+                  isVisible: _showChrome,
+                  onToggleNarration: () => audioEngine.toggleNarration(),
+                  onToggleSoundscape: () => audioEngine.toggleSoundscape(),
+                ),
             ],
           );
         },
@@ -163,7 +174,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  Future<void> _showAudioSettings(BuildContext context, dynamic audioEngine) {
+  Future<void> _showAudioSettings(
+    BuildContext context,
+    AudioEngine audioEngine,
+  ) {
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: const Color(0xFFF9F8F4),
@@ -230,29 +244,26 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   }
 }
 
-class _ReaderChrome extends StatelessWidget {
+// =============================================================================
+// Top bar with title / page info / settings
+// =============================================================================
+
+class _ReaderTopBar extends StatelessWidget {
   final Book book;
-  final int activePageIndex;
   final int activePageNumber;
-  final bool isPlaying;
   final VoidCallback onClose;
-  final Future<void> Function() onPlayPause;
   final VoidCallback onAudioSettingsTap;
 
-  const _ReaderChrome({
+  const _ReaderTopBar({
     required this.book,
-    required this.activePageIndex,
     required this.activePageNumber,
-    required this.isPlaying,
     required this.onClose,
-    required this.onPlayPause,
     required this.onAudioSettingsTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Stack(
       children: [
@@ -267,7 +278,10 @@ class _ReaderChrome extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color.fromRGBO(8, 12, 17, 0.75), Colors.transparent],
+                  colors: [
+                    Color.fromRGBO(8, 12, 17, 0.75),
+                    Colors.transparent,
+                  ],
                 ),
               ),
             ),
@@ -324,70 +338,12 @@ class _ReaderChrome extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(width: 10),
+              _ChromeButton(
+                icon: Icons.tune_rounded,
+                onTap: onAudioSettingsTap,
+              ),
             ],
-          ),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: IgnorePointer(
-            child: Container(
-              height: bottomInset + 160,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Color.fromRGBO(8, 12, 17, 0.8)],
-                ),
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          left: 14,
-          right: 14,
-          bottom: bottomInset + 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(10, 16, 26, 0.62),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color.fromRGBO(255, 255, 255, 0.16),
-              ),
-            ),
-            child: Row(
-              children: [
-                _ChromeButton(
-                  icon: isPlaying
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
-                  onTap: () async => onPlayPause(),
-                  isPrimary: true,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: 220.ms,
-                    child: Text(
-                      key: ValueKey<int>(activePageIndex),
-                      'Now reading page $activePageNumber',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFFE7EBF2),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                _ChromeButton(
-                  icon: Icons.tune_rounded,
-                  onTap: onAudioSettingsTap,
-                ),
-              ],
-            ),
           ),
         ),
       ],
@@ -395,28 +351,241 @@ class _ReaderChrome extends StatelessWidget {
   }
 }
 
-class _ChromeButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  final bool isPrimary;
+// =============================================================================
+// Bottom audio controls pill — separate narration & soundscape toggles
+// =============================================================================
 
-  const _ChromeButton({
-    required this.icon,
-    required this.onTap,
-    this.isPrimary = false,
+const _narrationColor = Color(0xFFF59E0B); // Warm amber
+const _soundscapeColor = Color(0xFF14B8A6); // Teal
+
+class _AudioControlsPill extends StatelessWidget {
+  final bool hasNarration;
+  final bool hasSoundscape;
+  final bool isNarrationPlaying;
+  final bool isSoundscapePlaying;
+  final bool isVisible;
+  final Future<void> Function() onToggleNarration;
+  final Future<void> Function() onToggleSoundscape;
+
+  const _AudioControlsPill({
+    required this.hasNarration,
+    required this.hasSoundscape,
+    required this.isNarrationPlaying,
+    required this.isSoundscapePlaying,
+    required this.isVisible,
+    required this.onToggleNarration,
+    required this.onToggleSoundscape,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: math.max(28, bottomInset + 12),
+      child: IgnorePointer(
+        ignoring: !isVisible,
+        child: AnimatedOpacity(
+          opacity: isVisible ? 1 : 0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          child: AnimatedSlide(
+            offset: isVisible ? Offset.zero : const Offset(0, 0.3),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(10, 16, 26, 0.72),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: const Color.fromRGBO(255, 255, 255, 0.1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasNarration)
+                      _AudioIconButton(
+                        icon: isNarrationPlaying
+                            ? Icons.pause_rounded
+                            : Icons.mic_rounded,
+                        accentColor: _narrationColor,
+                        isPlaying: isNarrationPlaying,
+                        onTap: onToggleNarration,
+                      ),
+                    if (hasNarration && hasSoundscape)
+                      Container(
+                        width: 1,
+                        height: 24,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        color: const Color.fromRGBO(255, 255, 255, 0.12),
+                      ),
+                    if (hasSoundscape)
+                      _AudioIconButton(
+                        icon: isSoundscapePlaying
+                            ? Icons.volume_up_rounded
+                            : Icons.music_note_rounded,
+                        accentColor: _soundscapeColor,
+                        isPlaying: isSoundscapePlaying,
+                        onTap: onToggleSoundscape,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AudioIconButton extends StatelessWidget {
+  final IconData icon;
+  final Color accentColor;
+  final bool isPlaying;
+  final Future<void> Function() onTap;
+
+  const _AudioIconButton({
+    required this.icon,
+    required this.accentColor,
+    required this.isPlaying,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Glow ring behind button when active.
+          AnimatedOpacity(
+            opacity: isPlaying ? 1 : 0,
+            duration: const Duration(milliseconds: 300),
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: accentColor.withValues(alpha: 0.25),
+              ),
+            ),
+          ),
+          // Button circle.
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color.fromRGBO(255, 255, 255, 0.06),
+              border: Border.all(
+                color: isPlaying
+                    ? accentColor
+                    : const Color.fromRGBO(255, 255, 255, 0.08),
+                width: isPlaying ? 1.5 : 0.5,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: isPlaying
+                  ? accentColor
+                  : const Color.fromRGBO(255, 255, 255, 0.7),
+            ),
+          ),
+          // Pulsing dot indicator.
+          if (isPlaying)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: _PulsingDot(color: accentColor),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PulsingDot extends StatefulWidget {
+  final Color color;
+
+  const _PulsingDot({required this.color});
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final t = _controller.value;
+        return Opacity(
+          opacity: 0.4 + t * 0.6,
+          child: Transform.scale(
+            scale: 0.6 + t * 0.4,
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: widget.color,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// =============================================================================
+// Shared chrome button
+// =============================================================================
+
+class _ChromeButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _ChromeButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
-      color: isPrimary
-          ? const Color(0xFF6F61C7)
-          : const Color.fromRGBO(255, 255, 255, 0.14),
+      color: const Color.fromRGBO(255, 255, 255, 0.14),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: isPrimary
-            ? BorderSide.none
-            : const BorderSide(color: Color.fromRGBO(255, 255, 255, 0.18)),
+        side: const BorderSide(color: Color.fromRGBO(255, 255, 255, 0.18)),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -430,6 +599,10 @@ class _ChromeButton extends StatelessWidget {
     );
   }
 }
+
+// =============================================================================
+// Volume settings sheet
+// =============================================================================
 
 class _VolumeRow extends StatelessWidget {
   final IconData icon;
@@ -472,7 +645,8 @@ class _VolumeRow extends StatelessWidget {
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 4,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                thumbShape:
+                    const RoundSliderThumbShape(enabledThumbRadius: 7),
               ),
               child: Slider(
                 value: value,
@@ -496,6 +670,10 @@ class _VolumeRow extends StatelessWidget {
     );
   }
 }
+
+// =============================================================================
+// Loading / error states
+// =============================================================================
 
 class _ReaderLoadingState extends StatelessWidget {
   const _ReaderLoadingState();

@@ -904,5 +904,212 @@
       "replace_all": false
     },
     "tool_use_id": "toolu_01SeoX7uC4q1yi31YMrUtViB"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "dart analyze lib/src/features/reader/reader_screen.dart lib/src/audio/audio_engine.dart 2>&1 | head -30",
+      "description": "Analyze Flutter files for compile errors"
+    },
+    "tool_use_id": "toolu_014Z9JCUxj7JiQ67ZMWDtx8v"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "dart analyze lib/ 2>&1 | tail -20",
+      "description": "Analyze full lib directory"
+    },
+    "tool_use_id": "toolu_01HJhycL1q8t9cGCVir7Wqzb"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter/lib/src/audio/audio_engine.dart"
+    },
+    "tool_use_id": "toolu_014ghRcWxVETLtaCFyKcF8mf"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"MediaItem\" lib/ pubspec.yaml 2>/dev/null; grep \"just_audio\" pubspec.yaml",
+      "description": "Check MediaItem usage and just_audio versions"
+    },
+    "tool_use_id": "toolu_01DvewzQ9eGbpU1RLqQJZaNy"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"MediaItem\" ~/.pub-cache/hosted/pub.dev/just_audio_background-0.0.1-beta.17/lib/ 2>/dev/null | head -5; echo \"---\"; grep \"import.*media_item\\|class MediaItem\" ~/.pub-cache/hosted/pub.dev/just_audio_background-0.0.1-beta.17/lib/just_audio_background.dart 2>/dev/null | head -5",
+      "description": "Find MediaItem import source"
+    },
+    "tool_use_id": "toolu_01S4CBoBdd82KZWMF7VJvVcQ"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useAudioPlayer.ts"
+    },
+    "tool_use_id": "toolu_014rXgfBcejgZDzMgLrK3TN5"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/hooks/useReaderAudio.ts"
+    },
+    "tool_use_id": "toolu_017S7o4CFxxQ2YUn4wBqtror"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter/lib/src/data/book_repository.dart"
+    },
+    "tool_use_id": "toolu_01NAaVrW6Cd73wfk5b34cnt6"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"audio_service\\|MediaItem\" pubspec.yaml pubspec.lock 2>/dev/null | head -10",
+      "description": "Check if audio_service is available"
+    },
+    "tool_use_id": "toolu_013MwGSYvJiYYumw1okYsEHc"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter/lib/src/data/models.dart",
+      "old_string": "    // Soundscape URL is derived from the nested scenes -> soundscapes relation.\n    // Prefer admin-approved soundscapes, fall back to first available.\n    String? soundscapeUrl;\n    final scenesData = json['scenes'];\n    if (scenesData is Map<String, dynamic>) {\n      final rawSoundscapes = scenesData['soundscapes'];\n      if (rawSoundscapes is List && rawSoundscapes.isNotEmpty) {\n        final soundscapes = rawSoundscapes\n            .whereType<Map<String, dynamic>>()\n            .toList();\n        final approved = soundscapes\n            .where((s) => s['admin_approved'] == true)\n            .toList();\n        final chosen = approved.isNotEmpty ? approved.first : soundscapes.first;\n        soundscapeUrl = chosen['audio_url'] as String?;\n      }\n    }",
+      "new_string": "    // Soundscape URL is derived from the nested scenes -> soundscapes relation.\n    // Supabase returns scenes as an array (one-to-many). We flatten all\n    // soundscapes across scenes, prefer admin-approved, fall back to first.\n    String? soundscapeUrl;\n    final scenesData = json['scenes'];\n    if (scenesData is List && scenesData.isNotEmpty) {\n      final allSoundscapes = <Map<String, dynamic>>[];\n      for (final scene in scenesData.whereType<Map<String, dynamic>>()) {\n        final rawSoundscapes = scene['soundscapes'];\n        if (rawSoundscapes is List) {\n          allSoundscapes.addAll(rawSoundscapes.whereType<Map<String, dynamic>>());\n        }\n      }\n      if (allSoundscapes.isNotEmpty) {\n        final approved = allSoundscapes\n            .where((s) => s['admin_approved'] == true)\n            .toList();\n        final chosen =\n            approved.isNotEmpty ? approved.first : allSoundscapes.first;\n        soundscapeUrl = chosen['audio_url'] as String?;\n      }\n    } else if (scenesData is Map<String, dynamic>) {\n      // Handle single-object relation (1-to-1) as fallback.\n      final rawSoundscapes = scenesData['soundscapes'];\n      if (rawSoundscapes is List && rawSoundscapes.isNotEmpty) {\n        final soundscapes =\n            rawSoundscapes.whereType<Map<String, dynamic>>().toList();\n        final approved = soundscapes\n            .where((s) => s['admin_approved'] == true)\n            .toList();\n        final chosen =\n            approved.isNotEmpty ? approved.first : soundscapes.first;\n        soundscapeUrl = chosen['audio_url'] as String?;\n      }\n    }",
+      "replace_all": false
+    },
+    "tool_use_id": "toolu_015dWmLz4ZnLvLUdajYo6tpc"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter/lib/src/audio/audio_engine.dart",
+      "content": "import 'dart:async';\n\nimport 'package:audio_service/audio_service.dart';\nimport 'package:audio_session/audio_session.dart';\nimport 'package:just_audio/just_audio.dart';\n\nimport '../data/models.dart';\n\nclass AudioEngine {\n  final AudioPlayer _narration = AudioPlayer();\n  final AudioPlayer _soundscape = AudioPlayer();\n\n  bool _initialized = false;\n  Timer? _crossfadeTimer;\n  String? _currentSoundscapeUrl;\n\n  /// Whether the user has toggled narration on (independent of player state).\n  bool _narrationActive = false;\n\n  /// Whether the user has toggled soundscape on (independent of player state).\n  bool _soundscapeActive = false;\n\n  double _soundscapeTargetVolume = 0.6;\n\n  Future<void> ensureInitialized() async {\n    if (_initialized) {\n      return;\n    }\n\n    final session = await AudioSession.instance;\n    await session.configure(const AudioSessionConfiguration.music());\n\n    _soundscape.setLoopMode(LoopMode.one);\n    await _soundscape.setVolume(_soundscapeTargetVolume);\n\n    _initialized = true;\n  }\n\n  // ---------------------------------------------------------------------------\n  // Helpers \u2014 just_audio_background requires MediaItem tags on every source.\n  // ---------------------------------------------------------------------------\n\n  AudioSource _taggedSource(String url, {required String title}) {\n    return AudioSource.uri(\n      Uri.parse(url),\n      tag: MediaItem(\n        id: url,\n        title: title,\n      ),\n    );\n  }\n\n  Future<void> _loadUrl(AudioPlayer player, String url,\n      {required String title}) async {\n    await player.setAudioSource(_taggedSource(url, title: title));\n  }\n\n  // ---------------------------------------------------------------------------\n  // Page loading\n  // ---------------------------------------------------------------------------\n\n  Future<void> loadPage(PageData page) async {\n    await ensureInitialized();\n\n    final futures = <Future<void>>[];\n\n    if (page.narrationUrl != null && page.narrationUrl!.isNotEmpty) {\n      futures.add(\n        _loadUrl(_narration, page.narrationUrl!, title: 'Narration'),\n      );\n    } else {\n      futures.add(_narration.stop());\n    }\n\n    if (page.soundscapeUrl != null && page.soundscapeUrl!.isNotEmpty) {\n      futures.add(\n        _loadUrl(_soundscape, page.soundscapeUrl!, title: 'Soundscape'),\n      );\n      _currentSoundscapeUrl = page.soundscapeUrl;\n    } else {\n      futures.add(_soundscape.stop());\n      _currentSoundscapeUrl = null;\n    }\n\n    await Future.wait(futures);\n  }\n\n  // ---------------------------------------------------------------------------\n  // Independent narration controls\n  // ---------------------------------------------------------------------------\n\n  Future<void> playNarration() async {\n    await ensureInitialized();\n    _narrationActive = true;\n    await _narration.play();\n  }\n\n  Future<void> pauseNarration() async {\n    _narrationActive = false;\n    await _narration.pause();\n  }\n\n  Future<void> toggleNarration() async {\n    if (_narrationActive) {\n      await pauseNarration();\n    } else {\n      await playNarration();\n    }\n  }\n\n  // ---------------------------------------------------------------------------\n  // Independent soundscape controls\n  // ---------------------------------------------------------------------------\n\n  Future<void> playSoundscape() async {\n    await ensureInitialized();\n    _soundscapeActive = true;\n    await _soundscape.play();\n  }\n\n  Future<void> pauseSoundscape() async {\n    _soundscapeActive = false;\n    await _soundscape.pause();\n  }\n\n  Future<void> toggleSoundscape() async {\n    if (_soundscapeActive) {\n      await pauseSoundscape();\n    } else {\n      await playSoundscape();\n    }\n  }\n\n  // ---------------------------------------------------------------------------\n  // Page transitions\n  // ---------------------------------------------------------------------------\n\n  Future<void> transitionToPage(PageData nextPage) async {\n    await ensureInitialized();\n\n    final nextNarrationUrl = nextPage.narrationUrl;\n    final nextSoundscapeUrl = nextPage.soundscapeUrl;\n\n    // --- Narration transition ---\n    if (nextNarrationUrl != null && nextNarrationUrl.isNotEmpty) {\n      await _narration.stop();\n      await _loadUrl(_narration, nextNarrationUrl, title: 'Narration');\n      if (_narrationActive) {\n        await _narration.play();\n      }\n    } else {\n      await _narration.stop();\n    }\n\n    // --- Soundscape transition ---\n    if (nextSoundscapeUrl == null || nextSoundscapeUrl.isEmpty) {\n      await _soundscape.stop();\n      _currentSoundscapeUrl = null;\n      return;\n    }\n\n    // Same soundscape \u2013 keep playing, nothing to do.\n    if (_currentSoundscapeUrl == nextSoundscapeUrl) {\n      return;\n    }\n\n    // Different soundscape \u2013 crossfade.\n    _crossfadeTimer?.cancel();\n    await _soundscape.setVolume(0);\n    await _loadUrl(_soundscape, nextSoundscapeUrl, title: 'Soundscape');\n    _currentSoundscapeUrl = nextSoundscapeUrl;\n\n    if (_soundscapeActive) {\n      await _soundscape.play();\n\n      const steps = 15;\n      const duration = Duration(milliseconds: 1500);\n      final targetVolume = _soundscapeTargetVolume;\n      final tick = duration ~/ steps;\n      var currentStep = 0;\n\n      _crossfadeTimer = Timer.periodic(tick, (timer) async {\n        currentStep += 1;\n        final progress = currentStep / steps;\n        await _soundscape.setVolume(targetVolume * progress);\n        if (currentStep >= steps) {\n          timer.cancel();\n        }\n      });\n    }\n  }\n\n  // ---------------------------------------------------------------------------\n  // Streams\n  // ---------------------------------------------------------------------------\n\n  Stream<Duration> get narrationPosition => _narration.positionStream;\n  Stream<bool> get narrationPlaying => _narration.playingStream;\n  Stream<bool> get soundscapePlaying => _soundscape.playingStream;\n\n  bool get isNarrationActive => _narrationActive;\n  bool get isSoundscapeActive => _soundscapeActive;\n\n  // ---------------------------------------------------------------------------\n  // Volume\n  // ---------------------------------------------------------------------------\n\n  Future<void> setNarrationVolume(double volume) =>\n      _narration.setVolume(volume);\n\n  Future<void> setSoundscapeVolume(double volume) {\n    _soundscapeTargetVolume = volume;\n    return _soundscape.setVolume(volume);\n  }\n\n  // ---------------------------------------------------------------------------\n  // Lifecycle\n  // ---------------------------------------------------------------------------\n\n  Future<void> dispose() async {\n    _crossfadeTimer?.cancel();\n    await _narration.dispose();\n    await _soundscape.dispose();\n  }\n}\n"
+    },
+    "tool_use_id": "toolu_01QmG5rd2RhDpsv2EznmqJku"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "dart analyze lib/ 2>&1 | tail -10",
+      "description": "Analyze for compile errors"
+    },
+    "tool_use_id": "toolu_013Q2SkH3c3npCGiENM2eC3e"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter/pubspec.yaml"
+    },
+    "tool_use_id": "toolu_01Ff67AYbJAzZcSMrEzL9yeV"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter/pubspec.yaml",
+      "old_string": "  just_audio: ^0.10.5\n  just_audio_background: ^0.0.1-beta.17\n  audio_session: ^0.2.2",
+      "new_string": "  just_audio: ^0.10.5\n  just_audio_background: ^0.0.1-beta.17\n  audio_service: ^0.18.17\n  audio_session: ^0.2.2",
+      "replace_all": false
+    },
+    "tool_use_id": "toolu_01QS5q6tFyGiZPZhQ8RSg3ZJ"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "flutter pub get 2>&1 | tail -5",
+      "description": "Install audio_service dependency"
+    },
+    "tool_use_id": "toolu_01CdFnbL8WD5eFQCPhXVmkSW"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "dart analyze lib/ 2>&1 | tail -5",
+      "description": "Final analysis check"
+    },
+    "tool_use_id": "toolu_017VZM2PUTkfgeprKPyRDnAm"
   }
 ]
