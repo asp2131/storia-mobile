@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -37,25 +36,6 @@ class AudioEngine {
   }
 
   // ---------------------------------------------------------------------------
-  // Helpers — just_audio_background requires MediaItem tags on every source.
-  // ---------------------------------------------------------------------------
-
-  AudioSource _taggedSource(String url, {required String title}) {
-    return AudioSource.uri(
-      Uri.parse(url),
-      tag: MediaItem(
-        id: url,
-        title: title,
-      ),
-    );
-  }
-
-  Future<void> _loadUrl(AudioPlayer player, String url,
-      {required String title}) async {
-    await player.setAudioSource(_taggedSource(url, title: title));
-  }
-
-  // ---------------------------------------------------------------------------
   // Page loading
   // ---------------------------------------------------------------------------
 
@@ -65,17 +45,13 @@ class AudioEngine {
     final futures = <Future<void>>[];
 
     if (page.narrationUrl != null && page.narrationUrl!.isNotEmpty) {
-      futures.add(
-        _loadUrl(_narration, page.narrationUrl!, title: 'Narration'),
-      );
+      futures.add(_narration.setUrl(page.narrationUrl!).then((_) {}));
     } else {
       futures.add(_narration.stop());
     }
 
     if (page.soundscapeUrl != null && page.soundscapeUrl!.isNotEmpty) {
-      futures.add(
-        _loadUrl(_soundscape, page.soundscapeUrl!, title: 'Soundscape'),
-      );
+      futures.add(_soundscape.setUrl(page.soundscapeUrl!).then((_) {}));
       _currentSoundscapeUrl = page.soundscapeUrl;
     } else {
       futures.add(_soundscape.stop());
@@ -144,7 +120,7 @@ class AudioEngine {
     // --- Narration transition ---
     if (nextNarrationUrl != null && nextNarrationUrl.isNotEmpty) {
       await _narration.stop();
-      await _loadUrl(_narration, nextNarrationUrl, title: 'Narration');
+      await _narration.setUrl(nextNarrationUrl);
       if (_narrationActive) {
         await _narration.play();
       }
@@ -167,7 +143,7 @@ class AudioEngine {
     // Different soundscape – crossfade.
     _crossfadeTimer?.cancel();
     await _soundscape.setVolume(0);
-    await _loadUrl(_soundscape, nextSoundscapeUrl, title: 'Soundscape');
+    await _soundscape.setUrl(nextSoundscapeUrl);
     _currentSoundscapeUrl = nextSoundscapeUrl;
 
     if (_soundscapeActive) {

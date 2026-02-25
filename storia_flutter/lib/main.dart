@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/app.dart';
 import 'src/core/resilient_cache_manager.dart';
 
 Future<void> main() async {
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.storia.audio',
-    androidNotificationChannelName: 'Storia Audio',
-    androidNotificationOngoing: true,
-  );
-
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
 

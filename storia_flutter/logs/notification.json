@@ -38,5 +38,13 @@
     "hook_event_name": "Notification",
     "message": "Claude is waiting for your input",
     "notification_type": "idle_prompt"
+  },
+  {
+    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
   }
 ]

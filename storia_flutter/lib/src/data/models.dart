@@ -167,39 +167,39 @@ class PageData {
 
     final overlayJson = json['text_overlay'];
 
-    // Soundscape URL is derived from the nested scenes -> soundscapes relation.
-    // Supabase returns scenes as an array (one-to-many). We flatten all
-    // soundscapes across scenes, prefer admin-approved, fall back to first.
+    // --- Soundscape URL ---
+    // Primary: page_audio_assignments where audio_type == 'soundscape' (matches RN).
+    // Fallback: scenes -> soundscapes relation (via page's scene_id FK).
     String? soundscapeUrl;
-    final scenesData = json['scenes'];
-    if (scenesData is List && scenesData.isNotEmpty) {
-      final allSoundscapes = <Map<String, dynamic>>[];
-      for (final scene in scenesData.whereType<Map<String, dynamic>>()) {
-        final rawSoundscapes = scene['soundscapes'];
-        if (rawSoundscapes is List) {
-          allSoundscapes.addAll(rawSoundscapes.whereType<Map<String, dynamic>>());
+
+    final assignments = json['page_audio_assignments'];
+    if (assignments is List) {
+      for (final a in assignments.whereType<Map<String, dynamic>>()) {
+        if (a['audio_type'] == 'soundscape') {
+          final url = a['audio_url'] as String?;
+          if (url != null && url.isNotEmpty) {
+            soundscapeUrl = url;
+            break;
+          }
         }
       }
-      if (allSoundscapes.isNotEmpty) {
-        final approved = allSoundscapes
-            .where((s) => s['admin_approved'] == true)
-            .toList();
-        final chosen =
-            approved.isNotEmpty ? approved.first : allSoundscapes.first;
-        soundscapeUrl = chosen['audio_url'] as String?;
-      }
-    } else if (scenesData is Map<String, dynamic>) {
-      // Handle single-object relation (1-to-1) as fallback.
-      final rawSoundscapes = scenesData['soundscapes'];
-      if (rawSoundscapes is List && rawSoundscapes.isNotEmpty) {
-        final soundscapes =
-            rawSoundscapes.whereType<Map<String, dynamic>>().toList();
-        final approved = soundscapes
-            .where((s) => s['admin_approved'] == true)
-            .toList();
-        final chosen =
-            approved.isNotEmpty ? approved.first : soundscapes.first;
-        soundscapeUrl = chosen['audio_url'] as String?;
+    }
+
+    // Fallback to scenes -> soundscapes if no assignment found.
+    if (soundscapeUrl == null) {
+      final scenesData = json['scenes'];
+      if (scenesData is Map<String, dynamic>) {
+        final rawSoundscapes = scenesData['soundscapes'];
+        if (rawSoundscapes is List && rawSoundscapes.isNotEmpty) {
+          final soundscapes =
+              rawSoundscapes.whereType<Map<String, dynamic>>().toList();
+          final approved = soundscapes
+              .where((s) => s['admin_approved'] == true)
+              .toList();
+          final chosen =
+              approved.isNotEmpty ? approved.first : soundscapes.first;
+          soundscapeUrl = chosen['audio_url'] as String?;
+        }
       }
     }
 
