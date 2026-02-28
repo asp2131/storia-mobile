@@ -6,5 +6,13 @@
     "hook_event_name": "SessionEnd",
     "reason": "prompt_input_exit",
     "logged_at": "2026-02-24T22:00:15.029430"
+  },
+  {
+    "session_id": "82678338-c931-4abf-a890-26331446291d",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/82678338-c931-4abf-a890-26331446291d.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
+    "hook_event_name": "SessionEnd",
+    "reason": "other",
+    "logged_at": "2026-02-25T13:26:50.902824"
   }
 ]
