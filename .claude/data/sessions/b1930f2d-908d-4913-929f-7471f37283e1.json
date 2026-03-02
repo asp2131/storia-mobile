@@ -1,8 +1,0 @@
-{
-  "session_id": "b1930f2d-908d-4913-929f-7471f37283e1",
-  "prompts": [
-    "when logging in/signing up i see network request failed",
-    "Lets get rid of auth for now and make the initial view the library page",
-    "are we connected to postgresql://postgres:postgres@localhost:5432/storia_dev?"
-  ]
-}

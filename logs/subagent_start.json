@@ -1,92 +1,38 @@
 [
   {
-    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
     "hook_event_name": "SubagentStart",
-    "agent_id": "ad9e766",
-    "agent_type": "Explore",
-    "logged_at": "2026-02-19T21:22:56.475855"
-  },
-  {
-    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "hook_event_name": "SubagentStart",
-    "agent_id": "a3a63ec",
-    "agent_type": "Bash",
-    "logged_at": "2026-02-19T21:24:50.706397"
-  },
-  {
-    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "hook_event_name": "SubagentStart",
-    "agent_id": "a58545f",
+    "agent_id": "afbedb4fcebcbbd4c",
     "agent_type": "builder",
-    "logged_at": "2026-02-19T21:25:10.300659"
+    "logged_at": "2026-02-24T20:43:50.386915"
   },
   {
-    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
     "hook_event_name": "SubagentStart",
-    "agent_id": "a3d7ab7",
+    "agent_id": "a86c2b33fdc837036",
     "agent_type": "builder",
-    "logged_at": "2026-02-19T21:25:28.581899"
+    "logged_at": "2026-02-24T20:43:58.795672"
   },
   {
-    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
     "hook_event_name": "SubagentStart",
-    "agent_id": "a32656cdb799f3f99",
+    "agent_id": "ad63db2c01a1400cb",
     "agent_type": "Explore",
-    "logged_at": "2026-02-24T11:32:54.822291"
+    "logged_at": "2026-02-24T21:40:27.001516"
   },
   {
-    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
     "hook_event_name": "SubagentStart",
-    "agent_id": "a090eb4e20bf706d0",
-    "agent_type": "general-purpose",
-    "logged_at": "2026-02-24T11:33:01.910990"
-  },
-  {
-    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "hook_event_name": "SubagentStart",
-    "agent_id": "a0d1e3f4eba69f2e5",
+    "agent_id": "ac395c1e1f627e5dd",
     "agent_type": "Explore",
-    "logged_at": "2026-02-24T22:02:24.671175"
-  },
-  {
-    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "hook_event_name": "SubagentStart",
-    "agent_id": "a12c90dd688a34bf6",
-    "agent_type": "Explore",
-    "logged_at": "2026-02-24T22:02:26.932045"
-  },
-  {
-    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "hook_event_name": "SubagentStart",
-    "agent_id": "a7b0d4725a11d8843",
-    "agent_type": "Explore",
-    "logged_at": "2026-02-24T22:08:44.927652"
-  },
-  {
-    "session_id": "b4e1f045-63d6-4ecb-8551-d7641e0ada41",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b4e1f045-63d6-4ecb-8551-d7641e0ada41.jsonl",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "hook_event_name": "SubagentStart",
-    "agent_id": "a4e5fc409483bbb49",
-    "agent_type": "Explore",
-    "logged_at": "2026-02-24T22:08:48.237546"
+    "logged_at": "2026-02-24T21:40:36.317898"
   }
 ]

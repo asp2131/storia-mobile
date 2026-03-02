@@ -1,153 +1,60 @@
 [
   {
-    "timestamp": "2026-02-16T07:28:33.140421",
-    "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
+    "timestamp": "2026-02-24T20:43:15.528692",
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
     "hook_event_name": "PostToolUseFailure",
     "tool_name": "Read",
-    "tool_use_id": "toolu_01M2vFKoDRAbMeTWcBt8bWrH",
+    "tool_use_id": "toolu_01JZfijcugsjrwCsJ3LoKRdG",
     "tool_input": {
-      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/babel.config.js"
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/memory/MEMORY.md"
     },
-    "error": "File does not exist.",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "error": "File does not exist. Note: your current working directory is /Users/akinpound/Documents/experiments/storia-mobile/storia_flutter.",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
     "permission_mode": "default",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
     "raw_input": {
-      "session_id": "49e9a3d5-b438-4ceb-9504-e176293121aa",
-      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/49e9a3d5-b438-4ceb-9504-e176293121aa.jsonl",
-      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
       "permission_mode": "default",
       "hook_event_name": "PostToolUseFailure",
       "tool_name": "Read",
       "tool_input": {
-        "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/babel.config.js"
+        "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/memory/MEMORY.md"
       },
-      "tool_use_id": "toolu_01M2vFKoDRAbMeTWcBt8bWrH",
-      "error": "File does not exist.",
+      "tool_use_id": "toolu_01JZfijcugsjrwCsJ3LoKRdG",
+      "error": "File does not exist. Note: your current working directory is /Users/akinpound/Documents/experiments/storia-mobile/storia_flutter.",
       "is_interrupt": false,
-      "logged_at": "2026-02-16T07:28:33.140421"
+      "logged_at": "2026-02-24T20:43:15.528692"
     }
   },
   {
-    "timestamp": "2026-02-19T21:22:59.761880",
-    "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
+    "timestamp": "2026-02-24T20:43:18.562144",
+    "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
     "hook_event_name": "PostToolUseFailure",
     "tool_name": "Read",
-    "tool_use_id": "toolu_018tm5m63ykHw7QgxwjcVV7L",
+    "tool_use_id": "toolu_01GY9Lj7BXCSSR1K1HH9FQWh",
     "tool_input": {
-      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile"
+      "file_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/memory/MEMORY.md"
     },
-    "error": "EISDIR: illegal operation on a directory, read '/Users/akinpound/Documents/experiments/storia-mobile'",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "error": "File does not exist. Note: your current working directory is /Users/akinpound/Documents/experiments/storia-mobile/storia_flutter.",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
     "permission_mode": "default",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
     "raw_input": {
-      "session_id": "a6d1282a-2b6e-414b-9c4f-f218232f4a30",
-      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/a6d1282a-2b6e-414b-9c4f-f218232f4a30.jsonl",
-      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "session_id": "36a0a5dd-dd52-41fe-a100-8de35f102f52",
+      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile-storia-flutter/36a0a5dd-dd52-41fe-a100-8de35f102f52.jsonl",
+      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile/storia_flutter",
       "permission_mode": "default",
       "hook_event_name": "PostToolUseFailure",
       "tool_name": "Read",
       "tool_input": {
-        "file_path": "/Users/akinpound/Documents/experiments/storia-mobile"
+        "file_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/memory/MEMORY.md"
       },
-      "tool_use_id": "toolu_018tm5m63ykHw7QgxwjcVV7L",
-      "error": "EISDIR: illegal operation on a directory, read '/Users/akinpound/Documents/experiments/storia-mobile'",
+      "tool_use_id": "toolu_01GY9Lj7BXCSSR1K1HH9FQWh",
+      "error": "File does not exist. Note: your current working directory is /Users/akinpound/Documents/experiments/storia-mobile/storia_flutter.",
       "is_interrupt": false,
-      "logged_at": "2026-02-19T21:22:59.761880"
-    }
-  },
-  {
-    "timestamp": "2026-02-24T11:36:28.065882",
-    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
-    "hook_event_name": "PostToolUseFailure",
-    "tool_name": "Read",
-    "tool_use_id": "toolu_015PuVBdT9wURTymXRbVJsNL",
-    "tool_input": {
-      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/types"
-    },
-    "error": "EISDIR: illegal operation on a directory, read '/Users/akinpound/Documents/experiments/storia-mobile/types'",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "permission_mode": "default",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
-    "raw_input": {
-      "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
-      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
-      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-      "permission_mode": "default",
-      "hook_event_name": "PostToolUseFailure",
-      "tool_name": "Read",
-      "tool_input": {
-        "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/types"
-      },
-      "tool_use_id": "toolu_015PuVBdT9wURTymXRbVJsNL",
-      "error": "EISDIR: illegal operation on a directory, read '/Users/akinpound/Documents/experiments/storia-mobile/types'",
-      "is_interrupt": false,
-      "logged_at": "2026-02-24T11:36:28.065882"
-    }
-  },
-  {
-    "timestamp": "2026-02-24T11:37:09.453567",
-    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
-    "hook_event_name": "PostToolUseFailure",
-    "tool_name": "Read",
-    "tool_use_id": "toolu_01SnEkU6zJWb65owcFDEaMLk",
-    "tool_input": {
-      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log",
-      "offset": 25993,
-      "limit": 147
-    },
-    "error": "File content (122790 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "permission_mode": "default",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
-    "raw_input": {
-      "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
-      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
-      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-      "permission_mode": "default",
-      "hook_event_name": "PostToolUseFailure",
-      "tool_name": "Read",
-      "tool_input": {
-        "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/.expo/xcodebuild.log",
-        "offset": 25993,
-        "limit": 147
-      },
-      "tool_use_id": "toolu_01SnEkU6zJWb65owcFDEaMLk",
-      "error": "File content (122790 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific portions of the file, or use the GrepTool to search for specific content.",
-      "is_interrupt": false,
-      "logged_at": "2026-02-24T11:37:09.453567"
-    }
-  },
-  {
-    "timestamp": "2026-02-24T11:37:43.284534",
-    "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
-    "hook_event_name": "PostToolUseFailure",
-    "tool_name": "WebFetch",
-    "tool_use_id": "toolu_01J7NwpcV5QB11DqU5UVz8Ha",
-    "tool_input": {
-      "url": "https://median.co/blog/google-plays-target-api-level-requirement-for-android-apps",
-      "prompt": "What are the Google Play target API level requirements for Android apps? Include all deadlines, minimum versions for new apps and existing apps, and specific requirements."
-    },
-    "error": "Request failed with status code 403",
-    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-    "permission_mode": "default",
-    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
-    "raw_input": {
-      "session_id": "763c37a0-4228-4da9-833c-83478079c40b",
-      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/763c37a0-4228-4da9-833c-83478079c40b.jsonl",
-      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
-      "permission_mode": "default",
-      "hook_event_name": "PostToolUseFailure",
-      "tool_name": "WebFetch",
-      "tool_input": {
-        "url": "https://median.co/blog/google-plays-target-api-level-requirement-for-android-apps",
-        "prompt": "What are the Google Play target API level requirements for Android apps? Include all deadlines, minimum versions for new apps and existing apps, and specific requirements."
-      },
-      "tool_use_id": "toolu_01J7NwpcV5QB11DqU5UVz8Ha",
-      "error": "Request failed with status code 403",
-      "is_interrupt": false,
-      "logged_at": "2026-02-24T11:37:43.284534"
+      "logged_at": "2026-02-24T20:43:18.562144"
     }
   }
 ]
