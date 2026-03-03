@@ -24,12 +24,12 @@ class ReaderScreen extends ConsumerStatefulWidget {
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final PageController _pageController = PageController();
   final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
-    Duration.zero,
+    .zero,
   );
+  final ValueNotifier<bool> _isNarrationPlayingNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> _isSoundscapePlayingNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
   int _activePageIndex = 0;
-  bool _isNarrationPlaying = false;
-  bool _isSoundscapePlaying = false;
-  bool _showChrome = true;
   bool _loadedInitialAudio = false;
   double _narrationVolume = 1;
   double _soundscapeVolume = 0.6;
@@ -52,14 +52,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       playing,
     ) {
       if (!mounted) return;
-      setState(() => _isNarrationPlaying = playing);
+      _isNarrationPlayingNotifier.value = playing;
     });
 
     _soundscapePlayingSubscription = audioEngine.soundscapePlaying.listen((
       playing,
     ) {
       if (!mounted) return;
-      setState(() => _isSoundscapePlaying = playing);
+      _isSoundscapePlayingNotifier.value = playing;
     });
   }
 
@@ -69,6 +69,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     _narrationPlayingSubscription?.cancel();
     _soundscapePlayingSubscription?.cancel();
     _narrationPositionNotifier.dispose();
+    _isNarrationPlayingNotifier.dispose();
+    _isSoundscapePlayingNotifier.dispose();
+    _showChromeNotifier.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -79,7 +82,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final audioEngine = ref.watch(audioEngineProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
+      backgroundColor: Theme.of(context).brightness == .dark
           ? Theme.of(context).colorScheme.surface
           : const Color(0xFF121A24),
       body: bookAsync.when(
@@ -110,12 +113,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           return Stack(
             children: [
               GestureDetector(
-                behavior: HitTestBehavior.translucent,
+                behavior: .translucent,
                 excludeFromSemantics: true,
-                onTap: () => setState(() => _showChrome = !_showChrome),
+                onTap: () =>
+                    _showChromeNotifier.value = !_showChromeNotifier.value,
                 child: PageView.builder(
                   controller: _pageController,
-                  scrollDirection: Axis.vertical,
+                  scrollDirection: .vertical,
                   itemCount: book.pages.length,
                   onPageChanged: (index) async {
                     setState(() {
@@ -133,10 +137,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     return ValueListenableBuilder<Duration>(
                       valueListenable: _narrationPositionNotifier,
                       builder: (context, narrationPosition, child) {
+                        final heroTag =
+                            index == 0 && (book.coverUrl ?? '').isNotEmpty
+                            ? 'book-cover-${book.id}'
+                            : null;
                         return PageRenderer(
                           page: page,
                           narrationPosition: narrationPosition,
                           isActive: index == _activePageIndex,
+                          heroTag: heroTag,
                         );
                       },
                     );
@@ -144,31 +153,53 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 ),
               ),
               // Top chrome
-              IgnorePointer(
-                ignoring: !_showChrome,
-                child: AnimatedOpacity(
-                  opacity: _showChrome ? 1 : 0,
-                  duration: 220.ms,
-                  curve: Curves.easeOut,
-                  child: _ReaderTopBar(
-                    book: book,
-                    activePageNumber: activePage.pageNumber,
-                    onClose: () => Navigator.of(context).maybePop(),
-                    onAudioSettingsTap: () =>
-                        _showAudioSettings(context, audioEngine),
-                  ),
-                ),
+              ValueListenableBuilder<bool>(
+                valueListenable: _showChromeNotifier,
+                builder: (context, showChrome, child) {
+                  return IgnorePointer(
+                    ignoring: !showChrome,
+                    child: AnimatedOpacity(
+                      opacity: showChrome ? 1 : 0,
+                      duration: 220.ms,
+                      curve: Curves.easeOut,
+                      child: _ReaderTopBar(
+                        book: book,
+                        activePageNumber: activePage.pageNumber,
+                        onClose: () => Navigator.of(context).maybePop(),
+                        onAudioSettingsTap: () =>
+                            _showAudioSettings(context, audioEngine),
+                      ),
+                    ),
+                  );
+                },
               ),
               // Bottom audio controls
               if (hasNarration || hasSoundscape)
-                _AudioControlsPill(
-                  hasNarration: hasNarration,
-                  hasSoundscape: hasSoundscape,
-                  isNarrationPlaying: _isNarrationPlaying,
-                  isSoundscapePlaying: _isSoundscapePlaying,
-                  isVisible: _showChrome,
-                  onToggleNarration: () => audioEngine.toggleNarration(),
-                  onToggleSoundscape: () => audioEngine.toggleSoundscape(),
+                ValueListenableBuilder<bool>(
+                  valueListenable: _showChromeNotifier,
+                  builder: (context, showChrome, child) {
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: _isNarrationPlayingNotifier,
+                      builder: (context, isNarrationPlaying, child) {
+                        return ValueListenableBuilder<bool>(
+                          valueListenable: _isSoundscapePlayingNotifier,
+                          builder: (context, isSoundscapePlaying, child) {
+                            return _AudioControlsPill(
+                              hasNarration: hasNarration,
+                              hasSoundscape: hasSoundscape,
+                              isNarrationPlaying: isNarrationPlaying,
+                              isSoundscapePlaying: isSoundscapePlaying,
+                              isVisible: showChrome,
+                              onToggleNarration: () =>
+                                  audioEngine.toggleNarration(),
+                              onToggleSoundscape: () =>
+                                  audioEngine.toggleSoundscape(),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
                 ),
             ],
           );
@@ -198,8 +229,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             return Padding(
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: .min,
+                crossAxisAlignment: .start,
                 children: [
                   Center(
                     child: Container(
@@ -216,7 +247,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     'Audio Mix',
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 26,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: .w700,
                       color: const Color(0xFF2E2A3D),
                     ),
                   ),
@@ -290,8 +321,8 @@ class _ReaderTopBar extends StatelessWidget {
               height: topInset + 110,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  begin: .topCenter,
+                  end: .bottomCenter,
                   colors: [Color.fromRGBO(8, 12, 17, 0.75), Colors.transparent],
                 ),
               ),
@@ -325,16 +356,16 @@ class _ReaderTopBar extends StatelessWidget {
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: .start,
+                    mainAxisSize: .min,
                     children: [
                       Text(
                         book.title,
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        overflow: .ellipsis,
                         style: GoogleFonts.lora(
                           fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: .w700,
                           color: Colors.white,
                         ),
                       ),
@@ -343,7 +374,7 @@ class _ReaderTopBar extends StatelessWidget {
                         'Page $activePageNumber of ${book.pages.length}',
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: .w600,
                           color: const Color(0xFFD4D8E0),
                         ),
                       ),
@@ -407,7 +438,7 @@ class _AudioControlsPill extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
           child: AnimatedSlide(
-            offset: isVisible ? Offset.zero : const Offset(0, 0.3),
+            offset: isVisible ? .zero : const Offset(0, 0.3),
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
             child: Center(
@@ -421,7 +452,7 @@ class _AudioControlsPill extends StatelessWidget {
                   ),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   children: [
                     if (hasNarration)
                       _AudioIconButton(
@@ -487,7 +518,7 @@ class _AudioIconButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Stack(
-          alignment: Alignment.center,
+          alignment: .center,
           children: [
             // Glow ring behind button when active.
             AnimatedOpacity(
@@ -497,7 +528,7 @@ class _AudioIconButton extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  shape: .circle,
                   color: accentColor.withValues(alpha: 0.25),
                 ),
               ),
@@ -508,7 +539,7 @@ class _AudioIconButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                shape: .circle,
                 color: const Color.fromRGBO(255, 255, 255, 0.06),
                 border: Border.all(
                   color: isPlaying
@@ -580,10 +611,7 @@ class _PulsingDotState extends State<_PulsingDot>
             child: Container(
               width: 6,
               height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: widget.color,
-              ),
+              decoration: BoxDecoration(shape: .circle, color: widget.color),
             ),
           ),
         );
@@ -673,7 +701,7 @@ class _VolumeRow extends StatelessWidget {
               label,
               style: GoogleFonts.inter(
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: .w700,
                 color: const Color(0xFF2E2A3D),
               ),
             ),
@@ -702,7 +730,7 @@ class _VolumeRow extends StatelessWidget {
             '${(value * 100).round()}%',
             style: GoogleFonts.inter(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
+              fontWeight: .w700,
               color: const Color(0xFF6B7280),
             ),
           ),
@@ -723,7 +751,7 @@ class _ReaderLoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           const CircularProgressIndicator(color: Color(0xFF8A80CC)),
           const SizedBox(height: 14),
@@ -731,7 +759,7 @@ class _ReaderLoadingState extends StatelessWidget {
             'Opening your story...',
             style: GoogleFonts.inter(
               color: const Color(0xFFC5CBD8),
-              fontWeight: FontWeight.w600,
+              fontWeight: .w600,
             ),
           ),
         ],
@@ -752,7 +780,7 @@ class _ReaderErrorState extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: .min,
           children: [
             const Icon(
               Icons.auto_stories_rounded,
@@ -764,14 +792,14 @@ class _ReaderErrorState extends StatelessWidget {
               'This story could not be loaded',
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontWeight: FontWeight.w700,
+                fontWeight: .w700,
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               error,
-              textAlign: TextAlign.center,
+              textAlign: .center,
               style: GoogleFonts.inter(
                 color: const Color(0xFFC5CBD8),
                 fontSize: 12,

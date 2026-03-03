@@ -14,6 +14,7 @@ class PageRenderer extends StatefulWidget {
   final PageData page;
   final Duration narrationPosition;
   final bool isActive;
+  final String? heroTag;
   final void Function(String word, int globalIndex)? onWordTap;
 
   const PageRenderer({
@@ -21,6 +22,7 @@ class PageRenderer extends StatefulWidget {
     required this.page,
     required this.narrationPosition,
     required this.isActive,
+    this.heroTag,
     this.onWordTap,
   });
 
@@ -114,15 +116,7 @@ class _PageRendererState extends State<PageRenderer> {
           fit: StackFit.expand,
           children: [
             if (page.imageUrl != null && page.imageUrl!.isNotEmpty)
-              Image(
-                image: CachedNetworkImageProvider(
-                  page.imageUrl!,
-                  cacheManager: ResilientCacheManager.instance,
-                ),
-                fit: hasOverlay ? BoxFit.contain : BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              )
+              _buildPageImage(hasOverlay)
             else
               const ColoredBox(color: Color(0xFFDDDDD4)),
             if (hasOverlay && page.overlay != null && imageRect != Rect.zero)
@@ -228,5 +222,24 @@ class _PageRendererState extends State<PageRenderer> {
         );
       },
     );
+  }
+
+  Widget _buildPageImage(bool hasOverlay) {
+    final image = Image(
+      image: CachedNetworkImageProvider(
+        widget.page.imageUrl!,
+        cacheManager: ResilientCacheManager.instance,
+      ),
+      fit: hasOverlay ? BoxFit.contain : .cover,
+      width: double.infinity,
+      height: double.infinity,
+    );
+
+    final heroTag = widget.heroTag;
+    if (heroTag == null) {
+      return image;
+    }
+
+    return Hero(tag: heroTag, child: image);
   }
 }

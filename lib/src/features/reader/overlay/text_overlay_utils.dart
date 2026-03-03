@@ -11,7 +11,7 @@ Rect computeContainedImageRect({
       container.height <= 0 ||
       sourceImage.width <= 0 ||
       sourceImage.height <= 0) {
-    return Rect.zero;
+    return .zero;
   }
 
   final containerAspect = container.width / container.height;
@@ -106,11 +106,11 @@ Color parseHexColor(String value, {Color fallback = Colors.white}) {
 TextAlign resolveTextAlign(String value) {
   switch (value) {
     case 'center':
-      return TextAlign.center;
+      return .center;
     case 'right':
-      return TextAlign.right;
+      return .right;
     default:
-      return TextAlign.left;
+      return .left;
   }
 }
 
@@ -121,8 +121,8 @@ TextStyle resolveFontStyle(
   Color color,
 ) {
   final fw = FontWeight.values.firstWhere(
-    (w) => w.index * 100 == weight,
-    orElse: () => FontWeight.w400,
+    (w) => w.value == weight,
+    orElse: () => .w400,
   );
 
   switch (family) {

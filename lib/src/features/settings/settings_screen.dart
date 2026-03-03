@@ -42,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _openPrivacyPolicy(BuildContext context) async {
     final launched = await launchUrl(
       _privacyPolicyUri,
-      mode: LaunchMode.externalApplication,
+      mode: .externalApplication,
     );
 
     if (!context.mounted || launched) {
