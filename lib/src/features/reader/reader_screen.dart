@@ -580,10 +580,7 @@ class _PulsingDotState extends State<_PulsingDot>
             child: Container(
               width: 6,
               height: 6,
-              decoration: BoxDecoration(
-                shape: .circle,
-                color: widget.color,
-              ),
+              decoration: BoxDecoration(shape: .circle, color: widget.color),
             ),
           ),
         );

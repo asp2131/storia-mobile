@@ -564,10 +564,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               'Could not load the library',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: .w700,
-              ),
+              style: GoogleFonts.inter(fontSize: 16, fontWeight: .w700),
             ),
             const SizedBox(height: 6),
             Text(
