@@ -33,7 +33,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final booksAsync = ref.watch(bookLibraryProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F4EF),
+      backgroundColor: theme.brightness == Brightness.dark
+          ? theme.colorScheme.surface
+          : const Color(0xFFF5F4EF),
       body: booksAsync.when(
         data: (books) {
           final normalizedQuery = _searchQuery.trim().toLowerCase();
@@ -54,6 +56,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   searchController: _searchController,
                   onSearchChanged: (value) =>
                       setState(() => _searchQuery = value),
+                  onSettingsTap: () => context.push('/settings'),
                   totalBooks: books.length,
                 ),
               ),
@@ -62,14 +65,17 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
                   child: Row(
                     children: [
-                      Text(
-                        normalizedQuery.isEmpty
-                            ? 'All Books'
-                            : 'Search Results',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF1F2937),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          normalizedQuery.isEmpty
+                              ? 'All Books'
+                              : 'Search Results',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF1F2937),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -119,7 +125,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           );
         },
         loading: () => const _LoadingState(),
-        error: (error, _) => _ErrorState(error: '$error'),
+        error: (error, _) => _ErrorState(
+          error: '$error',
+          onRetry: () => ref.invalidate(bookLibraryProvider),
+        ),
       ),
     );
   }
@@ -128,11 +137,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 class _LibraryHeader extends StatelessWidget {
   final TextEditingController searchController;
   final ValueChanged<String> onSearchChanged;
+  final VoidCallback onSettingsTap;
   final int totalBooks;
 
   const _LibraryHeader({
     required this.searchController,
     required this.onSearchChanged,
+    required this.onSettingsTap,
     required this.totalBooks,
   });
 
@@ -163,24 +174,39 @@ class _LibraryHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Storia',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 34,
-                  height: 1,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF41315D),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Storia',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 34,
+                        height: 1,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF41315D),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Open settings',
+                    onPressed: onSettingsTap,
+                    icon: const Icon(Icons.settings_outlined),
+                    color: const Color(0xFF51456E),
+                  ),
+                ],
+              ),
+              Semantics(
+                label: '$totalBooks books ready for story time',
+                child: Text(
+                  '$totalBooks books ready for story time',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF51456E),
+                  ),
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                '$totalBooks books ready for story time',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF51456E),
-                ),
-              ),
+              const SizedBox(height: 2),
               const SizedBox(height: 14),
               DecoratedBox(
                 decoration: BoxDecoration(
@@ -198,6 +224,7 @@ class _LibraryHeader extends StatelessWidget {
                   ),
                   decoration: InputDecoration(
                     border: InputBorder.none,
+                    labelText: 'Search books',
                     hintText: 'Search by title or author',
                     hintStyle: GoogleFonts.inter(
                       fontSize: 14,
@@ -219,6 +246,7 @@ class _LibraryHeader extends StatelessWidget {
                               onSearchChanged('');
                             },
                             icon: const Icon(Icons.close_rounded, size: 18),
+                            tooltip: 'Clear search text',
                             color: const Color(0xFF8D82A7),
                           )
                         : null,
@@ -245,102 +273,108 @@ class _BookCard extends StatelessWidget {
         ? const Color(0xFF6F61C7)
         : const Color(0xFF2C7C9D);
 
-    return GestureDetector(
-          onTap: () => context.push('/reader/${book.id}'),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(49, 43, 74, 0.12),
-                  blurRadius: 12,
-                  offset: Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: book.coverUrl ?? '',
-                            cacheManager: ResilientCacheManager.instance,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => const _CoverPlaceholder(),
-                            errorWidget: (_, __, ___) =>
-                                const ColoredBox(color: Color(0xFFE5E5DE)),
-                          ),
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Container(
-                              height: 64,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Color.fromRGBO(0, 0, 0, 0.72),
-                                  ],
+    return Semantics(
+          button: true,
+          label:
+              '${book.title}, by ${book.author ?? 'Unknown author'}, ${book.pages.length} pages',
+          hint: 'Double tap to open this book in the reader',
+          child: GestureDetector(
+            onTap: () => context.push('/reader/${book.id}'),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(49, 43, 74, 0.12),
+                    blurRadius: 12,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: book.coverUrl ?? '',
+                              cacheManager: ResilientCacheManager.instance,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => const _CoverPlaceholder(),
+                              errorWidget: (_, __, ___) =>
+                                  const ColoredBox(color: Color(0xFFE5E5DE)),
+                            ),
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Container(
+                                height: 64,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Color.fromRGBO(0, 0, 0, 0.72),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 9),
-                  Text(
-                    book.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.lora(
-                      fontSize: 14,
-                      height: 1.18,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    book.author ?? 'Unknown',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF6B7280),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      '${book.pages.length} pages',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
+                    const SizedBox(height: 9),
+                    Text(
+                      book.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.lora(
+                        fontSize: 14,
+                        height: 1.18,
                         fontWeight: FontWeight.w700,
-                        color: accent,
+                        color: const Color(0xFF1F2937),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      book.author ?? 'Unknown',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '${book.pages.length} pages',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: accent,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -479,8 +513,9 @@ class _LoadingState extends StatelessWidget {
 
 class _ErrorState extends StatelessWidget {
   final String error;
+  final VoidCallback onRetry;
 
-  const _ErrorState({required this.error});
+  const _ErrorState({required this.error, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -511,6 +546,12 @@ class _ErrorState extends StatelessWidget {
                 fontSize: 12,
                 color: const Color(0xFF6B7280),
               ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again'),
             ),
           ],
         ),

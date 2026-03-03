@@ -14,6 +14,8 @@ class StoriaApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Storia',
       theme: buildAppTheme(),
+      darkTheme: buildAppTheme(brightness: Brightness.dark),
+      themeMode: ThemeMode.system,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/library/library_screen.dart';
 import '../features/reader/reader_screen.dart';
+import '../features/settings/settings_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -18,6 +19,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final bookId = state.pathParameters['bookId'] ?? '';
           return ReaderScreen(bookId: bookId);
         },
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

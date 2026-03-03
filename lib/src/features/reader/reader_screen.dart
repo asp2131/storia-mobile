@@ -48,14 +48,16 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       _narrationPositionNotifier.value = position;
     });
 
-    _narrationPlayingSubscription =
-        audioEngine.narrationPlaying.listen((playing) {
+    _narrationPlayingSubscription = audioEngine.narrationPlaying.listen((
+      playing,
+    ) {
       if (!mounted) return;
       setState(() => _isNarrationPlaying = playing);
     });
 
-    _soundscapePlayingSubscription =
-        audioEngine.soundscapePlaying.listen((playing) {
+    _soundscapePlayingSubscription = audioEngine.soundscapePlaying.listen((
+      playing,
+    ) {
       if (!mounted) return;
       setState(() => _isSoundscapePlaying = playing);
     });
@@ -77,7 +79,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final audioEngine = ref.watch(audioEngineProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121A24),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Theme.of(context).colorScheme.surface
+          : const Color(0xFF121A24),
       body: bookAsync.when(
         data: (book) {
           if (book == null) {
@@ -107,6 +111,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             children: [
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
+                excludeFromSemantics: true,
                 onTap: () => setState(() => _showChrome = !_showChrome),
                 child: PageView.builder(
                   controller: _pageController,
@@ -169,7 +174,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           );
         },
         loading: () => const _ReaderLoadingState(),
-        error: (error, _) => _ReaderErrorState(error: '$error'),
+        error: (error, _) => _ReaderErrorState(
+          error: '$error',
+          onRetry: () => ref.invalidate(currentBookProvider(widget.bookId)),
+        ),
       ),
     );
   }
@@ -216,10 +224,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   _VolumeRow(
                     icon: Icons.record_voice_over_rounded,
                     label: 'Narration',
+                    semanticsLabel: 'Narration volume',
                     value: _narrationVolume,
                     onChanged: (value) async {
                       setModalState(() => _narrationVolume = value);
-                      setState(() => _narrationVolume = value);
+                      if (mounted) {
+                        setState(() => _narrationVolume = value);
+                      }
                       await audioEngine.setNarrationVolume(value);
                     },
                   ),
@@ -227,10 +238,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   _VolumeRow(
                     icon: Icons.surround_sound_rounded,
                     label: 'Ambience',
+                    semanticsLabel: 'Ambience volume',
                     value: _soundscapeVolume,
                     onChanged: (value) async {
                       setModalState(() => _soundscapeVolume = value);
-                      setState(() => _soundscapeVolume = value);
+                      if (mounted) {
+                        setState(() => _soundscapeVolume = value);
+                      }
                       await audioEngine.setSoundscapeVolume(value);
                     },
                   ),
@@ -278,10 +292,7 @@ class _ReaderTopBar extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color.fromRGBO(8, 12, 17, 0.75),
-                    Colors.transparent,
-                  ],
+                  colors: [Color.fromRGBO(8, 12, 17, 0.75), Colors.transparent],
                 ),
               ),
             ),
@@ -296,6 +307,8 @@ class _ReaderTopBar extends StatelessWidget {
               _ChromeButton(
                 icon: Icons.arrow_back_ios_new_rounded,
                 onTap: onClose,
+                semanticLabel: 'Back to library',
+                semanticHint: 'Returns to your library',
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -342,6 +355,8 @@ class _ReaderTopBar extends StatelessWidget {
               _ChromeButton(
                 icon: Icons.tune_rounded,
                 onTap: onAudioSettingsTap,
+                semanticLabel: 'Audio settings',
+                semanticHint: 'Opens narration and ambience volume controls',
               ),
             ],
           ),
@@ -397,10 +412,7 @@ class _AudioControlsPill extends StatelessWidget {
             curve: Curves.easeOut,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(10, 16, 26, 0.72),
                   borderRadius: BorderRadius.circular(28),
@@ -418,6 +430,7 @@ class _AudioControlsPill extends StatelessWidget {
                             : Icons.mic_rounded,
                         accentColor: _narrationColor,
                         isPlaying: isNarrationPlaying,
+                        semanticLabel: 'Narration',
                         onTap: onToggleNarration,
                       ),
                     if (hasNarration && hasSoundscape)
@@ -434,6 +447,7 @@ class _AudioControlsPill extends StatelessWidget {
                             : Icons.music_note_rounded,
                         accentColor: _soundscapeColor,
                         isPlaying: isSoundscapePlaying,
+                        semanticLabel: 'Ambience',
                         onTap: onToggleSoundscape,
                       ),
                   ],
@@ -451,66 +465,75 @@ class _AudioIconButton extends StatelessWidget {
   final IconData icon;
   final Color accentColor;
   final bool isPlaying;
+  final String semanticLabel;
   final Future<void> Function() onTap;
 
   const _AudioIconButton({
     required this.icon,
     required this.accentColor,
     required this.isPlaying,
+    required this.semanticLabel,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Glow ring behind button when active.
-          AnimatedOpacity(
-            opacity: isPlaying ? 1 : 0,
-            duration: const Duration(milliseconds: 300),
-            child: Container(
-              width: 48,
-              height: 48,
+    return Semantics(
+      button: true,
+      toggled: isPlaying,
+      label: semanticLabel,
+      hint: 'Double tap to ${isPlaying ? 'pause' : 'play'} $semanticLabel',
+      value: isPlaying ? 'On' : 'Off',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Glow ring behind button when active.
+            AnimatedOpacity(
+              opacity: isPlaying ? 1 : 0,
+              duration: const Duration(milliseconds: 300),
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: 0.25),
+                ),
+              ),
+            ),
+            // Button circle.
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: accentColor.withValues(alpha: 0.25),
+                color: const Color.fromRGBO(255, 255, 255, 0.06),
+                border: Border.all(
+                  color: isPlaying
+                      ? accentColor
+                      : const Color.fromRGBO(255, 255, 255, 0.08),
+                  width: isPlaying ? 1.5 : 0.5,
+                ),
               ),
-            ),
-          ),
-          // Button circle.
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color.fromRGBO(255, 255, 255, 0.06),
-              border: Border.all(
+              child: Icon(
+                icon,
+                size: 20,
                 color: isPlaying
                     ? accentColor
-                    : const Color.fromRGBO(255, 255, 255, 0.08),
-                width: isPlaying ? 1.5 : 0.5,
+                    : const Color.fromRGBO(255, 255, 255, 0.7),
               ),
             ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: isPlaying
-                  ? accentColor
-                  : const Color.fromRGBO(255, 255, 255, 0.7),
-            ),
-          ),
-          // Pulsing dot indicator.
-          if (isPlaying)
-            Positioned(
-              top: 6,
-              right: 6,
-              child: _PulsingDot(color: accentColor),
-            ),
-        ],
+            // Pulsing dot indicator.
+            if (isPlaying)
+              Positioned(
+                top: 6,
+                right: 6,
+                child: _PulsingDot(color: accentColor),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -576,24 +599,36 @@ class _PulsingDotState extends State<_PulsingDot>
 class _ChromeButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
+  final String semanticLabel;
+  final String semanticHint;
 
-  const _ChromeButton({required this.icon, required this.onTap});
+  const _ChromeButton({
+    required this.icon,
+    required this.onTap,
+    required this.semanticLabel,
+    required this.semanticHint,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: const Color.fromRGBO(255, 255, 255, 0.14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color.fromRGBO(255, 255, 255, 0.18)),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: SizedBox(
-          width: 42,
-          height: 42,
-          child: Icon(icon, color: Colors.white, size: 21),
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      hint: semanticHint,
+      child: Material(
+        color: const Color.fromRGBO(255, 255, 255, 0.14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color.fromRGBO(255, 255, 255, 0.18)),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: SizedBox(
+            width: 42,
+            height: 42,
+            child: Icon(icon, color: Colors.white, size: 21),
+          ),
         ),
       ),
     );
@@ -608,12 +643,14 @@ class _VolumeRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final double value;
+  final String semanticsLabel;
   final ValueChanged<double> onChanged;
 
   const _VolumeRow({
     required this.icon,
     required this.label,
     required this.value,
+    required this.semanticsLabel,
     required this.onChanged,
   });
 
@@ -645,15 +682,19 @@ class _VolumeRow extends StatelessWidget {
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 4,
-                thumbShape:
-                    const RoundSliderThumbShape(enabledThumbRadius: 7),
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
               ),
-              child: Slider(
-                value: value,
-                min: 0,
-                max: 1,
-                activeColor: const Color(0xFF6F61C7),
-                onChanged: onChanged,
+              child: Semantics(
+                label: semanticsLabel,
+                value: '${(value * 100).round()} percent',
+                hint: 'Adjust $label volume',
+                child: Slider(
+                  value: value,
+                  min: 0,
+                  max: 1,
+                  activeColor: const Color(0xFF6F61C7),
+                  onChanged: onChanged,
+                ),
               ),
             ),
           ),
@@ -701,8 +742,9 @@ class _ReaderLoadingState extends StatelessWidget {
 
 class _ReaderErrorState extends StatelessWidget {
   final String error;
+  final VoidCallback onRetry;
 
-  const _ReaderErrorState({required this.error});
+  const _ReaderErrorState({required this.error, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -734,6 +776,12 @@ class _ReaderErrorState extends StatelessWidget {
                 color: const Color(0xFFC5CBD8),
                 fontSize: 12,
               ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again'),
             ),
           ],
         ),

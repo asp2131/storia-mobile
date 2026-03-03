@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-ThemeData buildAppTheme() {
+ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
   final textTheme = GoogleFonts.interTextTheme();
+  final colorScheme = ColorScheme.fromSeed(
+    seedColor: const Color(0xFF1F7A8C),
+    brightness: brightness,
+  );
 
   return ThemeData(
     useMaterial3: true,
     textTheme: textTheme,
-    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F7A8C)),
-    scaffoldBackgroundColor: const Color(0xFFF7F7F4),
+    colorScheme: colorScheme,
+    scaffoldBackgroundColor: brightness == Brightness.light
+        ? const Color(0xFFF7F7F4)
+        : colorScheme.surface,
   );
 }
