@@ -43,10 +43,10 @@ The reader already uses `ValueNotifier<Duration>` for narration position (`reade
 Converting these to `ValueNotifier` + `ValueListenableBuilder` isolates rebuilds to only the widgets that actually change.
 
 ### Checklist
-- [ ] Convert `_showChrome` to `ValueNotifier<bool>` — wrap only `_ReaderTopBar` and `_AudioControlsPill` in `ValueListenableBuilder`
-- [ ] Convert `_isNarrationPlaying` to `ValueNotifier<bool>` — rebuild only audio controls
-- [ ] Convert `_isSoundscapePlaying` to `ValueNotifier<bool>` — rebuild only audio controls
-- [ ] Dispose all new `ValueNotifier`s in `dispose()`
+- [x] Convert `_showChrome` to `ValueNotifier<bool>` — wrap only `_ReaderTopBar` and `_AudioControlsPill` in `ValueListenableBuilder`
+- [x] Convert `_isNarrationPlaying` to `ValueNotifier<bool>` — rebuild only audio controls
+- [x] Convert `_isSoundscapePlaying` to `ValueNotifier<bool>` — rebuild only audio controls
+- [x] Dispose all new `ValueNotifier`s in `dispose()`
 - [ ] Verify narration/soundscape toggle still works correctly
 - [ ] Verify chrome show/hide tap still works
 - [ ] Profile before/after with Flutter DevTools to confirm fewer rebuilds

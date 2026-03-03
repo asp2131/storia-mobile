@@ -26,10 +26,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
     .zero,
   );
+  final ValueNotifier<bool> _isNarrationPlayingNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> _isSoundscapePlayingNotifier = ValueNotifier(false);
+  final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
   int _activePageIndex = 0;
-  bool _isNarrationPlaying = false;
-  bool _isSoundscapePlaying = false;
-  bool _showChrome = true;
   bool _loadedInitialAudio = false;
   double _narrationVolume = 1;
   double _soundscapeVolume = 0.6;
@@ -52,14 +52,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       playing,
     ) {
       if (!mounted) return;
-      setState(() => _isNarrationPlaying = playing);
+      _isNarrationPlayingNotifier.value = playing;
     });
 
     _soundscapePlayingSubscription = audioEngine.soundscapePlaying.listen((
       playing,
     ) {
       if (!mounted) return;
-      setState(() => _isSoundscapePlaying = playing);
+      _isSoundscapePlayingNotifier.value = playing;
     });
   }
 
@@ -69,6 +69,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     _narrationPlayingSubscription?.cancel();
     _soundscapePlayingSubscription?.cancel();
     _narrationPositionNotifier.dispose();
+    _isNarrationPlayingNotifier.dispose();
+    _isSoundscapePlayingNotifier.dispose();
+    _showChromeNotifier.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -112,7 +115,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               GestureDetector(
                 behavior: .translucent,
                 excludeFromSemantics: true,
-                onTap: () => setState(() => _showChrome = !_showChrome),
+                onTap: () =>
+                    _showChromeNotifier.value = !_showChromeNotifier.value,
                 child: PageView.builder(
                   controller: _pageController,
                   scrollDirection: .vertical,
@@ -144,31 +148,53 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 ),
               ),
               // Top chrome
-              IgnorePointer(
-                ignoring: !_showChrome,
-                child: AnimatedOpacity(
-                  opacity: _showChrome ? 1 : 0,
-                  duration: 220.ms,
-                  curve: Curves.easeOut,
-                  child: _ReaderTopBar(
-                    book: book,
-                    activePageNumber: activePage.pageNumber,
-                    onClose: () => Navigator.of(context).maybePop(),
-                    onAudioSettingsTap: () =>
-                        _showAudioSettings(context, audioEngine),
-                  ),
-                ),
+              ValueListenableBuilder<bool>(
+                valueListenable: _showChromeNotifier,
+                builder: (context, showChrome, child) {
+                  return IgnorePointer(
+                    ignoring: !showChrome,
+                    child: AnimatedOpacity(
+                      opacity: showChrome ? 1 : 0,
+                      duration: 220.ms,
+                      curve: Curves.easeOut,
+                      child: _ReaderTopBar(
+                        book: book,
+                        activePageNumber: activePage.pageNumber,
+                        onClose: () => Navigator.of(context).maybePop(),
+                        onAudioSettingsTap: () =>
+                            _showAudioSettings(context, audioEngine),
+                      ),
+                    ),
+                  );
+                },
               ),
               // Bottom audio controls
               if (hasNarration || hasSoundscape)
-                _AudioControlsPill(
-                  hasNarration: hasNarration,
-                  hasSoundscape: hasSoundscape,
-                  isNarrationPlaying: _isNarrationPlaying,
-                  isSoundscapePlaying: _isSoundscapePlaying,
-                  isVisible: _showChrome,
-                  onToggleNarration: () => audioEngine.toggleNarration(),
-                  onToggleSoundscape: () => audioEngine.toggleSoundscape(),
+                ValueListenableBuilder<bool>(
+                  valueListenable: _showChromeNotifier,
+                  builder: (context, showChrome, child) {
+                    return ValueListenableBuilder<bool>(
+                      valueListenable: _isNarrationPlayingNotifier,
+                      builder: (context, isNarrationPlaying, child) {
+                        return ValueListenableBuilder<bool>(
+                          valueListenable: _isSoundscapePlayingNotifier,
+                          builder: (context, isSoundscapePlaying, child) {
+                            return _AudioControlsPill(
+                              hasNarration: hasNarration,
+                              hasSoundscape: hasSoundscape,
+                              isNarrationPlaying: isNarrationPlaying,
+                              isSoundscapePlaying: isSoundscapePlaying,
+                              isVisible: showChrome,
+                              onToggleNarration: () =>
+                                  audioEngine.toggleNarration(),
+                              onToggleSoundscape: () =>
+                                  audioEngine.toggleSoundscape(),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
                 ),
             ],
           );
