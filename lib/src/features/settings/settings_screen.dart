@@ -60,34 +60,50 @@ class TermsOfServiceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final bodyStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: colorScheme.onSurface,
+      height: 1.5,
+    );
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(title: const Text('Terms of Service')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            Text(
-              'By using Storia, you agree to use the app for personal, non-commercial reading and learning.',
-              style: textTheme.bodyMedium,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colorScheme.outlineVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ListView(
+              children: [
+                Text(
+                  'By using Storia, you agree to use the app for personal, non-commercial reading and learning.',
+                  style: bodyStyle,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Do not misuse the service, and ensure child accounts are used with parent or guardian oversight where required.',
+                  style: bodyStyle,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Storia content and branding are protected by applicable intellectual property laws.',
+                  style: bodyStyle,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'For legal questions, contact support through official Storia channels.',
+                  style: bodyStyle,
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Do not misuse the service, and ensure child accounts are used with parent or guardian oversight where required.',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Storia content and branding are protected by applicable intellectual property laws.',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'For legal questions, contact support through official Storia channels.',
-              style: textTheme.bodyMedium,
-            ),
-          ],
+          ),
         ),
       ),
     );
