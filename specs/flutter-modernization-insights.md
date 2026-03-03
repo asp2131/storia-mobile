@@ -84,11 +84,15 @@ Library grid is hardcoded to `crossAxisCount: 2` (`library_screen.dart:112`). On
 Add a `Hero` widget wrapping the book cover image in `_BookCard` and the corresponding image in `PageRenderer` / `ReaderScreen`. The cover "flies" from the grid into the reader on navigation.
 
 ### Checklist
-- [ ] Wrap `CachedNetworkImage` in `_BookCard` with `Hero(tag: 'book-cover-${book.id}')`
-- [ ] Wrap the first page image in `ReaderScreen` with matching `Hero` tag
-- [ ] Handle edge case: books with no cover image (skip Hero or use placeholder)
+- [x] Wrap `CachedNetworkImage` in `_BookCard` with `Hero(tag: 'book-cover-${book.id}')`
+- [x] Wrap the first page image in `ReaderScreen` with matching `Hero` tag
+- [x] Handle edge case: books with no cover image (skip Hero or use placeholder)
 - [ ] Test forward and back navigation transitions
 - [ ] Ensure `flutter_animate` stagger on `_BookCard` doesn't conflict with Hero
+
+### Implementation notes (this pass)
+- Library cards now apply Hero only when `book.coverUrl` is present; missing-cover cards render a static placeholder without Hero.
+- Reader now provides a matching Hero tag for page index `0` when a cover exists, and `PageRenderer` wraps that page image with `Hero`.
 
 ---
 

@@ -340,14 +340,22 @@ class _BookCard extends StatelessWidget {
                         child: Stack(
                           fit: .expand,
                           children: [
-                            CachedNetworkImage(
-                              imageUrl: book.coverUrl ?? '',
-                              cacheManager: ResilientCacheManager.instance,
-                              fit: .cover,
-                              placeholder: (_, __) => const _CoverPlaceholder(),
-                              errorWidget: (_, __, ___) =>
-                                  const ColoredBox(color: Color(0xFFE5E5DE)),
-                            ),
+                            if ((book.coverUrl ?? '').isNotEmpty)
+                              Hero(
+                                tag: 'book-cover-${book.id}',
+                                child: CachedNetworkImage(
+                                  imageUrl: book.coverUrl!,
+                                  cacheManager: ResilientCacheManager.instance,
+                                  fit: .cover,
+                                  placeholder: (_, __) =>
+                                      const _CoverPlaceholder(),
+                                  errorWidget: (_, __, ___) => const ColoredBox(
+                                    color: Color(0xFFE5E5DE),
+                                  ),
+                                ),
+                              )
+                            else
+                              const ColoredBox(color: Color(0xFFE5E5DE)),
                             Align(
                               alignment: .bottomCenter,
                               child: Container(

@@ -137,10 +137,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     return ValueListenableBuilder<Duration>(
                       valueListenable: _narrationPositionNotifier,
                       builder: (context, narrationPosition, child) {
+                        final heroTag =
+                            index == 0 && (book.coverUrl ?? '').isNotEmpty
+                            ? 'book-cover-${book.id}'
+                            : null;
                         return PageRenderer(
                           page: page,
                           narrationPosition: narrationPosition,
                           isActive: index == _activePageIndex,
+                          heroTag: heroTag,
                         );
                       },
                     );
