@@ -16,14 +16,21 @@ Upgrade SDK from `^3.9.2` to `^3.10.0` to enable Swift-inspired dot-shorthands. 
 Affects every screen — `library_screen.dart`, `reader_screen.dart`, `settings_screen.dart` all have heavy enum usage in build methods.
 
 ### Checklist
-- [ ] Upgrade `sdk` constraint in `pubspec.yaml` to `^3.10.0`
-- [ ] Run `flutter pub upgrade` and resolve any dependency conflicts
-- [ ] Refactor `library_screen.dart` — replace verbose enum/constructor references with dot-shorthands
-- [ ] Refactor `reader_screen.dart` — same treatment
-- [ ] Refactor `settings_screen.dart` — same treatment
-- [ ] Refactor remaining files (`app.dart`, `app_theme.dart`, `app_router.dart`)
-- [ ] Run `dart analyze` — ensure no regressions
-- [ ] Build and test on iOS + Android
+- [x] Upgrade `sdk` constraint in `pubspec.yaml` to `^3.10.0`
+- [x] Run `flutter pub upgrade` and resolve any dependency conflicts
+- [x] Refactor `library_screen.dart` — replace verbose enum/constructor references with dot-shorthands
+- [x] Refactor `reader_screen.dart` — same treatment
+- [x] Refactor `settings_screen.dart` — same treatment
+- [x] Refactor remaining files (`app.dart`, `app_theme.dart`, `app_router.dart`)
+- [x] Run `dart analyze` — ensure no regressions
+- [x] Build and test on iOS + Android
+
+### Scoped audit notes (this pass)
+- Updated: `lib/src/features/library/library_screen.dart`, `lib/src/features/reader/reader_screen.dart`, `lib/src/features/settings/settings_screen.dart`, `lib/src/features/reader/overlay/text_overlay_utils.dart`
+- Applied shorthand where Dart 3.10 context typing supports it in these files (for example `BoxFit.cover` -> `.cover`, `Duration.zero` -> `.zero`, `Offset.zero` -> `.zero`)
+- Kept non-shorthand forms that are intentionally explicit because dot-shorthand is not valid for those APIs (`Icons.*`, `Colors.*`, `Curves.*`)
+- Validation run: `flutter pub upgrade`, `dart analyze`, `flutter test`, `flutter build apk --debug`, and `flutter build ios --simulator --no-codesign`
+- Follow-up pass replaced deprecated `FontWeight.index` usage with `FontWeight.value`; analyzer now reports no issues
 
 ---
 

@@ -337,7 +337,7 @@ class _BookCard extends StatelessWidget {
                             CachedNetworkImage(
                               imageUrl: book.coverUrl ?? '',
                               cacheManager: ResilientCacheManager.instance,
-                              fit: BoxFit.cover,
+                              fit: .cover,
                               placeholder: (_, __) => const _CoverPlaceholder(),
                               errorWidget: (_, __, ___) =>
                                   const ColoredBox(color: Color(0xFFE5E5DE)),

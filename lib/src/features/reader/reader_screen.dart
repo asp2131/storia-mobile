@@ -24,7 +24,7 @@ class ReaderScreen extends ConsumerStatefulWidget {
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final PageController _pageController = PageController();
   final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
-    Duration.zero,
+    .zero,
   );
   int _activePageIndex = 0;
   bool _isNarrationPlaying = false;
@@ -407,7 +407,7 @@ class _AudioControlsPill extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
           child: AnimatedSlide(
-            offset: isVisible ? Offset.zero : const Offset(0, 0.3),
+            offset: isVisible ? .zero : const Offset(0, 0.3),
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
             child: Center(
