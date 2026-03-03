@@ -79,7 +79,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final audioEngine = ref.watch(audioEngineProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
+      backgroundColor: Theme.of(context).brightness == .dark
           ? Theme.of(context).colorScheme.surface
           : const Color(0xFF121A24),
       body: bookAsync.when(
@@ -110,12 +110,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           return Stack(
             children: [
               GestureDetector(
-                behavior: HitTestBehavior.translucent,
+                behavior: .translucent,
                 excludeFromSemantics: true,
                 onTap: () => setState(() => _showChrome = !_showChrome),
                 child: PageView.builder(
                   controller: _pageController,
-                  scrollDirection: Axis.vertical,
+                  scrollDirection: .vertical,
                   itemCount: book.pages.length,
                   onPageChanged: (index) async {
                     setState(() {
@@ -198,8 +198,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             return Padding(
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: .min,
+                crossAxisAlignment: .start,
                 children: [
                   Center(
                     child: Container(
@@ -216,7 +216,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     'Audio Mix',
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 26,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: .w700,
                       color: const Color(0xFF2E2A3D),
                     ),
                   ),
@@ -290,8 +290,8 @@ class _ReaderTopBar extends StatelessWidget {
               height: topInset + 110,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  begin: .topCenter,
+                  end: .bottomCenter,
                   colors: [Color.fromRGBO(8, 12, 17, 0.75), Colors.transparent],
                 ),
               ),
@@ -325,16 +325,16 @@ class _ReaderTopBar extends StatelessWidget {
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: .start,
+                    mainAxisSize: .min,
                     children: [
                       Text(
                         book.title,
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        overflow: .ellipsis,
                         style: GoogleFonts.lora(
                           fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: .w700,
                           color: Colors.white,
                         ),
                       ),
@@ -343,7 +343,7 @@ class _ReaderTopBar extends StatelessWidget {
                         'Page $activePageNumber of ${book.pages.length}',
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: .w600,
                           color: const Color(0xFFD4D8E0),
                         ),
                       ),
@@ -421,7 +421,7 @@ class _AudioControlsPill extends StatelessWidget {
                   ),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   children: [
                     if (hasNarration)
                       _AudioIconButton(
@@ -487,7 +487,7 @@ class _AudioIconButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Stack(
-          alignment: Alignment.center,
+          alignment: .center,
           children: [
             // Glow ring behind button when active.
             AnimatedOpacity(
@@ -497,7 +497,7 @@ class _AudioIconButton extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  shape: .circle,
                   color: accentColor.withValues(alpha: 0.25),
                 ),
               ),
@@ -508,7 +508,7 @@ class _AudioIconButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                shape: .circle,
                 color: const Color.fromRGBO(255, 255, 255, 0.06),
                 border: Border.all(
                   color: isPlaying
@@ -581,7 +581,7 @@ class _PulsingDotState extends State<_PulsingDot>
               width: 6,
               height: 6,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                shape: .circle,
                 color: widget.color,
               ),
             ),
@@ -673,7 +673,7 @@ class _VolumeRow extends StatelessWidget {
               label,
               style: GoogleFonts.inter(
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: .w700,
                 color: const Color(0xFF2E2A3D),
               ),
             ),
@@ -702,7 +702,7 @@ class _VolumeRow extends StatelessWidget {
             '${(value * 100).round()}%',
             style: GoogleFonts.inter(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
+              fontWeight: .w700,
               color: const Color(0xFF6B7280),
             ),
           ),
@@ -723,7 +723,7 @@ class _ReaderLoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           const CircularProgressIndicator(color: Color(0xFF8A80CC)),
           const SizedBox(height: 14),
@@ -731,7 +731,7 @@ class _ReaderLoadingState extends StatelessWidget {
             'Opening your story...',
             style: GoogleFonts.inter(
               color: const Color(0xFFC5CBD8),
-              fontWeight: FontWeight.w600,
+              fontWeight: .w600,
             ),
           ),
         ],
@@ -752,7 +752,7 @@ class _ReaderErrorState extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: .min,
           children: [
             const Icon(
               Icons.auto_stories_rounded,
@@ -764,14 +764,14 @@ class _ReaderErrorState extends StatelessWidget {
               'This story could not be loaded',
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontWeight: FontWeight.w700,
+                fontWeight: .w700,
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               error,
-              textAlign: TextAlign.center,
+              textAlign: .center,
               style: GoogleFonts.inter(
                 color: const Color(0xFFC5CBD8),
                 fontSize: 12,

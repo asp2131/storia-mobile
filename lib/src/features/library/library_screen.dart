@@ -33,7 +33,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final booksAsync = ref.watch(bookLibraryProvider);
 
     return Scaffold(
-      backgroundColor: theme.brightness == Brightness.dark
+      backgroundColor: theme.brightness == .dark
           ? theme.colorScheme.surface
           : const Color(0xFFF5F4EF),
       body: booksAsync.when(
@@ -73,7 +73,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               : 'Search Results',
                           style: GoogleFonts.inter(
                             fontSize: 18,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: .w800,
                             color: const Color(0xFF1F2937),
                           ),
                         ),
@@ -92,7 +92,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           '${filteredBooks.length}',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: .w700,
                             color: colorScheme.primary,
                           ),
                         ),
@@ -151,7 +151,7 @@ class _LibraryHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == .dark;
     final searchBackground = isDark
         ? theme.colorScheme.surfaceContainerHigh
         : const Color(0xFFFFFFFF);
@@ -174,8 +174,8 @@ class _LibraryHeader extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: .topLeft,
+            end: .bottomRight,
             colors: [Color(0xFFDCEBFF), Color(0xFFEDE4FF), Color(0xFFFFF5DD)],
           ),
           boxShadow: const [
@@ -189,7 +189,7 @@ class _LibraryHeader extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               Row(
                 children: [
@@ -199,7 +199,7 @@ class _LibraryHeader extends StatelessWidget {
                       style: GoogleFonts.playfairDisplay(
                         fontSize: 34,
                         height: 1,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: .w700,
                         color: const Color(0xFF41315D),
                       ),
                     ),
@@ -218,7 +218,7 @@ class _LibraryHeader extends StatelessWidget {
                   '$totalBooks books ready for story time',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: .w500,
                     color: const Color(0xFF51456E),
                   ),
                 ),
@@ -236,7 +236,7 @@ class _LibraryHeader extends StatelessWidget {
                   onChanged: onSearchChanged,
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: .w500,
                     color: searchTextColor,
                   ),
                   decoration: InputDecoration(
@@ -287,7 +287,7 @@ class _BookCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = theme.brightness == .dark;
     final cardBackground = isDark
         ? theme.colorScheme.surfaceContainerHigh
         : Colors.white;
@@ -326,13 +326,13 @@ class _BookCard extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
                     Expanded(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Stack(
-                          fit: StackFit.expand,
+                          fit: .expand,
                           children: [
                             CachedNetworkImage(
                               imageUrl: book.coverUrl ?? '',
@@ -343,13 +343,13 @@ class _BookCard extends StatelessWidget {
                                   const ColoredBox(color: Color(0xFFE5E5DE)),
                             ),
                             Align(
-                              alignment: Alignment.bottomCenter,
+                              alignment: .bottomCenter,
                               child: Container(
                                 height: 64,
                                 decoration: const BoxDecoration(
                                   gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
+                                    begin: .topCenter,
+                                    end: .bottomCenter,
                                     colors: [
                                       Colors.transparent,
                                       Color.fromRGBO(0, 0, 0, 0.72),
@@ -366,11 +366,11 @@ class _BookCard extends StatelessWidget {
                     Text(
                       book.title,
                       maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: .ellipsis,
                       style: GoogleFonts.lora(
                         fontSize: 14,
                         height: 1.18,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: .w700,
                         color: titleColor,
                       ),
                     ),
@@ -378,10 +378,10 @@ class _BookCard extends StatelessWidget {
                     Text(
                       book.author ?? 'Unknown',
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: .ellipsis,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: .w500,
                         color: authorColor,
                       ),
                     ),
@@ -399,7 +399,7 @@ class _BookCard extends StatelessWidget {
                         '${book.pages.length} pages',
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: .w700,
                           color: accent,
                         ),
                       ),
@@ -429,8 +429,8 @@ class _CoverPlaceholder extends StatelessWidget {
     return Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: .topLeft,
+              end: .bottomRight,
               colors: [Color(0xFFD6DAD3), Color(0xFFC6CDC4), Color(0xFFB8BEB6)],
             ),
           ),
@@ -467,7 +467,7 @@ class _EmptyState extends StatelessWidget {
                 'No books matched your search',
                 style: GoogleFonts.inter(
                   fontSize: 15,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: .w700,
                   color: const Color(0xFF374151),
                 ),
               ),
@@ -476,7 +476,7 @@ class _EmptyState extends StatelessWidget {
                 'Try a different title or author.',
                 style: GoogleFonts.inter(
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: .w500,
                   color: const Color(0xFF6B7280),
                 ),
               ),
@@ -554,7 +554,7 @@ class _ErrorState extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: .min,
           children: [
             const Icon(
               Icons.cloud_off_rounded,
@@ -566,13 +566,13 @@ class _ErrorState extends StatelessWidget {
               'Could not load the library',
               style: GoogleFonts.inter(
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
+                fontWeight: .w700,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               error,
-              textAlign: TextAlign.center,
+              textAlign: .center,
               style: GoogleFonts.inter(
                 fontSize: 12,
                 color: const Color(0xFF6B7280),
