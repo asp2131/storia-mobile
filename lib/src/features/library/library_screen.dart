@@ -150,6 +150,23 @@ class _LibraryHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final searchBackground = isDark
+        ? theme.colorScheme.surfaceContainerHigh
+        : const Color(0xFFFFFFFF);
+    final searchBorder = isDark
+        ? theme.colorScheme.outline.withValues(alpha: 0.35)
+        : const Color(0xFFDCCFF3);
+    final searchTextColor = isDark
+        ? theme.colorScheme.onSurface
+        : const Color(0xFF2F2C42);
+    final searchHintColor = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : const Color(0xFF9A91B0);
+    final searchIconColor = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : const Color(0xFF8D82A7);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(18, topPadding + 12, 18, 14),
@@ -210,9 +227,9 @@ class _LibraryHeader extends StatelessWidget {
               const SizedBox(height: 14),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFFFF),
+                  color: searchBackground,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFDCCFF3)),
+                  border: Border.all(color: searchBorder),
                 ),
                 child: TextField(
                   controller: searchController,
@@ -220,7 +237,7 @@ class _LibraryHeader extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF2F2C42),
+                    color: searchTextColor,
                   ),
                   decoration: InputDecoration(
                     border: InputBorder.none,
@@ -228,16 +245,16 @@ class _LibraryHeader extends StatelessWidget {
                     hintText: 'Search by title or author',
                     hintStyle: GoogleFonts.inter(
                       fontSize: 14,
-                      color: const Color(0xFF9A91B0),
+                      color: searchHintColor,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 12,
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search_rounded,
                       size: 20,
-                      color: Color(0xFF8D82A7),
+                      color: searchIconColor,
                     ),
                     suffixIcon: searchController.text.isNotEmpty
                         ? IconButton(
@@ -247,7 +264,7 @@ class _LibraryHeader extends StatelessWidget {
                             },
                             icon: const Icon(Icons.close_rounded, size: 18),
                             tooltip: 'Clear search text',
-                            color: const Color(0xFF8D82A7),
+                            color: searchIconColor,
                           )
                         : null,
                   ),
@@ -269,6 +286,20 @@ class _BookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBackground = isDark
+        ? theme.colorScheme.surfaceContainerHigh
+        : Colors.white;
+    final titleColor = isDark
+        ? theme.colorScheme.onSurface
+        : const Color(0xFF1F2937);
+    final authorColor = isDark
+        ? theme.colorScheme.onSurfaceVariant
+        : const Color(0xFF6B7280);
+    final cardShadow = isDark
+        ? const Color.fromRGBO(0, 0, 0, 0.45)
+        : const Color.fromRGBO(49, 43, 74, 0.12);
     final accent = index.isEven
         ? const Color(0xFF6F61C7)
         : const Color(0xFF2C7C9D);
@@ -282,11 +313,11 @@ class _BookCard extends StatelessWidget {
             onTap: () => context.push('/reader/${book.id}'),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cardBackground,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color.fromRGBO(49, 43, 74, 0.12),
+                    color: cardShadow,
                     blurRadius: 12,
                     offset: Offset(0, 6),
                   ),
@@ -340,7 +371,7 @@ class _BookCard extends StatelessWidget {
                         fontSize: 14,
                         height: 1.18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1F2937),
+                        color: titleColor,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -351,7 +382,7 @@ class _BookCard extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF6B7280),
+                        color: authorColor,
                       ),
                     ),
                     const SizedBox(height: 8),
