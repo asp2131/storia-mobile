@@ -65,10 +65,15 @@ Library grid is hardcoded to `crossAxisCount: 2` (`library_screen.dart:112`). On
 - 700px+ → 4 columns
 
 ### Checklist
-- [ ] Wrap `SliverGrid.builder` in a `LayoutBuilder` (or use `SliverGridDelegateWithMaxCrossAxisExtent`)
+- [x] Wrap `SliverGrid.builder` in a `LayoutBuilder` (or use `SliverGridDelegateWithMaxCrossAxisExtent`)
 - [ ] Set `maxCrossAxisExtent` ~180-200px so columns scale naturally
 - [ ] Test on iPhone SE (small), iPhone 15 (medium), iPad (large)
 - [ ] Verify book card aspect ratio and text truncation at each size
+
+### Implementation notes (this pass)
+- `library_screen.dart` now uses `SliverLayoutBuilder` to derive responsive `crossAxisCount` from available width.
+- Breakpoints implemented: `<400` -> 2 columns, `400-699` -> 3 columns, `700+` -> 4 columns.
+- Applied to both content grid and loading-state shimmer grid so behavior stays consistent.
 
 ---
 

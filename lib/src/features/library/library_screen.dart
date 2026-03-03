@@ -106,18 +106,24 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               else
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(18, 0, 18, 26),
-                  sliver: SliverGrid.builder(
-                    itemCount: filteredBooks.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
+                  sliver: SliverLayoutBuilder(
+                    builder: (context, constraints) {
+                      final crossAxisCount = _gridColumnsForWidth(
+                        constraints.crossAxisExtent,
+                      );
+                      return SliverGrid.builder(
+                        itemCount: filteredBooks.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 14,
                           childAspectRatio: 0.67,
                         ),
-                    itemBuilder: (context, index) {
-                      final book = filteredBooks[index];
-                      return _BookCard(book: book, index: index);
+                        itemBuilder: (context, index) {
+                          final book = filteredBooks[index];
+                          return _BookCard(book: book, index: index);
+                        },
+                      );
                     },
                   ),
                 ),
@@ -518,28 +524,41 @@ class _LoadingState extends StatelessWidget {
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(18, 0, 18, 26),
-          sliver: SliverGrid.builder(
-            itemCount: 8,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 14,
-              childAspectRatio: 0.67,
-            ),
-            itemBuilder: (_, __) =>
-                Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE2E2DB),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    )
-                    .animate(onPlay: (controller) => controller.repeat())
-                    .shimmer(duration: 1300.ms),
+          sliver: SliverLayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = _gridColumnsForWidth(
+                constraints.crossAxisExtent,
+              );
+              return SliverGrid.builder(
+                itemCount: 8,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 0.67,
+                ),
+                itemBuilder: (_, __) =>
+                    Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E2DB),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        )
+                        .animate(onPlay: (controller) => controller.repeat())
+                        .shimmer(duration: 1300.ms),
+              );
+            },
           ),
         ),
       ],
     );
   }
+}
+
+int _gridColumnsForWidth(double width) {
+  if (width < 400) return 2;
+  if (width < 700) return 3;
+  return 4;
 }
 
 class _ErrorState extends StatelessWidget {
