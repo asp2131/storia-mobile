@@ -19,5 +19,9 @@ Future<void> main() async {
   // are cleaned up before any widget tries to load a cached image.
   await ResilientCacheManager.getInstance();
 
+  // Auth session check happens lazily via AuthStateNotifier's checkSession()
+  // when the authStateProvider is first read (triggered by the router).
+  // NOTE: Ensure API_BASE_URL is set in .env for the Better Auth backend.
+
   runApp(const ProviderScope(child: StoriaApp()));
 }

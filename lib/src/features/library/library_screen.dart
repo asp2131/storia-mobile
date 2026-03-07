@@ -56,7 +56,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   searchController: _searchController,
                   onSearchChanged: (value) =>
                       setState(() => _searchQuery = value),
-                  onSettingsTap: () => context.push('/settings'),
+                  onSettingsTap: () => context.push('/profile'),
                   totalBooks: books.length,
                 ),
               ),
@@ -211,9 +211,9 @@ class _LibraryHeader extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Open settings',
+                    tooltip: 'Open profile',
                     onPressed: onSettingsTap,
-                    icon: const Icon(Icons.settings_outlined),
+                    icon: const Icon(Icons.person_outline_rounded),
                     color: const Color(0xFF51456E),
                   ),
                 ],
