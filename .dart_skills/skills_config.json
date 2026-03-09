@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "installations": {
+    "claude": {
+      "flutter": {
+        "skills": [
+          {
+            "name": "flutter-native-interop",
+            "installedAt": "2026-03-09T19:06:44.918463Z"
+          },
+          {
+            "name": "flutter-testing",
+            "installedAt": "2026-03-09T19:06:44.919499Z"
+          },
+          {
+            "name": "flutter-environment-setup-macos",
+            "installedAt": "2026-03-09T19:06:44.920138Z"
+          },
+          {
+            "name": "flutter-architecture",
+            "installedAt": "2026-03-09T19:06:44.920778Z"
+          },
+          {
+            "name": "flutter-http-and-json",
+            "installedAt": "2026-03-09T19:06:44.921444Z"
+          },
+          {
+            "name": "flutter-state-management",
+            "installedAt": "2026-03-09T19:06:44.922025Z"
+          },
+          {
+            "name": "flutter-concurrency",
+            "installedAt": "2026-03-09T19:06:44.922611Z"
+          },
+          {
+            "name": "flutter-theming",
+            "installedAt": "2026-03-09T19:06:44.923375Z"
+          },
+          {
+            "name": "flutter-accessibility",
+            "installedAt": "2026-03-09T19:06:44.924187Z"
+          },
+          {
+            "name": "flutter-performance",
+            "installedAt": "2026-03-09T19:06:44.925101Z"
+          },
+          {
+            "name": "flutter-caching",
+            "installedAt": "2026-03-09T19:06:44.925981Z"
+          },
+          {
+            "name": "flutter-home-screen-widget",
+            "installedAt": "2026-03-09T19:06:44.926787Z"
+          },
+          {
+            "name": "flutter-layout",
+            "installedAt": "2026-03-09T19:06:44.927420Z"
+          },
+          {
+            "name": "flutter-platform-views",
+            "installedAt": "2026-03-09T19:06:44.928055Z"
+          },
+          {
+            "name": "flutter-localization",
+            "installedAt": "2026-03-09T19:06:44.928717Z"
+          },
+          {
+            "name": "flutter-routing-and-navigation",
+            "installedAt": "2026-03-09T19:06:44.929408Z"
+          },
+          {
+            "name": "flutter-app-size",
+            "installedAt": "2026-03-09T19:06:44.930068Z"
+          },
+          {
+            "name": "flutter-environment-setup-linux",
+            "installedAt": "2026-03-09T19:06:44.930680Z"
+          },
+          {
+            "name": "flutter-animation",
+            "installedAt": "2026-03-09T19:06:44.931260Z"
+          },
+          {
+            "name": "flutter-plugins",
+            "installedAt": "2026-03-09T19:06:44.931837Z"
+          },
+          {
+            "name": "flutter-environment-setup-windows",
+            "installedAt": "2026-03-09T19:06:44.932557Z"
+          },
+          {
+            "name": "flutter-databases",
+            "installedAt": "2026-03-09T19:06:44.933233Z"
+          }
+        ]
+      },
+      "riverpod": {
+        "skills": [
+          {
+            "name": "riverpod-family",
+            "installedAt": "2026-03-09T19:06:44.934666Z"
+          },
+          {
+            "name": "riverpod-consumers",
+            "installedAt": "2026-03-09T19:06:44.935349Z"
+          },
+          {
+            "name": "riverpod-retry",
+            "installedAt": "2026-03-09T19:06:44.935899Z"
+          },
+          {
+            "name": "riverpod-eager-initialization",
+            "installedAt": "2026-03-09T19:06:44.936471Z"
+          },
+          {
+            "name": "riverpod-faq-and-practices",
+            "installedAt": "2026-03-09T19:06:44.938074Z"
+          },
+          {
+            "name": "riverpod-auto-dispose",
+            "installedAt": "2026-03-09T19:06:44.938600Z"
+          },
+          {
+            "name": "riverpod-cancel",
+            "installedAt": "2026-03-09T19:06:44.939117Z"
+          },
+          {
+            "name": "riverpod-codegen-and-hooks",
+            "installedAt": "2026-03-09T19:06:44.939617Z"
+          },
+          {
+            "name": "riverpod-containers",
+            "installedAt": "2026-03-09T19:06:44.940146Z"
+          },
+          {
+            "name": "riverpod-scoping",
+            "installedAt": "2026-03-09T19:06:44.940950Z"
+          },
+          {
+            "name": "riverpod-from-provider",
+            "installedAt": "2026-03-09T19:06:44.941505Z"
+          },
+          {
+            "name": "riverpod-pull-to-refresh",
+            "installedAt": "2026-03-09T19:06:44.942069Z"
+          },
+          {
+            "name": "riverpod-observers",
+            "installedAt": "2026-03-09T19:06:44.942579Z"
+          },
+          {
+            "name": "riverpod-migration",
+            "installedAt": "2026-03-09T19:06:44.944568Z"
+          },
+          {
+            "name": "riverpod-testing",
+            "installedAt": "2026-03-09T19:06:44.945129Z"
+          },
+          {
+            "name": "riverpod-getting-started",
+            "installedAt": "2026-03-09T19:06:44.945658Z"
+          },
+          {
+            "name": "riverpod-overrides",
+            "installedAt": "2026-03-09T19:06:44.946191Z"
+          },
+          {
+            "name": "riverpod-select",
+            "installedAt": "2026-03-09T19:06:44.946748Z"
+          },
+          {
+            "name": "riverpod-refs",
+            "installedAt": "2026-03-09T19:06:44.947520Z"
+          },
+          {
+            "name": "riverpod-3-0-migration",
+            "installedAt": "2026-03-09T19:06:44.948073Z"
+          },
+          {
+            "name": "riverpod-mutations",
+            "installedAt": "2026-03-09T19:06:44.948559Z"
+          },
+          {
+            "name": "riverpod-providers",
+            "installedAt": "2026-03-09T19:06:44.949424Z"
+          },
+          {
+            "name": "riverpod-offline",
+            "installedAt": "2026-03-09T19:06:44.949916Z"
+          }
+        ]
+      }
+    }
+  }
+}
