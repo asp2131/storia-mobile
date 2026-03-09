@@ -23,66 +23,22 @@ class AuthRepository {
   Stream<supabase.AuthState> get authStateChanges =>
       _client.auth.onAuthStateChange;
 
-  Future<void> signInWithPassword({
+  Future<void> sendMagicLink({
     required String email,
-    required String password,
+    required bool shouldCreateUser,
   }) async {
     try {
-      await _client.auth.signInWithPassword(email: email, password: password);
-    } catch (error) {
-      if (error is supabase.AuthException) {
-        throw AppAuthException(error.message);
-      }
-      throw AppAuthException(
-        _messageFrom(error, 'Could not sign in right now.'),
-      );
-    }
-  }
-
-  Future<supabase.AuthResponse> signUp({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      return await _client.auth.signUp(
+      await _client.auth.signInWithOtp(
         email: email,
-        password: password,
         emailRedirectTo: _callbackUrl,
+        shouldCreateUser: shouldCreateUser,
       );
     } catch (error) {
       if (error is supabase.AuthException) {
         throw AppAuthException(error.message);
       }
       throw AppAuthException(
-        _messageFrom(error, 'Could not create the account right now.'),
-      );
-    }
-  }
-
-  Future<void> sendPasswordReset(String email) async {
-    try {
-      await _client.auth.resetPasswordForEmail(email, redirectTo: _callbackUrl);
-    } catch (error) {
-      if (error is supabase.AuthException) {
-        throw AppAuthException(error.message);
-      }
-      throw AppAuthException(
-        _messageFrom(error, 'Could not send the reset email.'),
-      );
-    }
-  }
-
-  Future<void> updatePassword(String password) async {
-    try {
-      await _client.auth.updateUser(
-        supabase.UserAttributes(password: password),
-      );
-    } catch (error) {
-      if (error is supabase.AuthException) {
-        throw AppAuthException(error.message);
-      }
-      throw AppAuthException(
-        _messageFrom(error, 'Could not update the password.'),
+        _messageFrom(error, 'Could not send a magic link right now.'),
       );
     }
   }

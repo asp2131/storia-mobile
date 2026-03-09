@@ -13,20 +13,23 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(client);
 });
 
-final authStateNotifierProvider = Provider<AuthStateNotifier>((ref) {
+final authStateNotifierProvider = ChangeNotifierProvider<AuthStateNotifier>((
+  ref,
+) {
   final repository = ref.watch(authRepositoryProvider);
   final notifier = AuthStateNotifier(repository);
   ref.onDispose(notifier.dispose);
   return notifier;
 });
 
+final authViewStateProvider = Provider<AuthViewState>((ref) {
+  final notifier = ref.watch(authStateNotifierProvider);
+  return notifier.state;
+});
+
 class AuthStateNotifier extends ChangeNotifier {
   AuthStateNotifier(this._repository)
-      : _state = AuthViewState(
-          session: _repository.currentSession,
-          isRecoveryMode: false,
-          lastEvent: null,
-        ) {
+    : _state = AuthViewState(session: _repository.currentSession) {
     _subscription = _repository.authStateChanges.listen(_handleAuthState);
   }
 
@@ -36,28 +39,9 @@ class AuthStateNotifier extends ChangeNotifier {
 
   AuthViewState get state => _state;
   bool get isAuthenticated => _state.isAuthenticated;
-  bool get isRecoveryMode => _state.isRecoveryMode;
-
-  void clearRecoveryMode() {
-    if (!_state.isRecoveryMode) {
-      return;
-    }
-    _state = AuthViewState(
-      session: _state.session,
-      isRecoveryMode: false,
-      lastEvent: _state.lastEvent,
-    );
-    notifyListeners();
-  }
 
   void _handleAuthState(AuthState authState) {
-    _state = AuthViewState(
-      session: authState.session,
-      isRecoveryMode:
-          authState.event == AuthChangeEvent.passwordRecovery ||
-          (_state.isRecoveryMode && authState.session != null),
-      lastEvent: authState.event,
-    );
+    _state = AuthViewState(session: authState.session);
     notifyListeners();
   }
 

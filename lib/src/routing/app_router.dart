@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/data/auth_providers.dart';
 import '../features/auth/presentation/auth_gate.dart';
-import '../features/auth/presentation/forgot_password_screen.dart';
 import '../features/auth/presentation/intro_screen.dart';
 import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/sign_up_screen.dart';
@@ -13,31 +12,18 @@ import '../features/settings/settings_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.watch(authStateNotifierProvider);
+  final authState = ref.watch(authViewStateProvider);
 
   return GoRouter(
     initialLocation: '/',
     refreshListenable: authNotifier,
     redirect: (context, state) {
-      final isAuthenticated = authNotifier.isAuthenticated;
-      final isRecoveryMode = authNotifier.isRecoveryMode;
+      final isAuthenticated = authState.isAuthenticated;
       final location = state.matchedLocation;
-      const publicLocations = {
-        '/',
-        '/intro',
-        '/sign-in',
-        '/sign-up',
-        '/forgot-password',
-      };
+      const publicLocations = {'/', '/intro', '/sign-in', '/sign-up'};
 
       if (location == '/') {
-        if (isRecoveryMode) {
-          return '/forgot-password?mode=update';
-        }
         return isAuthenticated ? '/library' : '/intro';
-      }
-
-      if (isRecoveryMode && location != '/forgot-password') {
-        return '/forgot-password?mode=update';
       }
 
       if (!isAuthenticated && !publicLocations.contains(location)) {
@@ -63,11 +49,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sign-up',
         builder: (context, state) => const SignUpScreen(),
-      ),
-      GoRoute(
-        path: '/forgot-password',
-        builder: (context, state) =>
-            ForgotPasswordScreen(mode: state.uri.queryParameters['mode']),
       ),
       GoRoute(
         path: '/library',
