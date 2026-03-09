@@ -244,6 +244,7 @@ class Book {
   final String title;
   final String? author;
   final String? coverUrl;
+  final int pageCount;
   final List<PageData> pages;
 
   const Book({
@@ -251,8 +252,21 @@ class Book {
     required this.title,
     this.author,
     this.coverUrl,
+    required this.pageCount,
     required this.pages,
   });
+
+  factory Book.fromLibraryJson(Map<String, dynamic> json) {
+    final pageCount = _parseBookPageCount(json);
+    return Book(
+      id: json['id']?.toString() ?? '',
+      title: json['title'] as String? ?? '',
+      author: json['author'] as String?,
+      coverUrl: json['cover_url'] as String? ?? json['coverUrl'] as String?,
+      pageCount: pageCount,
+      pages: const [],
+    );
+  }
 
   factory Book.fromJson(Map<String, dynamic> json) {
     final rawPages = (json['pages'] as List<dynamic>? ?? <dynamic>[])
@@ -285,9 +299,53 @@ class Book {
       title: json['title'] as String? ?? '',
       author: json['author'] as String?,
       coverUrl: json['cover_url'] as String? ?? json['coverUrl'] as String?,
+      pageCount: pagesWithResolvedSoundscapes.length,
       pages: pagesWithResolvedSoundscapes,
     );
   }
+}
+
+int _parseBookPageCount(Map<String, dynamic> json) {
+  final directCount = _parseNonNegativeInt(
+    json['page_count'] ?? json['pageCount'],
+  );
+  if (directCount != null) {
+    return directCount;
+  }
+
+  final pagesValue = json['pages'];
+  if (pagesValue is List) {
+    if (pagesValue.isEmpty) {
+      return 0;
+    }
+
+    final first = pagesValue.first;
+    if (first is Map<String, dynamic>) {
+      final embeddedCount = _parseNonNegativeInt(first['count']);
+      if (embeddedCount != null) {
+        return embeddedCount;
+      }
+    }
+
+    return pagesValue.length;
+  }
+
+  return 0;
+}
+
+int? _parseNonNegativeInt(dynamic value) {
+  if (value is num) {
+    final intValue = value.toInt();
+    return intValue >= 0 ? intValue : null;
+  }
+  if (value is String) {
+    final intValue = int.tryParse(value);
+    if (intValue == null || intValue < 0) {
+      return null;
+    }
+    return intValue;
+  }
+  return null;
 }
 
 class _SoundscapeAssignment {

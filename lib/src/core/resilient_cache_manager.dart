@@ -46,8 +46,7 @@ class ResilientCacheManager {
   /// (e.g. in widget build methods). Falls back to [DefaultCacheManager] if
   /// called before initialisation -- this is safe because [DefaultCacheManager]
   /// is itself a singleton.
-  static CacheManager get instance =>
-      _instance ?? DefaultCacheManager();
+  static CacheManager get instance => _instance ?? DefaultCacheManager();
 
   /// Remove stale WAL/SHM journal files that cause SQLITE_BUSY on re-open.
   static Future<void> _cleanStaleLockFiles() async {
@@ -66,7 +65,11 @@ class ResilientCacheManager {
       final filesDir = await getApplicationDocumentsDirectory();
       // The default DB lives next to the files directory.
       final parent = filesDir.parent;
-      final defaultDbPath = p.join(parent.path, 'files', 'libCachedImageData.db');
+      final defaultDbPath = p.join(
+        parent.path,
+        'files',
+        'libCachedImageData.db',
+      );
       for (final suffix in ['-wal', '-shm']) {
         final file = File('$defaultDbPath$suffix');
         if (await file.exists()) {

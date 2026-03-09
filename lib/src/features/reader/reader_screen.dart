@@ -8,6 +8,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../audio/audio_engine.dart';
 import '../../audio/audio_providers.dart';
+import '../../core/theme/storia_colors.dart';
+import '../../core/theme/storia_motion.dart';
+import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
 import 'page_renderer.dart';
@@ -82,9 +85,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final audioEngine = ref.watch(audioEngineProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).brightness == .dark
-          ? Theme.of(context).colorScheme.surface
-          : const Color(0xFF121A24),
+      backgroundColor: StoriaColors.readerBackground,
       body: bookAsync.when(
         data: (book) {
           if (book == null) {
@@ -219,9 +220,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   ) {
     return showModalBottomSheet<void>(
       context: context,
-      backgroundColor: const Color(0xFFF9F8F4),
+      backgroundColor: StoriaColors.paper,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -245,11 +246,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Audio Mix',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 26,
-                      fontWeight: .w700,
-                      color: const Color(0xFF2E2A3D),
-                    ),
+                    style: Theme.of(context).textTheme.headlineLarge,
                   ),
                   const SizedBox(height: 18),
                   _VolumeRow(
@@ -323,7 +320,7 @@ class _ReaderTopBar extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: .topCenter,
                   end: .bottomCenter,
-                  colors: [Color.fromRGBO(8, 12, 17, 0.75), Colors.transparent],
+                  colors: [Color.fromRGBO(8, 12, 17, 0.82), Colors.transparent],
                 ),
               ),
             ),
@@ -343,42 +340,50 @@ class _ReaderTopBar extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 9,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color.fromRGBO(10, 16, 26, 0.58),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: const Color.fromRGBO(255, 255, 255, 0.2),
+                child: DecoratedBox(
+                  decoration: const ShapeDecoration(
+                    color: Color.fromRGBO(29, 33, 39, 0.9),
+                    shape: SketchBorderShape(
+                      side: BorderSide(
+                        color: Color.fromRGBO(255, 255, 255, 0.16),
+                        width: 1.2,
+                      ),
+                      radiusScale: 0.88,
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: .start,
-                    mainAxisSize: .min,
-                    children: [
-                      Text(
-                        book.title,
-                        maxLines: 1,
-                        overflow: .ellipsis,
-                        style: GoogleFonts.lora(
-                          fontSize: 14,
-                          fontWeight: .w700,
-                          color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: .center,
+                      mainAxisSize: .min,
+                      children: [
+                        Text(
+                          book.title,
+                          maxLines: 1,
+                          overflow: .ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.lora(
+                            fontSize: 14,
+                            fontWeight: .w700,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Page $activePageNumber of ${book.pages.length}',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: .w600,
-                          color: const Color(0xFFD4D8E0),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Page $activePageNumber of ${book.pages.length}',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: .w800,
+                            color: const Color(0xFFD4D8E0),
+                            letterSpacing: 0.8,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -442,48 +447,56 @@ class _AudioControlsPill extends StatelessWidget {
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
             child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color.fromRGBO(10, 16, 26, 0.72),
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(
-                    color: const Color.fromRGBO(255, 255, 255, 0.1),
+              child: DecoratedBox(
+                decoration: const ShapeDecoration(
+                  color: Color.fromRGBO(29, 33, 39, 0.94),
+                  shape: SketchBorderShape(
+                    side: BorderSide(
+                      color: Color.fromRGBO(255, 255, 255, 0.12),
+                      width: 1.1,
+                    ),
+                    radiusScale: 0.9,
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: .min,
-                  children: [
-                    if (hasNarration)
-                      _AudioIconButton(
-                        icon: isNarrationPlaying
-                            ? Icons.pause_rounded
-                            : Icons.mic_rounded,
-                        accentColor: _narrationColor,
-                        isPlaying: isNarrationPlaying,
-                        semanticLabel: 'Narration',
-                        onTap: onToggleNarration,
-                      ),
-                    if (hasNarration && hasSoundscape)
-                      Container(
-                        width: 1,
-                        height: 24,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        color: const Color.fromRGBO(255, 255, 255, 0.12),
-                      ),
-                    if (hasSoundscape)
-                      _AudioIconButton(
-                        icon: isSoundscapePlaying
-                            ? Icons.volume_up_rounded
-                            : Icons.music_note_rounded,
-                        accentColor: _soundscapeColor,
-                        isPlaying: isSoundscapePlaying,
-                        semanticLabel: 'Ambience',
-                        onTap: onToggleSoundscape,
-                      ),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: .min,
+                    children: [
+                      if (hasNarration)
+                        _AudioIconButton(
+                          icon: isNarrationPlaying
+                              ? Icons.pause_rounded
+                              : Icons.mic_rounded,
+                          accentColor: _narrationColor,
+                          isPlaying: isNarrationPlaying,
+                          semanticLabel: 'Narration',
+                          onTap: onToggleNarration,
+                        ),
+                      if (hasNarration && hasSoundscape)
+                        Container(
+                          width: 1,
+                          height: 24,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          color: const Color.fromRGBO(255, 255, 255, 0.12),
+                        ),
+                      if (hasSoundscape)
+                        _AudioIconButton(
+                          icon: isSoundscapePlaying
+                              ? Icons.volume_up_rounded
+                              : Icons.music_note_rounded,
+                          accentColor: _soundscapeColor,
+                          isPlaying: isSoundscapePlaying,
+                          semanticLabel: 'Ambience',
+                          onTap: onToggleSoundscape,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
+              ).animate().fadeIn(duration: StoriaMotion.medium),
             ),
           ),
         ),
@@ -536,11 +549,13 @@ class _AudioIconButton extends StatelessWidget {
             // Button circle.
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 shape: .circle,
-                color: const Color.fromRGBO(255, 255, 255, 0.06),
+                color: isPlaying
+                    ? Colors.white.withValues(alpha: 0.12)
+                    : const Color.fromRGBO(255, 255, 255, 0.05),
                 border: Border.all(
                   color: isPlaying
                       ? accentColor
@@ -644,17 +659,20 @@ class _ChromeButton extends StatelessWidget {
       label: semanticLabel,
       hint: semanticHint,
       child: Material(
-        color: const Color.fromRGBO(255, 255, 255, 0.14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color.fromRGBO(255, 255, 255, 0.18)),
+        color: const Color.fromRGBO(29, 33, 39, 0.9),
+        shape: const SketchBorderShape(
+          side: BorderSide(color: Color.fromRGBO(255, 255, 255, 0.16)),
+          radiusScale: 0.8,
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          customBorder: const SketchBorderShape(
+            side: BorderSide(color: Color.fromRGBO(255, 255, 255, 0.16)),
+            radiusScale: 0.8,
+          ),
           onTap: onTap,
           child: SizedBox(
-            width: 42,
-            height: 42,
+            width: 48,
+            height: 48,
             child: Icon(icon, color: Colors.white, size: 21),
           ),
         ),
@@ -686,24 +704,24 @@ class _VolumeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: BoxDecoration(
+      decoration: const ShapeDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE4E4DE)),
+        shape: SketchBorderShape(
+          side: BorderSide(color: StoriaColors.line, width: 1.1),
+          radiusScale: 0.82,
+        ),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: const Color(0xFF585374)),
+          Icon(icon, size: 20, color: StoriaColors.inkMuted),
           const SizedBox(width: 10),
           SizedBox(
             width: 72,
             child: Text(
               label,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: .w700,
-                color: const Color(0xFF2E2A3D),
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900),
             ),
           ),
           Expanded(
@@ -720,7 +738,7 @@ class _VolumeRow extends StatelessWidget {
                   value: value,
                   min: 0,
                   max: 1,
-                  activeColor: const Color(0xFF6F61C7),
+                  activeColor: StoriaColors.dustyPinkStrong,
                   onChanged: onChanged,
                 ),
               ),
@@ -728,11 +746,9 @@ class _VolumeRow extends StatelessWidget {
           ),
           Text(
             '${(value * 100).round()}%',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: .w700,
-              color: const Color(0xFF6B7280),
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w900),
           ),
         ],
       ),
@@ -757,10 +773,9 @@ class _ReaderLoadingState extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             'Opening your story...',
-            style: GoogleFonts.inter(
-              color: const Color(0xFFC5CBD8),
-              fontWeight: .w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: const Color(0xFFC5CBD8)),
           ),
         ],
       ),
@@ -790,20 +805,17 @@ class _ReaderErrorState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'This story could not be loaded',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: .w700,
-                fontSize: 16,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: Colors.white),
             ),
             const SizedBox(height: 8),
             Text(
               error,
               textAlign: .center,
-              style: GoogleFonts.inter(
-                color: const Color(0xFFC5CBD8),
-                fontSize: 12,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFFC5CBD8)),
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
