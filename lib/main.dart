@@ -13,6 +13,7 @@ Future<void> main() async {
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+    authOptions: const FlutterAuthClientOptions(),
   );
 
   // Eagerly initialise the image cache manager so stale SQLite lock files
