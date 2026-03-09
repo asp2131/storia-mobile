@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SettingsScreen extends StatelessWidget {
+import '../auth/data/auth_providers.dart';
+import '../auth/data/auth_repository.dart';
+
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   static final Uri _privacyPolicyUri = Uri.parse(
     'https://storia.kids/privacy-policy',
   );
+
+  @override
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool _isSigningOut = false;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +46,22 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           ),
+          const Divider(height: 32),
+          ListTile(
+            leading: const Icon(Icons.logout_rounded),
+            title: const Text('Sign Out'),
+            subtitle: const Text('Leave this device and return to sign in'),
+            textColor: Theme.of(context).colorScheme.error,
+            iconColor: Theme.of(context).colorScheme.error,
+            trailing: _isSigningOut
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : null,
+            onTap: _isSigningOut ? null : _signOut,
+          ),
         ],
       ),
     );
@@ -41,7 +69,7 @@ class SettingsScreen extends StatelessWidget {
 
   Future<void> _openPrivacyPolicy(BuildContext context) async {
     final launched = await launchUrl(
-      _privacyPolicyUri,
+      SettingsScreen._privacyPolicyUri,
       mode: .externalApplication,
     );
 
@@ -52,6 +80,38 @@ class SettingsScreen extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Could not open the privacy policy link.')),
     );
+  }
+
+  Future<void> _signOut() async {
+    final repository = ref.read(authRepositoryProvider);
+
+    setState(() => _isSigningOut = true);
+
+    try {
+      await repository.signOut();
+      if (!mounted) {
+        return;
+      }
+      context.go('/intro');
+    } on AppAuthException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not sign out right now.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSigningOut = false);
+      }
+    }
   }
 }
 
