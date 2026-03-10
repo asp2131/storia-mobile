@@ -34,6 +34,13 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         defaultTargetPlatform == TargetPlatform.macOS;
   }
 
+  bool get _supportsGoogleSignIn {
+    if (kIsWeb) {
+      return true;
+    }
+    return defaultTargetPlatform != TargetPlatform.iOS;
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -145,15 +152,16 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          SketchButton(
-            label: 'Continue with Google',
-            tone: SketchButtonTone.secondary,
-            leading: const Icon(Icons.g_mobiledata_rounded, size: 24),
-            isLoading: _isSocialSubmitting,
-            onPressed: (_isSubmitting || _isSocialSubmitting)
-                ? null
-                : () => _startOAuth(OAuthProvider.google),
-          ),
+          if (_supportsGoogleSignIn)
+            SketchButton(
+              label: 'Continue with Google',
+              tone: SketchButtonTone.secondary,
+              leading: const Icon(Icons.g_mobiledata_rounded, size: 24),
+              isLoading: _isSocialSubmitting,
+              onPressed: (_isSubmitting || _isSocialSubmitting)
+                  ? null
+                  : () => _startOAuth(OAuthProvider.google),
+            ),
           if (_supportsAppleSignIn) ...[
             const SizedBox(height: 12),
             SketchButton(
