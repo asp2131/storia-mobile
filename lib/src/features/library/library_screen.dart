@@ -11,6 +11,7 @@ import '../../core/resilient_cache_manager.dart';
 import '../../core/theme/storia_colors.dart';
 import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/leaf_accent.dart';
+import '../../core/widgets/parental_gate.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../core/widgets/sketch_card.dart';
 import '../../core/widgets/sketch_icon_button.dart';
@@ -112,7 +113,11 @@ class _LibraryView extends StatelessWidget {
             totalBooks: books.length,
             searchController: searchController,
             onSearchChanged: onSearchChanged,
-            onSettingsTap: () => context.push('/settings'),
+            onSettingsTap: () async {
+              final passed = await ParentalGate.verify(context);
+              if (!context.mounted || !passed) return;
+              context.push('/settings');
+            },
           ),
         ),
         SliverToBoxAdapter(
