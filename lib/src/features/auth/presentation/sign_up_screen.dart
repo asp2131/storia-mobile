@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_text_field.dart';
+import '../../onboarding/data/app_review_flow_providers.dart';
 import '../data/auth_providers.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_state.dart';
@@ -126,6 +127,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return;
     }
 
+    if (email.toLowerCase() == appReviewBypassEmail) {
+      await _submitAppReviewBypass(email);
+      return;
+    }
+
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
@@ -149,6 +155,32 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         setState(
           () => _errorMessage = 'Could not send a magic link right now.',
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  Future<void> _submitAppReviewBypass(String email) async {
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    try {
+      await ref
+          .read(appReviewFlowNotifierProvider)
+          .enableReviewBypass(email: email);
+      if (!mounted) {
+        return;
+      }
+      context.go('/parent-birth-year');
+    } catch (_) {
+      if (mounted) {
+        setState(() => _errorMessage = 'Could not start the App Review flow.');
       }
     } finally {
       if (mounted) {
