@@ -22,12 +22,12 @@ class ReviewOnboardingScreen extends ConsumerStatefulWidget {
 class _ReviewOnboardingScreenState
     extends ConsumerState<ReviewOnboardingScreen> {
   final _nicknameController = TextEditingController();
-  int? _selectedAge;
+  ChildAgeRange? _selectedAgeRange;
   ParentGoal? _selectedGoal;
   bool _isSubmitting = false;
   String? _errorMessage;
 
-  List<int> get _ageOptions => List<int>.generate(8, (index) => index + 5);
+  List<ChildAgeRange> get _ageOptions => ChildAgeRange.values;
 
   @override
   void dispose() {
@@ -37,7 +37,6 @@ class _ReviewOnboardingScreenState
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     ref.watch(appReviewFlowProvider);
 
     return AuthScreenShell(
@@ -45,94 +44,108 @@ class _ReviewOnboardingScreenState
       subtitle:
           'Now add the child details and what the parent hopes Storia will help with.',
       onBack: _startOver,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SketchTextField(
-            controller: _nicknameController,
-            label: "Child's Nickname",
-            hintText: 'Milo',
-            textInputAction: TextInputAction.next,
-            leading: const Icon(Icons.face_rounded),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "Child's Age",
-            style: textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
+      child: Builder(
+        builder: (context) {
+          final textTheme = Theme.of(context).textTheme;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (final age in _ageOptions)
-                ChoiceChip(
-                  label: Text('$age'),
-                  selected: _selectedAge == age,
-                  labelStyle: textTheme.bodyMedium?.copyWith(
-                    color: _selectedAge == age
-                        ? StoriaColors.paper
-                        : StoriaColors.ink,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  selectedColor: StoriaColors.ink,
-                  backgroundColor: StoriaColors.paperAlt,
-                  side: BorderSide(
-                    color: _selectedAge == age
-                        ? StoriaColors.ink
-                        : StoriaColors.lineStrong,
-                  ),
-                  showCheckmark: false,
-                  onSelected: (_) => setState(() => _selectedAge = age),
+              SketchTextField(
+                controller: _nicknameController,
+                label: "Child's Nickname",
+                hintText: 'Milo',
+                textInputAction: TextInputAction.next,
+                leading: const Icon(Icons.face_rounded),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                "Child's Age Range",
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontStyle: FontStyle.italic,
+                  color: StoriaColors.ink,
                 ),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  for (final ageRange in _ageOptions)
+                    ChoiceChip(
+                      label: Text(ageRange.label),
+                      selected: _selectedAgeRange == ageRange,
+                      labelStyle: textTheme.bodyMedium?.copyWith(
+                        color: _selectedAgeRange == ageRange
+                            ? StoriaColors.paper
+                            : StoriaColors.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      selectedColor: StoriaColors.ink,
+                      backgroundColor: StoriaColors.paperAlt,
+                      side: BorderSide(
+                        color: _selectedAgeRange == ageRange
+                            ? StoriaColors.ink
+                            : StoriaColors.lineStrong,
+                      ),
+                      showCheckmark: false,
+                      onSelected: (_) =>
+                          setState(() => _selectedAgeRange = ageRange),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'What are they hoping to get from Storia?',
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontStyle: FontStyle.italic,
+                  color: StoriaColors.ink,
+                ),
+              ),
+              const SizedBox(height: 10),
+              for (final goal in ParentGoal.values) ...[
+                _GoalCard(
+                  goal: goal,
+                  isSelected: _selectedGoal == goal,
+                  onTap: () => setState(() => _selectedGoal = goal),
+                ),
+                const SizedBox(height: 10),
+              ],
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  _errorMessage!,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: StoriaColors.danger,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 18),
+              SketchButton(
+                label: 'Continue to Library',
+                trailing: const Icon(Icons.auto_stories_rounded, size: 18),
+                isLoading: _isSubmitting,
+                onPressed: _isSubmitting ? null : _submit,
+              ),
             ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'What are they hoping to get from Storia?',
-            style: textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: 10),
-          for (final goal in ParentGoal.values) ...[
-            _GoalCard(
-              goal: goal,
-              isSelected: _selectedGoal == goal,
-              onTap: () => setState(() => _selectedGoal = goal),
-            ),
-            const SizedBox(height: 10),
-          ],
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              _errorMessage!,
-              style: textTheme.bodyMedium?.copyWith(color: StoriaColors.danger),
-            ),
-          ],
-          const SizedBox(height: 18),
-          SketchButton(
-            label: 'Continue to Library',
-            trailing: const Icon(Icons.auto_stories_rounded, size: 18),
-            isLoading: _isSubmitting,
-            onPressed: _isSubmitting ? null : _submit,
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
   Future<void> _submit() async {
     final nickname = _nicknameController.text.trim();
-    final age = _selectedAge;
+    final ageRange = _selectedAgeRange;
     final birthYear = ref.read(appReviewFlowProvider).parentBirthYear;
     final goal = _selectedGoal;
 
-    if (nickname.isEmpty || age == null || birthYear == null || goal == null) {
+    if (nickname.isEmpty ||
+        ageRange == null ||
+        birthYear == null ||
+        goal == null) {
       setState(() {
         _errorMessage = 'Complete every field before continuing.';
       });
@@ -150,7 +163,7 @@ class _ReviewOnboardingScreenState
           .completeOnboarding(
             ReviewOnboardingProfile(
               childNickname: nickname,
-              childAge: age,
+              childAgeRange: ageRange,
               parentBirthYear: birthYear,
               parentGoal: goal,
             ),
