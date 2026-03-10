@@ -9,6 +9,7 @@ import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/sign_up_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/onboarding/data/app_review_flow_providers.dart';
+import '../features/onboarding/presentation/parent_birth_year_screen.dart';
 import '../features/onboarding/presentation/review_onboarding_screen.dart';
 import '../features/reader/reader_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -25,8 +26,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAuthenticated =
           authState.isAuthenticated || appReviewState.hasReviewBypass;
+      final needsParentBirthYear =
+          appReviewState.hasReviewBypass && !appReviewState.hasParentBirthYear;
       final needsReviewOnboarding =
           appReviewState.hasReviewBypass &&
+          appReviewState.hasParentBirthYear &&
           !appReviewState.hasCompletedOnboarding;
       final location = state.matchedLocation;
       const publicLocations = {'/', '/intro', '/sign-in', '/sign-up'};
@@ -39,6 +43,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         if (!isAuthenticated) {
           return '/intro';
         }
+        if (needsParentBirthYear) {
+          return '/parent-birth-year';
+        }
         return needsReviewOnboarding ? '/onboarding' : '/library';
       }
 
@@ -46,15 +53,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/intro';
       }
 
+      if (needsParentBirthYear && location != '/parent-birth-year') {
+        return '/parent-birth-year';
+      }
+
       if (needsReviewOnboarding && location != '/onboarding') {
         return '/onboarding';
       }
 
       if (isAuthenticated &&
+          !needsParentBirthYear &&
           !needsReviewOnboarding &&
           (location == '/intro' ||
               location == '/sign-in' ||
               location == '/sign-up' ||
+              location == '/parent-birth-year' ||
               location == '/onboarding')) {
         return '/library';
       }
@@ -71,6 +84,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sign-up',
         builder: (context, state) => const SignUpScreen(),
+      ),
+      GoRoute(
+        path: '/parent-birth-year',
+        builder: (context, state) => const ParentBirthYearScreen(),
       ),
       GoRoute(
         path: '/onboarding',

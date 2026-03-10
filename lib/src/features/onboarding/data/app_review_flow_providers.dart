@@ -11,13 +11,16 @@ class AppReviewFlowState {
   const AppReviewFlowState({
     required this.isReady,
     required this.hasReviewBypass,
+    required this.parentBirthYear,
     required this.onboardingProfile,
   });
 
   final bool isReady;
   final bool hasReviewBypass;
+  final int? parentBirthYear;
   final ReviewOnboardingProfile? onboardingProfile;
 
+  bool get hasParentBirthYear => parentBirthYear != null;
   bool get hasCompletedOnboarding => onboardingProfile != null;
 }
 
@@ -39,12 +42,14 @@ class AppReviewFlowNotifier extends ChangeNotifier {
   }
 
   static const _reviewBypassEmailKey = 'app_review_bypass_email';
+  static const _reviewParentBirthYearKey = 'app_review_parent_birth_year';
   static const _reviewOnboardingProfileKey = 'app_review_onboarding_profile';
 
   SharedPreferences? _preferences;
   AppReviewFlowState _state = const AppReviewFlowState(
     isReady: false,
     hasReviewBypass: false,
+    parentBirthYear: null,
     onboardingProfile: null,
   );
 
@@ -56,6 +61,7 @@ class AppReviewFlowNotifier extends ChangeNotifier {
       isReady: true,
       hasReviewBypass:
           (preferences.getString(_reviewBypassEmailKey) ?? '').isNotEmpty,
+      parentBirthYear: preferences.getInt(_reviewParentBirthYearKey),
       onboardingProfile: ReviewOnboardingProfile.tryParse(
         preferences.getString(_reviewOnboardingProfileKey),
       ),
@@ -66,12 +72,27 @@ class AppReviewFlowNotifier extends ChangeNotifier {
   Future<void> enableReviewBypass({required String email}) async {
     final preferences = await _prefs;
     await preferences.setString(_reviewBypassEmailKey, email.toLowerCase());
+    await preferences.remove(_reviewParentBirthYearKey);
     await preferences.remove(_reviewOnboardingProfileKey);
 
     _state = const AppReviewFlowState(
       isReady: true,
       hasReviewBypass: true,
+      parentBirthYear: null,
       onboardingProfile: null,
+    );
+    notifyListeners();
+  }
+
+  Future<void> saveParentBirthYear(int birthYear) async {
+    final preferences = await _prefs;
+    await preferences.setInt(_reviewParentBirthYearKey, birthYear);
+
+    _state = AppReviewFlowState(
+      isReady: true,
+      hasReviewBypass: _state.hasReviewBypass,
+      parentBirthYear: birthYear,
+      onboardingProfile: _state.onboardingProfile,
     );
     notifyListeners();
   }
@@ -83,6 +104,7 @@ class AppReviewFlowNotifier extends ChangeNotifier {
     _state = AppReviewFlowState(
       isReady: true,
       hasReviewBypass: _state.hasReviewBypass,
+      parentBirthYear: _state.parentBirthYear,
       onboardingProfile: profile,
     );
     notifyListeners();
@@ -91,11 +113,13 @@ class AppReviewFlowNotifier extends ChangeNotifier {
   Future<void> clearReviewFlow() async {
     final preferences = await _prefs;
     await preferences.remove(_reviewBypassEmailKey);
+    await preferences.remove(_reviewParentBirthYearKey);
     await preferences.remove(_reviewOnboardingProfileKey);
 
     _state = const AppReviewFlowState(
       isReady: true,
       hasReviewBypass: false,
+      parentBirthYear: null,
       onboardingProfile: null,
     );
     notifyListeners();

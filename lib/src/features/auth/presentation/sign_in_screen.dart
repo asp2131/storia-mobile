@@ -231,7 +231,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/onboarding');
+      context.go('/parent-birth-year');
     } catch (_) {
       if (mounted) {
         setState(() => _errorMessage = 'Could not start the App Review flow.');

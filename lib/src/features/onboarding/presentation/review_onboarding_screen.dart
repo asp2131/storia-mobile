@@ -23,17 +23,11 @@ class _ReviewOnboardingScreenState
     extends ConsumerState<ReviewOnboardingScreen> {
   final _nicknameController = TextEditingController();
   int? _selectedAge;
-  int? _selectedBirthYear;
   ParentGoal? _selectedGoal;
   bool _isSubmitting = false;
   String? _errorMessage;
 
   List<int> get _ageOptions => List<int>.generate(8, (index) => index + 5);
-
-  List<int> get _birthYears {
-    final latest = DateTime.now().year - 18;
-    return List<int>.generate(63, (index) => latest - index);
-  }
 
   @override
   void dispose() {
@@ -44,11 +38,12 @@ class _ReviewOnboardingScreenState
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    ref.watch(appReviewFlowProvider);
 
     return AuthScreenShell(
       title: 'A Quick Family Setup',
       subtitle:
-          'Before App Review enters the library, collect the same essentials parents will see later in the real signup flow.',
+          'Now add the child details and what the parent hopes Storia will help with.',
       onBack: _startOver,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -96,36 +91,6 @@ class _ReviewOnboardingScreenState
             ],
           ),
           const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.only(left: 10, bottom: 8),
-            child: Text(
-              'Parent Birth Year',
-              style: textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-          DecoratedBox(
-            decoration: ShapeDecoration(
-              color: StoriaColors.paperAlt,
-              shape: _dropdownShape(StoriaColors.line),
-            ),
-            child: DropdownButton<int>(
-              value: _selectedBirthYear,
-              isExpanded: true,
-              underline: const SizedBox.shrink(),
-              borderRadius: sketchBorderRadius(0.82).resolve(TextDirection.ltr),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
-              hint: const Text('Select a year'),
-              items: [
-                for (final year in _birthYears)
-                  DropdownMenuItem<int>(value: year, child: Text('$year')),
-              ],
-              onChanged: (value) => setState(() => _selectedBirthYear = value),
-            ),
-          ),
-          const SizedBox(height: 20),
           Text(
             'What are they hoping to get from Storia?',
             style: textTheme.bodyMedium?.copyWith(
@@ -164,7 +129,7 @@ class _ReviewOnboardingScreenState
   Future<void> _submit() async {
     final nickname = _nicknameController.text.trim();
     final age = _selectedAge;
-    final birthYear = _selectedBirthYear;
+    final birthYear = ref.read(appReviewFlowProvider).parentBirthYear;
     final goal = _selectedGoal;
 
     if (nickname.isEmpty || age == null || birthYear == null || goal == null) {
@@ -215,10 +180,6 @@ class _ReviewOnboardingScreenState
       return;
     }
     context.go('/sign-in');
-  }
-
-  OutlinedBorder _dropdownShape(Color color) {
-    return SketchBorderShape(side: BorderSide(color: color, width: 1.2));
   }
 }
 
