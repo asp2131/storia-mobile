@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../auth/data/auth_providers.dart';
 import '../auth/data/auth_repository.dart';
+import '../auth/domain/auth_state.dart';
+import '../onboarding/data/app_review_flow_providers.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -84,11 +86,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _signOut() async {
     final repository = ref.read(authRepositoryProvider);
+    final authState = ref.read<AuthViewState>(authViewStateProvider);
+    final reviewFlowNotifier = ref.read(appReviewFlowNotifierProvider);
 
     setState(() => _isSigningOut = true);
 
     try {
-      await repository.signOut();
+      if (authState.isAuthenticated) {
+        await repository.signOut();
+      }
+      await reviewFlowNotifier.clearReviewFlow();
       if (!mounted) {
         return;
       }
