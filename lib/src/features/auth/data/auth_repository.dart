@@ -1,3 +1,8 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 class AppAuthException implements Exception {
@@ -70,11 +75,86 @@ class AuthRepository {
     }
   }
 
+  Future<void> signInWithNativeApple() async {
+    try {
+      final rawNonce = _generateRawNonce();
+      final hashedNonce = _sha256OfString(rawNonce);
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: const [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+
+      final idToken = credential.identityToken;
+      if (idToken == null || idToken.isEmpty) {
+        throw const AppAuthException(
+          'Could not get an Apple identity token from this device.',
+        );
+      }
+
+      await _client.auth.signInWithIdToken(
+        provider: supabase.OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+    } on SignInWithAppleAuthorizationException catch (error) {
+      switch (error.code) {
+        case AuthorizationErrorCode.canceled:
+          throw const AppAuthException('Apple sign-in was canceled.');
+        case AuthorizationErrorCode.failed:
+        case AuthorizationErrorCode.notHandled:
+          throw const AppAuthException(
+            'Apple sign-in failed. Verify Sign in with Apple is enabled for this app and that this device is signed into an Apple ID.',
+          );
+        case AuthorizationErrorCode.invalidResponse:
+          throw const AppAuthException(
+            'Apple returned an invalid auth response. Please try again.',
+          );
+        case AuthorizationErrorCode.notInteractive:
+          throw const AppAuthException(
+            'Apple sign-in is not interactive right now. Try again when the app is active.',
+          );
+        case AuthorizationErrorCode.unknown:
+          throw AppAuthException(
+            _messageFrom(error, 'Could not complete Apple sign-in right now.'),
+          );
+      }
+    } catch (error) {
+      if (error is supabase.AuthException) {
+        throw AppAuthException(error.message);
+      }
+      if (error is AppAuthException) {
+        rethrow;
+      }
+      throw AppAuthException(
+        _messageFrom(error, 'Could not complete Apple sign-in right now.'),
+      );
+    }
+  }
+
   String _messageFrom(dynamic error, String fallback) {
     final message = error?.message;
     if (message is String && message.isNotEmpty) {
       return message;
     }
     return fallback;
+  }
+
+  String _generateRawNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List<String>.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
+  }
+
+  String _sha256OfString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 }

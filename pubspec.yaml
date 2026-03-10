@@ -45,10 +45,12 @@ dependencies:
   shared_preferences: ^2.5.3
   connectivity_plus: ^6.1.5
   flutter_secure_storage: ^9.2.4
+  sign_in_with_apple: ^6.1.4
   url_launcher: ^6.3.1
   dio: ^5.9.0
   path_provider: ^2.1.5
   http: ^1.2.2
+  crypto: ^3.0.6
   path: ^1.9.1
   wakelock_plus: ^1.4.0
   flutter_animate: ^4.5.2

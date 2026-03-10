@@ -221,7 +221,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     });
 
     try {
-      await repository.signInWithOAuth(provider);
+      if (provider == OAuthProvider.apple) {
+        await repository.signInWithNativeApple();
+      } else {
+        await repository.signInWithOAuth(provider);
+      }
     } on AppAuthException catch (error) {
       if (mounted) {
         setState(() => _errorMessage = error.message);
