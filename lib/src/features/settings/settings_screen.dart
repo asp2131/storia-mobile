@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/widgets/parental_gate.dart';
 import '../auth/data/auth_providers.dart';
 import '../auth/data/auth_repository.dart';
 import '../auth/domain/auth_state.dart';
@@ -70,6 +71,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final passed = await ParentalGate.verify(context);
+    if (!context.mounted || !passed) return;
+
     final launched = await launchUrl(
       SettingsScreen._privacyPolicyUri,
       mode: .externalApplication,
@@ -85,6 +89,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _signOut() async {
+    final passed = await ParentalGate.verify(context);
+    if (!mounted || !passed) return;
+
     final repository = ref.read(authRepositoryProvider);
     final authState = ref.read<AuthViewState>(authViewStateProvider);
     final reviewFlowNotifier = ref.read(appReviewFlowNotifierProvider);
