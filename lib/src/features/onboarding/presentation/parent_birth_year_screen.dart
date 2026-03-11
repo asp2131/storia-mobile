@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
   final _yearController = TextEditingController();
   final _yearFocusNode = FocusNode();
 
+  Timer? _ticker;
   bool _gatePassed = false;
   bool _isSubmitting = false;
   String? _challengeError;
@@ -37,10 +39,21 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
   late int _answer;
   late String _question;
 
+  int _solveSecondsLeft = ParentalGate.solveSeconds;
+  bool _isLockedOut = false;
+  int _lockoutSecondsLeft = 0;
+
   @override
   void initState() {
     super.initState();
+    if (GateLockout.isLocked) {
+      _isLockedOut = true;
+      _lockoutSecondsLeft = GateLockout.remainingSeconds;
+    } else {
+      _solveSecondsLeft = ParentalGate.solveSeconds;
+    }
     _regenerateChallenge();
+    _startTicker();
   }
 
   void _regenerateChallenge() {
@@ -48,10 +61,43 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
     _answer = challenge.answer;
     _question = challenge.question;
     _challengeController.clear();
+    _challengeError = null;
+  }
+
+  void _startTicker() {
+    _ticker?.cancel();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      if (_gatePassed) return;
+      setState(() {
+        if (_isLockedOut) {
+          _lockoutSecondsLeft--;
+          if (_lockoutSecondsLeft <= 0) {
+            _isLockedOut = false;
+            _regenerateChallenge();
+            _solveSecondsLeft = ParentalGate.solveSeconds;
+          }
+        } else {
+          _solveSecondsLeft--;
+          if (_solveSecondsLeft <= 0) {
+            _onChallengeFailure();
+          }
+        }
+      });
+    });
+  }
+
+  void _onChallengeFailure() {
+    GateLockout.recordFailure();
+    _isLockedOut = true;
+    _lockoutSecondsLeft = GateLockout.remainingSeconds;
+    _challengeError = null;
+    _challengeController.clear();
   }
 
   @override
   void dispose() {
+    _ticker?.cancel();
     _challengeController.dispose();
     _challengeFocusNode.dispose();
     _yearController.dispose();
@@ -86,7 +132,9 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
                       constraints: const BoxConstraints(maxWidth: 420),
                       child: _gatePassed
                           ? _buildBirthYearStep(textTheme)
-                          : _buildChallengeStep(textTheme),
+                          : _isLockedOut
+                              ? _buildLockoutStep(textTheme)
+                              : _buildChallengeStep(textTheme),
                     ),
                   ),
                 ),
@@ -99,6 +147,10 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
   }
 
   Widget _buildChallengeStep(TextTheme textTheme) {
+    final timerColor = _solveSecondsLeft <= 10
+        ? const Color(0xFFFFB4B4)
+        : StoriaColors.paper.withValues(alpha: 0.7);
+
     return SketchCard(
       color: const Color(0xFF4A5BE7),
       borderColor: const Color(0xFF3544C4),
@@ -113,6 +165,15 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
             textAlign: TextAlign.center,
             style: textTheme.headlineMedium?.copyWith(
               color: StoriaColors.paper,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            formatCountdown(_solveSecondsLeft),
+            textAlign: TextAlign.center,
+            style: textTheme.titleMedium?.copyWith(
+              color: timerColor,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
           const SizedBox(height: 14),
@@ -184,6 +245,58 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
             label: 'Continue',
             expand: false,
             onPressed: _submitChallenge,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLockoutStep(TextTheme textTheme) {
+    return SketchCard(
+      color: const Color(0xFF4A5BE7),
+      borderColor: const Color(0xFF3544C4),
+      padding: const EdgeInsets.fromLTRB(22, 24, 22, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF8F5ED),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.lock_clock_rounded,
+              color: StoriaColors.ink,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Please wait',
+            textAlign: TextAlign.center,
+            style: textTheme.headlineMedium?.copyWith(
+              color: StoriaColors.paper,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Please try again in',
+            textAlign: TextAlign.center,
+            style: textTheme.bodyLarge?.copyWith(
+              color: StoriaColors.paper.withValues(alpha: 0.88),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            formatCountdown(_lockoutSecondsLeft),
+            textAlign: TextAlign.center,
+            style: textTheme.displaySmall?.copyWith(
+              color: StoriaColors.paper,
+              fontWeight: FontWeight.w900,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ],
       ),
@@ -291,6 +404,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
     }
 
     if (input == _answer) {
+      GateLockout.recordSuccess();
       setState(() {
         _gatePassed = true;
         _challengeError = null;
@@ -298,10 +412,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
       return;
     }
 
-    setState(() {
-      _challengeError = "That's not right. Try this one instead.";
-      _regenerateChallenge();
-    });
+    setState(() => _onChallengeFailure());
   }
 
   Future<void> _submitBirthYear() async {
