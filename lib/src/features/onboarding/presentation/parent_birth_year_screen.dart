@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
+import '../../../core/widgets/parental_gate.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/sketch_icon_button.dart';
@@ -33,20 +34,19 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
   String? _challengeError;
   String? _yearError;
 
-  late int _a;
-  late int _b;
   late int _answer;
+  late String _question;
 
   @override
   void initState() {
     super.initState();
-    _generateChallenge();
+    _regenerateChallenge();
   }
 
-  void _generateChallenge() {
-    _a = 12 + _random.nextInt(19);
-    _b = 7 + _random.nextInt(13);
-    _answer = _a * _b;
+  void _regenerateChallenge() {
+    final challenge = generateGateChallenge(_random);
+    _answer = challenge.answer;
+    _question = challenge.question;
     _challengeController.clear();
   }
 
@@ -115,24 +115,20 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
               color: StoriaColors.paper,
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            'Please solve this to continue:',
-            textAlign: TextAlign.center,
-            style: textTheme.bodyLarge?.copyWith(
-              color: StoriaColors.paper.withValues(alpha: 0.92),
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              _question,
+              textAlign: TextAlign.center,
+              style: textTheme.titleLarge?.copyWith(
+                color: StoriaColors.paper.withValues(alpha: 0.95),
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+              ),
             ),
           ),
-          const SizedBox(height: 22),
-          Text(
-            '$_a  ×  $_b  =  ?',
-            textAlign: TextAlign.center,
-            style: textTheme.displaySmall?.copyWith(
-              color: StoriaColors.paper,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           SizedBox(
             width: 140,
             child: TextField(
@@ -163,7 +159,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
               ),
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(4),
+                LengthLimitingTextInputFormatter(3),
               ],
               onChanged: (_) {
                 if (_challengeError != null) {
@@ -304,7 +300,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
 
     setState(() {
       _challengeError = "That's not right. Try this one instead.";
-      _generateChallenge();
+      _regenerateChallenge();
     });
   }
 
