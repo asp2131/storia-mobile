@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -6,7 +5,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../audio/audio_engine.dart';
 import '../../audio/audio_providers.dart';
 import '../../core/theme/storia_colors.dart';
 import '../../core/theme/storia_motion.dart';
@@ -14,6 +12,7 @@ import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
 import 'page_renderer.dart';
+import 'reader_audio_state.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
   final String bookId;
@@ -26,54 +25,19 @@ class ReaderScreen extends ConsumerStatefulWidget {
 
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final PageController _pageController = PageController();
-  final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
-    .zero,
-  );
-  final ValueNotifier<bool> _isNarrationPlayingNotifier = ValueNotifier(false);
-  final ValueNotifier<bool> _isSoundscapePlayingNotifier = ValueNotifier(false);
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
   int _activePageIndex = 0;
   bool _loadedInitialAudio = false;
-  double _narrationVolume = 1;
-  double _soundscapeVolume = 0.6;
-  StreamSubscription<Duration>? _positionSubscription;
-  StreamSubscription<bool>? _narrationPlayingSubscription;
-  StreamSubscription<bool>? _soundscapePlayingSubscription;
 
   @override
   void initState() {
     super.initState();
     final audioEngine = ref.read(audioEngineProvider);
     audioEngine.ensureInitialized();
-
-    _positionSubscription = audioEngine.narrationPosition.listen((position) {
-      if (!mounted) return;
-      _narrationPositionNotifier.value = position;
-    });
-
-    _narrationPlayingSubscription = audioEngine.narrationPlaying.listen((
-      playing,
-    ) {
-      if (!mounted) return;
-      _isNarrationPlayingNotifier.value = playing;
-    });
-
-    _soundscapePlayingSubscription = audioEngine.soundscapePlaying.listen((
-      playing,
-    ) {
-      if (!mounted) return;
-      _isSoundscapePlayingNotifier.value = playing;
-    });
   }
 
   @override
   void dispose() {
-    _positionSubscription?.cancel();
-    _narrationPlayingSubscription?.cancel();
-    _soundscapePlayingSubscription?.cancel();
-    _narrationPositionNotifier.dispose();
-    _isNarrationPlayingNotifier.dispose();
-    _isSoundscapePlayingNotifier.dispose();
     _showChromeNotifier.dispose();
     _pageController.dispose();
     super.dispose();
@@ -83,6 +47,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   Widget build(BuildContext context) {
     final bookAsync = ref.watch(currentBookProvider(widget.bookId));
     final audioEngine = ref.watch(audioEngineProvider);
+    final audioState = ref.watch(readerAudioStateProvider);
 
     return Scaffold(
       backgroundColor: StoriaColors.readerBackground,
@@ -114,13 +79,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           return Stack(
             children: [
               GestureDetector(
-                behavior: .translucent,
+                behavior: HitTestBehavior.translucent,
                 excludeFromSemantics: true,
                 onTap: () =>
                     _showChromeNotifier.value = !_showChromeNotifier.value,
                 child: PageView.builder(
                   controller: _pageController,
-                  scrollDirection: .vertical,
+                  scrollDirection: Axis.vertical,
                   itemCount: book.pages.length,
                   onPageChanged: (index) async {
                     setState(() {
@@ -135,20 +100,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       return const SizedBox.shrink();
                     }
                     final page = book.pages[index];
-                    return ValueListenableBuilder<Duration>(
-                      valueListenable: _narrationPositionNotifier,
-                      builder: (context, narrationPosition, child) {
-                        final heroTag =
-                            index == 0 && (book.coverUrl ?? '').isNotEmpty
-                            ? 'book-cover-${book.id}'
-                            : null;
-                        return PageRenderer(
-                          page: page,
-                          narrationPosition: narrationPosition,
-                          isActive: index == _activePageIndex,
-                          heroTag: heroTag,
-                        );
-                      },
+                    final heroTag =
+                        index == 0 && (book.coverUrl ?? '').isNotEmpty
+                        ? 'book-cover-${book.id}'
+                        : null;
+                    return PageRenderer(
+                      page: page,
+                      narrationPosition: audioState.narrationPosition,
+                      isActive: index == _activePageIndex,
+                      heroTag: heroTag,
                     );
                   },
                 ),
@@ -168,7 +128,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         activePageNumber: activePage.pageNumber,
                         onClose: () => Navigator.of(context).maybePop(),
                         onAudioSettingsTap: () =>
-                            _showAudioSettings(context, audioEngine),
+                            _showAudioSettings(context),
                       ),
                     ),
                   );
@@ -179,26 +139,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 ValueListenableBuilder<bool>(
                   valueListenable: _showChromeNotifier,
                   builder: (context, showChrome, child) {
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: _isNarrationPlayingNotifier,
-                      builder: (context, isNarrationPlaying, child) {
-                        return ValueListenableBuilder<bool>(
-                          valueListenable: _isSoundscapePlayingNotifier,
-                          builder: (context, isSoundscapePlaying, child) {
-                            return _AudioControlsPill(
-                              hasNarration: hasNarration,
-                              hasSoundscape: hasSoundscape,
-                              isNarrationPlaying: isNarrationPlaying,
-                              isSoundscapePlaying: isSoundscapePlaying,
-                              isVisible: showChrome,
-                              onToggleNarration: () =>
-                                  audioEngine.toggleNarration(),
-                              onToggleSoundscape: () =>
-                                  audioEngine.toggleSoundscape(),
-                            );
-                          },
-                        );
-                      },
+                    return _AudioControlsPill(
+                      hasNarration: hasNarration,
+                      hasSoundscape: hasSoundscape,
+                      isNarrationPlaying: audioState.isNarrationPlaying,
+                      isSoundscapePlaying: audioState.isSoundscapePlaying,
+                      isVisible: showChrome,
+                      onToggleNarration: () => audioEngine.toggleNarration(),
+                      onToggleSoundscape: () => audioEngine.toggleSoundscape(),
                     );
                   },
                 ),
@@ -214,10 +162,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
-  Future<void> _showAudioSettings(
-    BuildContext context,
-    AudioEngine audioEngine,
-  ) {
+  Future<void> _showAudioSettings(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: StoriaColors.paper,
@@ -225,13 +170,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final audioState = ref.watch(readerAudioStateProvider);
+            final notifier = ref.read(readerAudioStateProvider.notifier);
             return Padding(
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
               child: Column(
-                mainAxisSize: .min,
-                crossAxisAlignment: .start,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
                     child: Container(
@@ -253,13 +200,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     icon: Icons.record_voice_over_rounded,
                     label: 'Narration',
                     semanticsLabel: 'Narration volume',
-                    value: _narrationVolume,
-                    onChanged: (value) async {
-                      setModalState(() => _narrationVolume = value);
-                      if (mounted) {
-                        setState(() => _narrationVolume = value);
-                      }
-                      await audioEngine.setNarrationVolume(value);
+                    value: audioState.narrationVolume,
+                    onChanged: (value) {
+                      notifier.setNarrationVolume(value);
                     },
                   ),
                   const SizedBox(height: 14),
@@ -267,13 +210,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     icon: Icons.surround_sound_rounded,
                     label: 'Ambience',
                     semanticsLabel: 'Ambience volume',
-                    value: _soundscapeVolume,
-                    onChanged: (value) async {
-                      setModalState(() => _soundscapeVolume = value);
-                      if (mounted) {
-                        setState(() => _soundscapeVolume = value);
-                      }
-                      await audioEngine.setSoundscapeVolume(value);
+                    value: audioState.soundscapeVolume,
+                    onChanged: (value) {
+                      notifier.setSoundscapeVolume(value);
                     },
                   ),
                 ],
@@ -318,8 +257,8 @@ class _ReaderTopBar extends StatelessWidget {
               height: topInset + 110,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: .topCenter,
-                  end: .bottomCenter,
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                   colors: [Color.fromRGBO(8, 12, 17, 0.82), Colors.transparent],
                 ),
               ),
@@ -357,17 +296,17 @@ class _ReaderTopBar extends StatelessWidget {
                       vertical: 9,
                     ),
                     child: Column(
-                      crossAxisAlignment: .center,
-                      mainAxisSize: .min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           book.title,
                           maxLines: 1,
-                          overflow: .ellipsis,
+                          overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.lora(
                             fontSize: 14,
-                            fontWeight: .w700,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
                           ),
                         ),
@@ -377,7 +316,7 @@ class _ReaderTopBar extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            fontWeight: .w800,
+                            fontWeight: FontWeight.w800,
                             color: const Color(0xFFD4D8E0),
                             letterSpacing: 0.8,
                           ),
@@ -443,7 +382,7 @@ class _AudioControlsPill extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
           child: AnimatedSlide(
-            offset: isVisible ? .zero : const Offset(0, 0.3),
+            offset: isVisible ? Offset.zero : const Offset(0, 0.3),
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
             child: Center(
@@ -464,7 +403,7 @@ class _AudioControlsPill extends StatelessWidget {
                     vertical: 8,
                   ),
                   child: Row(
-                    mainAxisSize: .min,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       if (hasNarration)
                         _AudioIconButton(
@@ -531,7 +470,7 @@ class _AudioIconButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Stack(
-          alignment: .center,
+          alignment: Alignment.center,
           children: [
             // Glow ring behind button when active.
             AnimatedOpacity(
@@ -541,7 +480,7 @@ class _AudioIconButton extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  shape: .circle,
+                  shape: BoxShape.circle,
                   color: accentColor.withValues(alpha: 0.25),
                 ),
               ),
@@ -552,7 +491,7 @@ class _AudioIconButton extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                shape: .circle,
+                shape: BoxShape.circle,
                 color: isPlaying
                     ? Colors.white.withValues(alpha: 0.12)
                     : const Color.fromRGBO(255, 255, 255, 0.05),
@@ -626,7 +565,7 @@ class _PulsingDotState extends State<_PulsingDot>
             child: Container(
               width: 6,
               height: 6,
-              decoration: BoxDecoration(shape: .circle, color: widget.color),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: widget.color),
             ),
           ),
         );
@@ -767,7 +706,7 @@ class _ReaderLoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-        mainAxisSize: .min,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const CircularProgressIndicator(color: Color(0xFF8A80CC)),
           const SizedBox(height: 14),
@@ -795,7 +734,7 @@ class _ReaderErrorState extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: .min,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
               Icons.auto_stories_rounded,
@@ -812,7 +751,7 @@ class _ReaderErrorState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               error,
-              textAlign: .center,
+              textAlign: TextAlign.center,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: const Color(0xFFC5CBD8)),
