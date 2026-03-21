@@ -11,6 +11,7 @@ import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
 import 'reader_audio_state.dart';
 
@@ -28,17 +29,25 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
   int _activePageIndex = 0;
   bool _loadedInitialAudio = false;
+  double _scrollOffset = 0.0;
 
   @override
   void initState() {
     super.initState();
     final audioEngine = ref.read(audioEngineProvider);
     audioEngine.ensureInitialized();
+    _pageController.addListener(_onPageScroll);
+  }
+
+  void _onPageScroll() {
+    final page = _pageController.page;
+    if (page != null) setState(() => _scrollOffset = page);
   }
 
   @override
   void dispose() {
     _showChromeNotifier.dispose();
+    _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
     super.dispose();
   }
@@ -94,21 +103,46 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     await audioEngine.transitionToPage(book.pages[index]);
                   },
                   itemBuilder: (context, index) {
-                    final isInVirtualizationWindow =
-                        (index - _activePageIndex).abs() <= 1;
-                    if (!isInVirtualizationWindow) {
-                      return const SizedBox.shrink();
-                    }
+                    final isInVirtualizationWindow = (index - _activePageIndex).abs() <= 1;
+                    if (!isInVirtualizationWindow) return const SizedBox.shrink();
+
                     final page = book.pages[index];
-                    final heroTag =
-                        index == 0 && (book.coverUrl ?? '').isNotEmpty
+                    final heroTag = index == 0 && (book.coverUrl ?? '').isNotEmpty
                         ? 'book-cover-${book.id}'
                         : null;
-                    return PageRenderer(
-                      page: page,
-                      narrationPosition: audioState.narrationPosition,
-                      isActive: index == _activePageIndex,
-                      heroTag: heroTag,
+
+                    // localOffset: distance from scroll position to this page
+                    // 0.0 = this is the current page, negative = below, positive = above
+                    final localOffset = _scrollOffset - index;
+
+                    // Determine reveal direction and progress
+                    final double progress;
+                    final bool revealFromTop;
+
+                    if (localOffset < 0) {
+                      // Page is below viewport — scrolling forward, reveals from bottom
+                      progress = (1.0 + localOffset).clamp(0.0, 1.0);
+                      revealFromTop = false;
+                    } else if (localOffset > 0) {
+                      // Page is above viewport — scrolling backward, reveals from top
+                      progress = (1.0 - localOffset).clamp(0.0, 1.0);
+                      revealFromTop = true;
+                    } else {
+                      progress = 1.0;
+                      revealFromTop = false;
+                    }
+
+                    // Always keep ClipPath in the tree to preserve PageRenderer
+                    // state across scroll frames. The clipper returns a full rect
+                    // at progress >= 1.0 so it is a no-op when the page is settled.
+                    return ClipPath(
+                      clipper: VerticalLiquidClipper(progress: progress, revealFromTop: revealFromTop),
+                      child: PageRenderer(
+                        page: page,
+                        narrationPosition: audioState.narrationPosition,
+                        isActive: index == _activePageIndex,
+                        heroTag: heroTag,
+                      ),
                     );
                   },
                 ),
