@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -170,19 +171,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
               ),
               // Bottom audio controls
               if (hasNarration || hasSoundscape)
-                ValueListenableBuilder<bool>(
-                  valueListenable: _showChromeNotifier,
-                  builder: (context, showChrome, child) {
-                    return _AudioControlsPill(
-                      hasNarration: hasNarration,
-                      hasSoundscape: hasSoundscape,
-                      isNarrationPlaying: audioState.isNarrationPlaying,
-                      isSoundscapePlaying: audioState.isSoundscapePlaying,
-                      isVisible: showChrome,
-                      onToggleNarration: () => audioEngine.toggleNarration(),
-                      onToggleSoundscape: () => audioEngine.toggleSoundscape(),
-                    );
-                  },
+                _AudioControlsPill(
+                  hasNarration: hasNarration,
+                  hasSoundscape: hasSoundscape,
+                  isNarrationPlaying: audioState.isNarrationPlaying,
+                  isSoundscapePlaying: audioState.isSoundscapePlaying,
+                  isVisible: true,
+                  onToggleNarration: () => audioEngine.toggleNarration(),
+                  onToggleSoundscape: () => audioEngine.toggleSoundscape(),
                 ),
             ],
           );
@@ -313,49 +309,63 @@ class _ReaderTopBar extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: DecoratedBox(
-                  decoration: const ShapeDecoration(
-                    color: Color.fromRGBO(29, 33, 39, 0.9),
-                    shape: SketchBorderShape(
+                child: ClipPath(
+                  clipper: ShapeBorderClipper(
+                    shape: const SketchBorderShape(
                       side: BorderSide(
-                        color: Color.fromRGBO(255, 255, 255, 0.16),
+                        color: Color.fromRGBO(255, 255, 255, 0.22),
                         width: 1.2,
                       ),
                       radiusScale: 0.88,
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 9,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          book.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.lora(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    child: DecoratedBox(
+                      decoration: const ShapeDecoration(
+                        color: Color.fromRGBO(10, 15, 25, 0.35),
+                        shape: SketchBorderShape(
+                          side: BorderSide(
+                            color: Color.fromRGBO(255, 255, 255, 0.22),
+                            width: 1.2,
                           ),
+                          radiusScale: 0.88,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Page $activePageNumber of ${book.pages.length}',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFFD4D8E0),
-                            letterSpacing: 0.8,
-                          ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 9,
                         ),
-                      ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              book.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.lora(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Page $activePageNumber of ${book.pages.length}',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFFD4D8E0),
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -420,53 +430,69 @@ class _AudioControlsPill extends StatelessWidget {
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
             child: Center(
-              child: DecoratedBox(
-                decoration: const ShapeDecoration(
-                  color: Color.fromRGBO(29, 33, 39, 0.94),
-                  shape: SketchBorderShape(
+              child: ClipPath(
+                clipper: ShapeBorderClipper(
+                  shape: const SketchBorderShape(
                     side: BorderSide(
-                      color: Color.fromRGBO(255, 255, 255, 0.12),
+                      color: Color.fromRGBO(255, 255, 255, 0.18),
                       width: 1.1,
                     ),
                     radiusScale: 0.9,
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (hasNarration)
-                        _AudioIconButton(
-                          icon: isNarrationPlaying
-                              ? Icons.pause_rounded
-                              : Icons.mic_rounded,
-                          accentColor: _narrationColor,
-                          isPlaying: isNarrationPlaying,
-                          semanticLabel: 'Narration',
-                          onTap: onToggleNarration,
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: DecoratedBox(
+                    decoration: const ShapeDecoration(
+                      color: Color.fromRGBO(10, 15, 25, 0.40),
+                      shape: SketchBorderShape(
+                        side: BorderSide(
+                          color: Color.fromRGBO(255, 255, 255, 0.18),
+                          width: 1.1,
                         ),
-                      if (hasNarration && hasSoundscape)
-                        Container(
-                          width: 1,
-                          height: 24,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          color: const Color.fromRGBO(255, 255, 255, 0.12),
-                        ),
-                      if (hasSoundscape)
-                        _AudioIconButton(
-                          icon: isSoundscapePlaying
-                              ? Icons.volume_up_rounded
-                              : Icons.music_note_rounded,
-                          accentColor: _soundscapeColor,
-                          isPlaying: isSoundscapePlaying,
-                          semanticLabel: 'Ambience',
-                          onTap: onToggleSoundscape,
-                        ),
-                    ],
+                        radiusScale: 0.9,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (hasNarration)
+                            _AudioIconButton(
+                              icon: isNarrationPlaying
+                                  ? Icons.pause_rounded
+                                  : Icons.headphones_rounded,
+                              accentColor: _narrationColor,
+                              isPlaying: isNarrationPlaying,
+                              label: 'Story',
+                              semanticLabel: 'Narration',
+                              onTap: onToggleNarration,
+                            ),
+                          if (hasNarration && hasSoundscape)
+                            Container(
+                              width: 1,
+                              height: 24,
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              color: const Color.fromRGBO(255, 255, 255, 0.12),
+                            ),
+                          if (hasSoundscape)
+                            _AudioIconButton(
+                              icon: isSoundscapePlaying
+                                  ? Icons.volume_up_rounded
+                                  : Icons.waves_rounded,
+                              accentColor: _soundscapeColor,
+                              isPlaying: isSoundscapePlaying,
+                              label: 'Music',
+                              semanticLabel: 'Ambience',
+                              onTap: onToggleSoundscape,
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ).animate().fadeIn(duration: StoriaMotion.medium),
@@ -478,10 +504,11 @@ class _AudioControlsPill extends StatelessWidget {
   }
 }
 
-class _AudioIconButton extends StatelessWidget {
+class _AudioIconButton extends StatefulWidget {
   final IconData icon;
   final Color accentColor;
   final bool isPlaying;
+  final String label;
   final String semanticLabel;
   final Future<void> Function() onTap;
 
@@ -489,69 +516,169 @@ class _AudioIconButton extends StatelessWidget {
     required this.icon,
     required this.accentColor,
     required this.isPlaying,
+    required this.label,
     required this.semanticLabel,
     required this.onTap,
   });
 
   @override
+  State<_AudioIconButton> createState() => _AudioIconButtonState();
+}
+
+class _AudioIconButtonState extends State<_AudioIconButton>
+    with TickerProviderStateMixin {
+  late final AnimationController _breathController;
+  late final AnimationController _pressController;
+  late final Animation<double> _breathAnimation;
+  late final Animation<double> _pressAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Breathing idle pulse — gentle scale when not playing
+    _breathController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    _breathAnimation = Tween<double>(begin: 1.0, end: 1.07).animate(
+      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    );
+    if (!widget.isPlaying) {
+      _breathController.repeat(reverse: true);
+    }
+
+    // Press bounce
+    _pressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+      lowerBound: 0.0,
+      upperBound: 1.0,
+    );
+    _pressAnimation = Tween<double>(begin: 1.0, end: 0.88).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void didUpdateWidget(_AudioIconButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isPlaying != oldWidget.isPlaying) {
+      if (widget.isPlaying) {
+        _breathController.stop();
+        _breathController.animateTo(0);
+      } else {
+        _breathController.repeat(reverse: true);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _breathController.dispose();
+    _pressController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails _) {
+    _pressController.forward();
+  }
+
+  void _onTapUp(TapUpDetails _) {
+    _pressController.reverse();
+    widget.onTap();
+  }
+
+  void _onTapCancel() {
+    _pressController.reverse();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      toggled: isPlaying,
-      label: semanticLabel,
-      hint: 'Double tap to ${isPlaying ? 'pause' : 'play'} $semanticLabel',
-      value: isPlaying ? 'On' : 'Off',
+      toggled: widget.isPlaying,
+      label: widget.semanticLabel,
+      hint: 'Double tap to ${widget.isPlaying ? 'pause' : 'play'} ${widget.semanticLabel}',
+      value: widget.isPlaying ? 'On' : 'Off',
       child: GestureDetector(
-        onTap: onTap,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Glow ring behind button when active.
-            AnimatedOpacity(
-              opacity: isPlaying ? 1 : 0,
-              duration: const Duration(milliseconds: 300),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accentColor.withValues(alpha: 0.25),
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([_breathAnimation, _pressAnimation]),
+          builder: (context, child) {
+            final scale = _pressAnimation.value * _breathAnimation.value;
+            return Transform.scale(
+              scale: scale,
+              child: child,
+            );
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Glow ring behind button when active.
+                  AnimatedOpacity(
+                    opacity: widget.isPlaying ? 1 : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: widget.accentColor.withValues(alpha: 0.28),
+                      ),
+                    ),
+                  ),
+                  // Button circle — filled with accent when playing.
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: widget.isPlaying
+                          ? widget.accentColor.withValues(alpha: 0.88)
+                          : const Color.fromRGBO(255, 255, 255, 0.08),
+                      border: Border.all(
+                        color: widget.isPlaying
+                            ? widget.accentColor
+                            : const Color.fromRGBO(255, 255, 255, 0.22),
+                        width: widget.isPlaying ? 2.0 : 1.0,
+                      ),
+                    ),
+                    child: Icon(
+                      widget.icon,
+                      size: 24,
+                      color: widget.isPlaying
+                          ? Colors.white
+                          : const Color.fromRGBO(255, 255, 255, 0.85),
+                    ),
+                  ),
+                  // Pulsing dot indicator when playing.
+                  if (widget.isPlaying)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: _PulsingDot(color: widget.accentColor),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Text(
+                widget.label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
                 ),
               ),
-            ),
-            // Button circle.
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isPlaying
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : const Color.fromRGBO(255, 255, 255, 0.05),
-                border: Border.all(
-                  color: isPlaying
-                      ? accentColor
-                      : const Color.fromRGBO(255, 255, 255, 0.08),
-                  width: isPlaying ? 1.5 : 0.5,
-                ),
-              ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: isPlaying
-                    ? accentColor
-                    : const Color.fromRGBO(255, 255, 255, 0.7),
-              ),
-            ),
-            // Pulsing dot indicator.
-            if (isPlaying)
-              Positioned(
-                top: 6,
-                right: 6,
-                child: _PulsingDot(color: accentColor),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -631,22 +758,33 @@ class _ChromeButton extends StatelessWidget {
       button: true,
       label: semanticLabel,
       hint: semanticHint,
-      child: Material(
-        color: const Color.fromRGBO(29, 33, 39, 0.9),
-        shape: const SketchBorderShape(
-          side: BorderSide(color: Color.fromRGBO(255, 255, 255, 0.16)),
-          radiusScale: 0.8,
-        ),
-        child: InkWell(
-          customBorder: const SketchBorderShape(
-            side: BorderSide(color: Color.fromRGBO(255, 255, 255, 0.16)),
+      child: ClipPath(
+        clipper: ShapeBorderClipper(
+          shape: const SketchBorderShape(
+            side: BorderSide(color: Color.fromRGBO(255, 255, 255, 0.28)),
             radiusScale: 0.8,
           ),
-          onTap: onTap,
-          child: SizedBox(
-            width: 48,
-            height: 48,
-            child: Icon(icon, color: Colors.white, size: 21),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          child: Material(
+            color: const Color.fromRGBO(255, 255, 255, 0.10),
+            shape: const SketchBorderShape(
+              side: BorderSide(color: Color.fromRGBO(255, 255, 255, 0.28)),
+              radiusScale: 0.8,
+            ),
+            child: InkWell(
+              customBorder: const SketchBorderShape(
+                side: BorderSide(color: Color.fromRGBO(255, 255, 255, 0.28)),
+                radiusScale: 0.8,
+              ),
+              onTap: onTap,
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Icon(icon, color: Colors.white, size: 21),
+              ),
+            ),
           ),
         ),
       ),
