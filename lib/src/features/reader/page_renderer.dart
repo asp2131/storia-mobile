@@ -16,6 +16,7 @@ class PageRenderer extends StatefulWidget {
   final bool isActive;
   final String? heroTag;
   final void Function(String word, int globalIndex)? onWordTap;
+  final Set<int> spokenWordIndices;
 
   const PageRenderer({
     super.key,
@@ -24,6 +25,7 @@ class PageRenderer extends StatefulWidget {
     required this.isActive,
     this.heroTag,
     this.onWordTap,
+    this.spokenWordIndices = const {},
   });
 
   @override
@@ -129,6 +131,7 @@ class _PageRendererState extends State<PageRenderer> {
                   overlay: page.overlay!,
                   imageSize: imageRect.size,
                   activeWordIndex: activeWordIndex,
+                  spokenWordIndices: widget.spokenWordIndices,
                   isActive: widget.isActive,
                   onWordTap: widget.onWordTap,
                 ),

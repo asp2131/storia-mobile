@@ -81,5 +81,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Storia needs your microphone so you can practice reading aloud.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Storia listens to your voice to highlight words as you read.</string>
 </dict>
 </plist>

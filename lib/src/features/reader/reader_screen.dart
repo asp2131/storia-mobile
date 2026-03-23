@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,7 @@ import '../../data/providers.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
 import 'reader_audio_state.dart';
+import 'reader_practice_notifier.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
   final String bookId;
@@ -31,6 +33,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   int _activePageIndex = 0;
   bool _loadedInitialAudio = false;
   double _scrollOffset = 0.0;
+  late final ConfettiController _confettiController;
 
   @override
   void initState() {
@@ -38,6 +41,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final audioEngine = ref.read(audioEngineProvider);
     audioEngine.ensureInitialized();
     _pageController.addListener(_onPageScroll);
+    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
   }
 
   void _onPageScroll() {
@@ -50,6 +54,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     _showChromeNotifier.dispose();
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -58,6 +63,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final bookAsync = ref.watch(currentBookProvider(widget.bookId));
     final audioEngine = ref.watch(audioEngineProvider);
     final audioState = ref.watch(readerAudioStateProvider);
+    final practiceState = ref.watch(readerPracticeProvider);
+    final practiceNotifier = ref.read(readerPracticeProvider.notifier);
+
+    // Fire confetti when celebration is triggered
+    ref.listen<ReaderPracticeState>(readerPracticeProvider, (prev, next) {
+      if (next.showCelebration && !(prev?.showCelebration ?? false)) {
+        _confettiController.play();
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) practiceNotifier.acknowledgeCelebration();
+        });
+      }
+    });
 
     return Scaffold(
       backgroundColor: StoriaColors.readerBackground,
@@ -83,6 +100,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             _loadedInitialAudio = true;
             WidgetsBinding.instance.addPostFrameCallback((_) async {
               await audioEngine.loadPage(book.pages[_activePageIndex]);
+              practiceNotifier.loadPageWords(book.pages[_activePageIndex]);
             });
           }
 
@@ -102,6 +120,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       _activePageIndex = index;
                     });
                     await audioEngine.transitionToPage(book.pages[index]);
+                    ref.read(readerPracticeProvider.notifier).resetForPage();
+                    ref.read(readerPracticeProvider.notifier).loadPageWords(book.pages[index]);
                   },
                   itemBuilder: (context, index) {
                     final isInVirtualizationWindow = (index - _activePageIndex).abs() <= 1;
@@ -143,6 +163,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         narrationPosition: audioState.narrationPosition,
                         isActive: index == _activePageIndex,
                         heroTag: heroTag,
+                        spokenWordIndices: practiceState.spokenWordIndices,
                       ),
                     );
                   },
@@ -164,6 +185,20 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         onClose: () => Navigator.of(context).maybePop(),
                         onAudioSettingsTap: () =>
                             _showAudioSettings(context),
+                        isPracticeMode: practiceState.isPracticeMode,
+                        isListening: practiceState.isListening,
+                        onPracticeToggle: () async {
+                          final notifier = ref.read(readerPracticeProvider.notifier);
+                          if (!practiceState.isPracticeMode) {
+                            await notifier.togglePracticeMode();
+                            notifier.loadPageWords(activePage);
+                            await notifier.startListening();
+                          } else if (practiceState.isListening) {
+                            await notifier.stopListening();
+                          } else {
+                            await notifier.startListening();
+                          }
+                        },
                       ),
                     ),
                   );
@@ -180,6 +215,24 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   onToggleNarration: () => audioEngine.toggleNarration(),
                   onToggleSoundscape: () => audioEngine.toggleSoundscape(),
                 ),
+              // Confetti celebration
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConfettiWidget(
+                  confettiController: _confettiController,
+                  blastDirectionality: BlastDirectionality.explosive,
+                  numberOfParticles: 30,
+                  gravity: 0.1,
+                  emissionFrequency: 0.05,
+                  colors: const [
+                    Color(0xFFF59E0B),
+                    Color(0xFF14B8A6),
+                    Color(0xFF8A80CC),
+                    Color(0xFFEC4899),
+                    Color(0xFF34D399),
+                  ],
+                ),
+              ),
             ],
           );
         },
@@ -264,12 +317,18 @@ class _ReaderTopBar extends StatelessWidget {
   final int activePageNumber;
   final VoidCallback onClose;
   final VoidCallback onAudioSettingsTap;
+  final bool isPracticeMode;
+  final bool isListening;
+  final VoidCallback onPracticeToggle;
 
   const _ReaderTopBar({
     required this.book,
     required this.activePageNumber,
     required this.onClose,
     required this.onAudioSettingsTap,
+    required this.isPracticeMode,
+    required this.isListening,
+    required this.onPracticeToggle,
   });
 
   @override
@@ -369,6 +428,20 @@ class _ReaderTopBar extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
+              const SizedBox(width: 10),
+              _ChromeButton(
+                icon: isListening
+                    ? Icons.mic_rounded
+                    : isPracticeMode
+                        ? Icons.mic_none_rounded
+                        : Icons.menu_book_rounded,
+                color: isPracticeMode ? const Color(0xFFF59E0B) : Colors.white,
+                onTap: onPracticeToggle,
+                semanticLabel: isPracticeMode ? 'Stop practice' : 'Practice reading',
+                semanticHint: isPracticeMode
+                    ? 'Tap to stop reading practice'
+                    : 'Tap to start reading practice',
               ),
               const SizedBox(width: 10),
               _ChromeButton(
@@ -744,12 +817,14 @@ class _ChromeButton extends StatelessWidget {
   final VoidCallback onTap;
   final String semanticLabel;
   final String semanticHint;
+  final Color color;
 
   const _ChromeButton({
     required this.icon,
     required this.onTap,
     required this.semanticLabel,
     required this.semanticHint,
+    this.color = Colors.white,
   });
 
   @override
@@ -782,7 +857,7 @@ class _ChromeButton extends StatelessWidget {
               child: SizedBox(
                 width: 48,
                 height: 48,
-                child: Icon(icon, color: Colors.white, size: 21),
+                child: Icon(icon, color: color, size: 21),
               ),
             ),
           ),
