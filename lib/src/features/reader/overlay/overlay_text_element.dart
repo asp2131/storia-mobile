@@ -10,6 +10,7 @@ class OverlayTextElement extends StatelessWidget {
   final Size imageSize;
   final int wordStartIndex;
   final int activeWordIndex;
+  final Set<int> spokenWordIndices;
   final bool isActive;
   final void Function(String word, int globalIndex)? onWordTap;
 
@@ -21,6 +22,7 @@ class OverlayTextElement extends StatelessWidget {
     required this.wordStartIndex,
     required this.activeWordIndex,
     required this.isActive,
+    this.spokenWordIndices = const {},
     this.onWordTap,
   });
 
@@ -57,7 +59,7 @@ class OverlayTextElement extends StatelessWidget {
 
     Widget content = RichText(
       textAlign: resolveTextAlign(element.textAlign),
-      text: TextSpan(style: baseStyle, children: _buildSpans(baseStyle)),
+      text: TextSpan(style: baseStyle, children: _buildSpans(baseStyle, spokenWordIndices)),
     );
 
     if (background != null) {
@@ -97,7 +99,7 @@ class OverlayTextElement extends StatelessWidget {
     );
   }
 
-  List<InlineSpan> _buildSpans(TextStyle baseStyle) {
+  List<InlineSpan> _buildSpans(TextStyle baseStyle, Set<int> spokenWordIndices) {
     final tokens = RegExp(
       r'\s+|\S+',
     ).allMatches(element.text).map((m) => m.group(0) ?? '').toList();
@@ -112,14 +114,20 @@ class OverlayTextElement extends StatelessWidget {
 
       final globalIndex = currentWordIndex;
       currentWordIndex += 1;
-      final isHighlighted = globalIndex == activeWordIndex;
+      final isNarrationHighlighted = globalIndex == activeWordIndex;
+      final isSpoken = spokenWordIndices.contains(globalIndex);
 
-      final wordStyle = isHighlighted
+      final wordStyle = isSpoken
           ? baseStyle.copyWith(
-              backgroundColor: const Color.fromRGBO(212, 237, 188, 0.8),
-              fontWeight: FontWeight.w700,
+              backgroundColor: const Color.fromRGBO(255, 213, 79, 0.85),
+              fontWeight: FontWeight.w800,
             )
-          : baseStyle;
+          : isNarrationHighlighted
+              ? baseStyle.copyWith(
+                  backgroundColor: const Color.fromRGBO(212, 237, 188, 0.8),
+                  fontWeight: FontWeight.w700,
+                )
+              : baseStyle;
 
       if (onWordTap != null) {
         spans.add(

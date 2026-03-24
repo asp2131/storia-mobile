@@ -8,6 +8,7 @@ class OverlayTextLayer extends StatelessWidget {
   final TextOverlayConfig overlay;
   final Size imageSize;
   final int activeWordIndex;
+  final Set<int> spokenWordIndices;
   final bool isActive;
   final void Function(String word, int globalIndex)? onWordTap;
 
@@ -17,6 +18,7 @@ class OverlayTextLayer extends StatelessWidget {
     required this.imageSize,
     required this.activeWordIndex,
     required this.isActive,
+    this.spokenWordIndices = const {},
     this.onWordTap,
   });
 
@@ -38,6 +40,7 @@ class OverlayTextLayer extends StatelessWidget {
             imageSize: imageSize,
             wordStartIndex: wordStarts[overlay.elements[i].id] ?? 0,
             activeWordIndex: activeWordIndex,
+            spokenWordIndices: spokenWordIndices,
             isActive: isActive,
             onWordTap: onWordTap,
           ),
