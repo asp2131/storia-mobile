@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:confetti/confetti.dart';
+import 'package:gif_player/gif_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,6 +35,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   bool _loadedInitialAudio = false;
   double _scrollOffset = 0.0;
   late final ConfettiController _confettiController;
+  bool _showCelebrationGif = false;
+  late GifPlayerController _gifPlayerController;
 
   @override
   void initState() {
@@ -42,6 +45,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     audioEngine.ensureInitialized();
     _pageController.addListener(_onPageScroll);
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _gifPlayerController = GifPlayerController(
+      dataSource: GifPlayerDataSource.asset('assets/gifs/green_screen.gif'),
+      isAutoPlay: false,
+      isAutoInitialize: true,
+      loop: true,
+      showControls: false,
+    );
   }
 
   void _onPageScroll() {
@@ -55,6 +65,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
     _confettiController.dispose();
+    _gifPlayerController.dispose();
     super.dispose();
   }
 
@@ -66,12 +77,19 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final practiceState = ref.watch(readerPracticeProvider);
     final practiceNotifier = ref.read(readerPracticeProvider.notifier);
 
-    // Fire confetti when celebration is triggered
+    // Fire confetti + GIF when celebration is triggered
     ref.listen<ReaderPracticeState>(readerPracticeProvider, (prev, next) {
       if (next.showCelebration && !(prev?.showCelebration ?? false)) {
         _confettiController.play();
+        _gifPlayerController.seekTo(0);
+        _gifPlayerController.play();
+        setState(() => _showCelebrationGif = true);
         Future.delayed(const Duration(seconds: 3), () {
-          if (mounted) practiceNotifier.acknowledgeCelebration();
+          if (mounted) {
+            practiceNotifier.acknowledgeCelebration();
+            _gifPlayerController.pause();
+            setState(() => _showCelebrationGif = false);
+          }
         });
       }
     });
@@ -231,6 +249,22 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     Color(0xFFEC4899),
                     Color(0xFF34D399),
                   ],
+                ),
+              ),
+              // GIF celebration overlay — topmost, bottom-right corner
+              Positioned(
+                right: 16,
+                bottom: MediaQuery.paddingOf(context).bottom + 100,
+                width: 160,
+                child: IgnorePointer(
+                  child: AnimatedOpacity(
+                    opacity: _showCelebrationGif ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: _showCelebrationGif ? 300 : 500),
+                    child: GifPlayer(
+                      controller: _gifPlayerController,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
               ),
             ],

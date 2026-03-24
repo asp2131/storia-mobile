@@ -56,6 +56,7 @@ dependencies:
   flutter_animate: ^4.5.2
   speech_to_text: ^7.0.0
   confetti: ^0.8.0
+  gif_player: ^0.1.0
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
@@ -78,6 +79,7 @@ flutter:
   uses-material-design: true
   assets:
     - .env
+    - assets/gifs/
 
 flutter_launcher_icons:
   android: true
