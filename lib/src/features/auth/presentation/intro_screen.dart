@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gif_player/gif_player.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -21,9 +22,18 @@ class _IntroScreenState extends State<IntroScreen>
     duration: const Duration(seconds: 6),
   )..repeat();
 
+  late final GifPlayerController _gifController = GifPlayerController(
+    dataSource: GifPlayerDataSource.asset('assets/gifs/landing.gif'),
+    isAutoPlay: true,
+    loop: true,
+    showControls: false,
+    showPlayButton: false,
+  );
+
   @override
   void dispose() {
     _controller.dispose();
+    _gifController.dispose();
     super.dispose();
   }
 
@@ -145,8 +155,8 @@ class _IntroScreenState extends State<IntroScreen>
                                         child: Stack(
                                           fit: StackFit.expand,
                                           children: [
-                                            Image.asset(
-                                              'assets/gifs/landing.gif',
+                                            GifPlayer(
+                                              controller: _gifController,
                                               fit: BoxFit.cover,
                                             ),
                                             Positioned(
