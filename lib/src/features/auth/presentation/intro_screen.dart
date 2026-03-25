@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -19,7 +20,7 @@ class _IntroScreenState extends State<IntroScreen>
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(seconds: 6),
+    duration: const Duration(seconds: 20),
   )..repeat();
 
   late final GifPlayerController _gifController = GifPlayerController(
@@ -44,6 +45,8 @@ class _IntroScreenState extends State<IntroScreen>
     const fg = Color(0xFF4A5568);
     const btn = Color(0xFFBBDF83);
 
+    final screenHeight = MediaQuery.sizeOf(context).height;
+
     return Scaffold(
       backgroundColor: bg,
       body: AnimatedBuilder(
@@ -66,131 +69,151 @@ class _IntroScreenState extends State<IntroScreen>
                 ),
               ),
 
-              _floating(
-                top: 62,
-                right: -36,
-                width: 128,
-                height: 128,
+              // Sun with warm radial glow pulse
+              _floatingSunWithGlow(
+                top: 32,
+                right: 12,
+                width: 118,
+                height: 118,
                 phase: 0.1,
-                amplitude: 6,
-                child: SvgPicture.asset('assets/svgs/sun.svg'),
-              ),
-              _floating(
-                top: 120,
-                left: -48,
-                width: 160,
-                height: 76,
-                phase: 0.0,
-                amplitude: 12,
-                child: SvgPicture.asset('assets/svgs/book.svg'),
-              ),
-              _floating(
-                top: 58,
-                left: 64,
-                width: 96,
-                height: 44,
-                phase: 0.4,
-                amplitude: 10,
-                child: Opacity(
-                  opacity: 0.72,
-                  child: Transform.scale(
-                    scale: 0.75,
-                    child: SvgPicture.asset('assets/svgs/book.svg'),
-                  ),
-                ),
-              ),
-              _floating(
-                top: MediaQuery.sizeOf(context).height * 0.45,
-                right: -40,
-                width: 144,
-                height: 66,
-                phase: 0.75,
-                amplitude: 14,
-                child: Opacity(
-                  opacity: 0.9,
-                  child: SvgPicture.asset('assets/svgs/book.svg'),
-                ),
+                amplitude: 2,
               ),
 
+              // --- Far layer clouds (behind content) ---
+              _driftingCloud(
+                top: 56,
+                width: 104,
+                height: 48,
+                phase: 0.15,
+                speed: 0.40,
+                yAmplitude: 3,
+                opacity: 0.45,
+                scale: 0.60,
+                blurSigma: 1.8,
+                flipX: false,
+              ),
+              _driftingCloud(
+                top: 88,
+                width: 96,
+                height: 44,
+                phase: 0.65,
+                speed: 0.38,
+                yAmplitude: 2.5,
+                opacity: 0.42,
+                scale: 0.58,
+                blurSigma: 1.6,
+                flipX: true,
+              ),
+
+              // --- Mid layer clouds (behind content) ---
+              _driftingCloud(
+                top: 80,
+                width: 148,
+                height: 68,
+                phase: 0.02,
+                speed: 0.70,
+                yAmplitude: 5,
+                opacity: 0.80,
+                scale: 0.90,
+                flipX: false,
+              ),
+              _driftingCloud(
+                top: 200,
+                width: 130,
+                height: 60,
+                phase: 0.43,
+                speed: 0.65,
+                yAmplitude: 4,
+                opacity: 0.75,
+                scale: 0.85,
+                flipX: true,
+              ),
+              _driftingCloud(
+                top: screenHeight * 0.44,
+                width: 160,
+                height: 76,
+                phase: 0.68,
+                speed: 0.78,
+                yAmplitude: 6,
+                opacity: 0.88,
+                scale: 0.95,
+                flipX: false,
+              ),
+
+              // --- Main content (SafeArea) ---
               SafeArea(
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 430),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 56, 24, 34),
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 34),
                       child: Column(
                         children: [
-                          Expanded(
-                            child: Center(
-                              child: SizedBox(
-                                width: _heroSize,
-                                height: _heroSize,
-                                child: Transform.translate(
-                                  offset: Offset(
-                                    0,
-                                    math.sin(_controller.value * math.pi * 2) *
-                                        -6,
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      Positioned.fill(
-                                        child: DecoratedBox(
-                                          decoration: BoxDecoration(
-                                            color: btn.withValues(alpha: 0.30),
-                                            shape: BoxShape.circle,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: btn.withValues(
-                                                  alpha: 0.45,
-                                                ),
-                                                blurRadius: 40,
-                                                spreadRadius: 6,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(32),
-                                        child: Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            GifPlayer(
-                                              controller: _gifController,
-                                              fit: BoxFit.cover,
-                                            ),
-                                            Positioned(
-                                              top: 18,
-                                              right: 18,
-                                              child: Icon(
-                                                Icons.auto_awesome,
-                                                color: const Color(
-                                                  0xFFFFD644,
-                                                ).withValues(alpha: 0.82),
-                                                size: 22,
-                                              ),
-                                            ),
-                                            Positioned(
-                                              bottom: 22,
-                                              left: 20,
-                                              child: Icon(
-                                                Icons.auto_awesome,
-                                                color: const Color(
-                                                  0xFFFFD644,
-                                                ).withValues(alpha: 0.68),
-                                                size: 18,
-                                              ),
-                                            ),
+                          const Spacer(flex: 2),
+                          SizedBox(
+                            width: _heroSize,
+                            height: _heroSize,
+                            child: Transform.translate(
+                              offset: Offset(
+                                0,
+                                math.sin(_controller.value * math.pi * 12) *
+                                    -4.2,
+                              ),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Positioned.fill(
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: RadialGradient(
+                                          colors: [
+                                            btn.withValues(alpha: 0.48),
+                                            btn.withValues(alpha: 0.28),
+                                            btn.withValues(alpha: 0.10),
                                           ],
+                                          stops: const [0.0, 0.66, 1.0],
                                         ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: btn.withValues(alpha: 0.38),
+                                            blurRadius: 44,
+                                            spreadRadius: 8,
+                                          ),
+                                        ],
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(32),
+                                    child: GifPlayer(
+                                      controller: _gifController,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  _sparkle(
+                                    top: 20,
+                                    right: 16,
+                                    size: 22,
+                                    phase: 0.08,
+                                  ),
+                                  _sparkle(
+                                    bottom: 26,
+                                    left: 18,
+                                    size: 18,
+                                    phase: 0.44,
+                                  ),
+                                  _sparkle(
+                                    top: 84,
+                                    left: -8,
+                                    size: 14,
+                                    phase: 0.72,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 2),
                           Column(
                             children: [
                               Text(
@@ -216,7 +239,7 @@ class _IntroScreenState extends State<IntroScreen>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 30),
+                          const Spacer(flex: 3),
                           _TactileButton(
                             label: 'Start your journey',
                             background: btn,
@@ -239,6 +262,18 @@ class _IntroScreenState extends State<IntroScreen>
                   ),
                 ),
               ),
+
+              // --- Near layer cloud (ABOVE content, peeking from right) ---
+              _driftingCloudNear(
+                top: screenHeight * 0.55,
+                width: 200,
+                height: 92,
+                phase: 0.30,
+                speed: 1.30,
+                yAmplitude: 4,
+                opacity: 0.90,
+                scale: 1.40,
+              ),
             ],
           );
         },
@@ -246,24 +281,177 @@ class _IntroScreenState extends State<IntroScreen>
     );
   }
 
-  Widget _floating({
-    required double? top,
-    double? right,
-    double? left,
+  /// Sun with a warm radial glow pulse behind it.
+  Widget _floatingSunWithGlow({
+    required double top,
+    required double right,
     required double width,
     required double height,
     required double phase,
     required double amplitude,
-    required Widget child,
   }) {
     final dy = math.sin((_controller.value + phase) * math.pi * 2) * amplitude;
+    final glowOpacity =
+        0.15 + 0.1 * math.sin(_controller.value * math.pi * 2);
+
     return Positioned(
-      top: top != null ? top + dy : null,
+      top: top + dy,
       right: right,
+      width: width,
+      height: height,
+      child: IgnorePointer(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Warm radial glow behind the sun
+            Container(
+              width: width + 32,
+              height: height + 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFFFD644).withValues(alpha: glowOpacity),
+                    const Color(0xFFFFD644).withValues(alpha: 0.0),
+                  ],
+                  stops: const [0.2, 1.0],
+                ),
+              ),
+            ),
+            SvgPicture.asset('assets/svgs/sun.svg', width: width, height: height),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Standard drifting cloud with optional blur and horizontal flip.
+  Widget _driftingCloud({
+    required double top,
+    required double width,
+    required double height,
+    required double phase,
+    required double speed,
+    required double yAmplitude,
+    required double opacity,
+    double scale = 1,
+    double blurSigma = 0,
+    bool flipX = false,
+  }) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final loopDistance = screenWidth + width + 120;
+    final progress = ((_controller.value * speed) + phase) % 1;
+    final left = screenWidth + 40 - (progress * loopDistance);
+    final dy =
+        math.sin((_controller.value + phase) * math.pi * 2) * yAmplitude;
+
+    Widget cloud = SvgPicture.asset('assets/svgs/book.svg');
+
+    if (flipX) {
+      cloud = Transform.flip(flipX: true, child: cloud);
+    }
+
+    if (blurSigma > 0) {
+      cloud = ImageFiltered(
+        imageFilter:
+            ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+        child: cloud,
+      );
+    }
+
+    return Positioned(
+      top: top + dy,
       left: left,
       width: width,
       height: height,
-      child: IgnorePointer(child: child),
+      child: IgnorePointer(
+        child: Opacity(
+          opacity: opacity,
+          child: Transform.scale(
+            scale: scale,
+            alignment: Alignment.center,
+            child: cloud,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Near-layer cloud that peeks from the right edge only.
+  /// Oscillates horizontally so it slides in/out from the right margin.
+  Widget _driftingCloudNear({
+    required double top,
+    required double width,
+    required double height,
+    required double phase,
+    required double speed,
+    required double yAmplitude,
+    required double opacity,
+    double scale = 1,
+  }) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    // Horizontal drift: oscillates from mostly off-screen right to partially visible
+    final driftX = math.sin((_controller.value * speed + phase) * math.pi * 2);
+    // Range: right edge minus a portion of the cloud width
+    // At driftX = -1 => more visible; driftX = 1 => less visible
+    final rightOffset = screenWidth - width * 0.35 + driftX * (width * 0.25);
+    final dy =
+        math.sin((_controller.value + phase) * math.pi * 2) * yAmplitude;
+
+    Widget cloud = Transform.flip(
+      flipX: true,
+      child: SvgPicture.asset('assets/svgs/book.svg'),
+    );
+
+    return Positioned(
+      top: top + dy,
+      left: rightOffset,
+      width: width,
+      height: height,
+      child: IgnorePointer(
+        child: Opacity(
+          opacity: opacity,
+          child: Transform.scale(
+            scale: scale,
+            alignment: Alignment.centerRight,
+            child: cloud,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sparkle({
+    double? top,
+    double? right,
+    double? left,
+    double? bottom,
+    required double size,
+    required double phase,
+  }) {
+    final pulse =
+        0.5 + (0.5 * math.sin((_controller.value * math.pi * 2 * 3) + phase));
+    final opacity = 0.28 + (pulse * 0.7);
+    final scale = 0.85 + (pulse * 0.3);
+
+    return Positioned(
+      top: top,
+      right: right,
+      left: left,
+      bottom: bottom,
+      child: IgnorePointer(
+        child: Opacity(
+          opacity: opacity,
+          child: Transform.scale(
+            scale: scale,
+            child: Icon(
+              Icons.auto_awesome,
+              color: const Color(0xFFFFD644).withValues(alpha: 0.95),
+              size: size,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
