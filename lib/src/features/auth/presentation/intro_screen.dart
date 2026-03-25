@@ -7,6 +7,8 @@ import 'package:gif_player/gif_player.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/theme/storia_colors.dart';
+
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
 
@@ -40,10 +42,10 @@ class _IntroScreenState extends State<IntroScreen>
 
   @override
   Widget build(BuildContext context) {
-    const bg = Color(0xFFFAF3E8);
-    const primary = Color(0xFF2C3358);
-    const fg = Color(0xFF4A5568);
-    const btn = Color(0xFFBBDF83);
+    const bg = StoriaColors.paper;
+    const primary = StoriaColors.ink;
+    const fg = StoriaColors.inkMuted;
+    const btn = StoriaColors.sage;
 
     final screenHeight = MediaQuery.sizeOf(context).height;
 

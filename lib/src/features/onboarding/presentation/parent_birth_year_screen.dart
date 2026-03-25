@@ -152,8 +152,8 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
         : StoriaColors.paper.withValues(alpha: 0.7);
 
     return SketchCard(
-      color: const Color(0xFF4A5BE7),
-      borderColor: const Color(0xFF3544C4),
+      color: const Color(0xFF2C3358),
+      borderColor: const Color(0xFF1E2445),
       padding: const EdgeInsets.fromLTRB(22, 24, 22, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -253,8 +253,8 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
 
   Widget _buildLockoutStep(TextTheme textTheme) {
     return SketchCard(
-      color: const Color(0xFF4A5BE7),
-      borderColor: const Color(0xFF3544C4),
+      color: const Color(0xFF2C3358),
+      borderColor: const Color(0xFF1E2445),
       padding: const EdgeInsets.fromLTRB(22, 24, 22, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -263,7 +263,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
             width: 48,
             height: 48,
             decoration: const BoxDecoration(
-              color: Color(0xFFF8F5ED),
+              color: Color(0xFFFAF3E8),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -307,8 +307,8 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
     final digits = _yearController.text;
 
     return SketchCard(
-      color: const Color(0xFF4A5BE7),
-      borderColor: const Color(0xFF3544C4),
+      color: const Color(0xFF2C3358),
+      borderColor: const Color(0xFF1E2445),
       padding: const EdgeInsets.fromLTRB(22, 24, 22, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -485,7 +485,7 @@ class _ParentsOnlyArt extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: const BoxDecoration(
-                color: Color(0xFFF8F5ED),
+                color: Color(0xFFFAF3E8),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
