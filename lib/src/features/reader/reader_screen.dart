@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -8,7 +9,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../audio/audio_providers.dart';
 import '../../core/theme/storia_colors.dart';
 import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
@@ -16,8 +16,10 @@ import '../../data/models.dart';
 import '../../data/providers.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
-import 'reader_audio_state.dart';
-import 'reader_practice_notifier.dart';
+import 'runtime/providers/reader_session_provider.dart';
+import 'runtime/reader_intent.dart';
+import 'runtime/reader_session.dart';
+import 'runtime/reader_view_state.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
   final String bookId;
@@ -31,18 +33,22 @@ class ReaderScreen extends ConsumerStatefulWidget {
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final PageController _pageController = PageController();
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
-  int _activePageIndex = 0;
-  bool _loadedInitialAudio = false;
   double _scrollOffset = 0.0;
   late final ConfettiController _confettiController;
   bool _showCelebrationGif = false;
   late GifPlayerController _gifPlayerController;
 
+  late final ReaderSession _session;
+  StreamSubscription<ReaderViewState>? _sessionSubscription;
+  ReaderViewState _runtimeState = const ReaderViewState.initial();
+  String? _initializedBookId;
+
   @override
   void initState() {
     super.initState();
-    final audioEngine = ref.read(audioEngineProvider);
-    audioEngine.ensureInitialized();
+    _session = ref.read(readerSessionProvider);
+    _sessionSubscription = _session.states.listen(_onRuntimeStateChanged);
+
     _pageController.addListener(_onPageScroll);
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
     _gifPlayerController = GifPlayerController(
@@ -54,6 +60,37 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
+  void _onRuntimeStateChanged(ReaderViewState next) {
+    final wasCelebrating = _runtimeState.showCelebration;
+    final isCelebrating = next.showCelebration;
+
+    if (mounted) {
+      setState(() {
+        _runtimeState = next;
+      });
+    } else {
+      _runtimeState = next;
+    }
+
+    if (isCelebrating && !wasCelebrating) {
+      _confettiController.play();
+      _gifPlayerController.seekTo(0);
+      _gifPlayerController.play();
+      if (mounted) {
+        setState(() => _showCelebrationGif = true);
+      } else {
+        _showCelebrationGif = true;
+      }
+    } else if (!isCelebrating && wasCelebrating) {
+      _gifPlayerController.pause();
+      if (mounted) {
+        setState(() => _showCelebrationGif = false);
+      } else {
+        _showCelebrationGif = false;
+      }
+    }
+  }
+
   void _onPageScroll() {
     final page = _pageController.page;
     if (page != null) setState(() => _scrollOffset = page);
@@ -61,6 +98,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   @override
   void dispose() {
+    _sessionSubscription?.cancel();
     _showChromeNotifier.dispose();
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
@@ -72,27 +110,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   @override
   Widget build(BuildContext context) {
     final bookAsync = ref.watch(currentBookProvider(widget.bookId));
-    final audioEngine = ref.watch(audioEngineProvider);
-    final audioState = ref.watch(readerAudioStateProvider);
-    final practiceState = ref.watch(readerPracticeProvider);
-    final practiceNotifier = ref.read(readerPracticeProvider.notifier);
-
-    // Fire confetti + GIF when celebration is triggered
-    ref.listen<ReaderPracticeState>(readerPracticeProvider, (prev, next) {
-      if (next.showCelebration && !(prev?.showCelebration ?? false)) {
-        _confettiController.play();
-        _gifPlayerController.seekTo(0);
-        _gifPlayerController.play();
-        setState(() => _showCelebrationGif = true);
-        Future.delayed(const Duration(seconds: 3), () {
-          if (mounted) {
-            practiceNotifier.acknowledgeCelebration();
-            _gifPlayerController.pause();
-            setState(() => _showCelebrationGif = false);
-          }
-        });
-      }
-    });
 
     return Scaffold(
       backgroundColor: StoriaColors.readerBackground,
@@ -106,21 +123,20 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
             return const Center(child: Text('No pages in this book'));
           }
 
-          if (_activePageIndex >= book.pages.length) {
-            _activePageIndex = book.pages.length - 1;
-          }
-
-          final activePage = book.pages[_activePageIndex];
-          final hasNarration = (activePage.narrationUrl ?? '').isNotEmpty;
-          final hasSoundscape = (activePage.soundscapeUrl ?? '').isNotEmpty;
-
-          if (!_loadedInitialAudio) {
-            _loadedInitialAudio = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) async {
-              await audioEngine.loadPage(book.pages[_activePageIndex]);
-              practiceNotifier.loadPageWords(book.pages[_activePageIndex]);
+          if (_initializedBookId != book.id) {
+            _initializedBookId = book.id;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _session.dispatch(ReaderStart(book: book));
             });
           }
+
+          final activeIndex = _runtimeState.activePageIndex.clamp(
+            0,
+            book.pages.length - 1,
+          );
+          final activePage = book.pages[activeIndex];
+          final hasNarration = (activePage.narrationUrl ?? '').isNotEmpty;
+          final hasSoundscape = (activePage.soundscapeUrl ?? '').isNotEmpty;
 
           return Stack(
             children: [
@@ -134,15 +150,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   scrollDirection: Axis.vertical,
                   itemCount: book.pages.length,
                   onPageChanged: (index) async {
-                    setState(() {
-                      _activePageIndex = index;
-                    });
-                    await audioEngine.transitionToPage(book.pages[index]);
-                    ref.read(readerPracticeProvider.notifier).resetForPage();
-                    ref.read(readerPracticeProvider.notifier).loadPageWords(book.pages[index]);
+                    await _session.dispatch(ReaderGoToPage(index));
                   },
                   itemBuilder: (context, index) {
-                    final isInVirtualizationWindow = (index - _activePageIndex).abs() <= 1;
+                    final isInVirtualizationWindow =
+                        (index - activeIndex).abs() <= 1;
                     if (!isInVirtualizationWindow) return const SizedBox.shrink();
 
                     final page = book.pages[index];
@@ -150,20 +162,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         ? 'book-cover-${book.id}'
                         : null;
 
-                    // localOffset: distance from scroll position to this page
-                    // 0.0 = this is the current page, negative = below, positive = above
                     final localOffset = _scrollOffset - index;
 
-                    // Determine reveal direction and progress
                     final double progress;
                     final bool revealFromTop;
 
                     if (localOffset < 0) {
-                      // Page is below viewport — scrolling forward, reveals from bottom
                       progress = (1.0 + localOffset).clamp(0.0, 1.0);
                       revealFromTop = false;
                     } else if (localOffset > 0) {
-                      // Page is above viewport — scrolling backward, reveals from top
                       progress = (1.0 - localOffset).clamp(0.0, 1.0);
                       revealFromTop = true;
                     } else {
@@ -171,23 +178,22 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       revealFromTop = false;
                     }
 
-                    // Always keep ClipPath in the tree to preserve PageRenderer
-                    // state across scroll frames. The clipper returns a full rect
-                    // at progress >= 1.0 so it is a no-op when the page is settled.
                     return ClipPath(
-                      clipper: VerticalLiquidClipper(progress: progress, revealFromTop: revealFromTop),
+                      clipper: VerticalLiquidClipper(
+                        progress: progress,
+                        revealFromTop: revealFromTop,
+                      ),
                       child: PageRenderer(
                         page: page,
-                        narrationPosition: audioState.narrationPosition,
-                        isActive: index == _activePageIndex,
+                        narrationPosition: _runtimeState.narrationPosition,
+                        isActive: index == activeIndex,
                         heroTag: heroTag,
-                        spokenWordIndices: practiceState.spokenWordIndices,
+                        spokenWordIndices: _runtimeState.spokenWordIndices,
                       ),
                     );
                   },
                 ),
               ),
-              // Top chrome
               ValueListenableBuilder<bool>(
                 valueListenable: _showChromeNotifier,
                 builder: (context, showChrome, child) {
@@ -201,39 +207,29 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         book: book,
                         activePageNumber: activePage.pageNumber,
                         onClose: () => Navigator.of(context).maybePop(),
-                        onAudioSettingsTap: () =>
-                            _showAudioSettings(context),
-                        isPracticeMode: practiceState.isPracticeMode,
-                        isListening: practiceState.isListening,
-                        onPracticeToggle: () async {
-                          final notifier = ref.read(readerPracticeProvider.notifier);
-                          if (!practiceState.isPracticeMode) {
-                            await notifier.togglePracticeMode();
-                            notifier.loadPageWords(activePage);
-                            await notifier.startListening();
-                          } else if (practiceState.isListening) {
-                            await notifier.stopListening();
-                          } else {
-                            await notifier.startListening();
-                          }
+                        onAudioSettingsTap: () => _showAudioSettings(context),
+                        isPracticeMode: _runtimeState.isPracticeMode,
+                        isListening: _runtimeState.isListening,
+                        onPracticeToggle: () {
+                          _session.dispatch(const ReaderPracticePrimaryAction());
                         },
                       ),
                     ),
                   );
                 },
               ),
-              // Bottom audio controls
               if (hasNarration || hasSoundscape)
                 _AudioControlsPill(
                   hasNarration: hasNarration,
                   hasSoundscape: hasSoundscape,
-                  isNarrationPlaying: audioState.isNarrationPlaying,
-                  isSoundscapePlaying: audioState.isSoundscapePlaying,
+                  isNarrationPlaying: _runtimeState.isNarrationPlaying,
+                  isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
                   isVisible: true,
-                  onToggleNarration: () => audioEngine.toggleNarration(),
-                  onToggleSoundscape: () => audioEngine.toggleSoundscape(),
+                  onToggleNarration: () =>
+                      _session.dispatch(const ReaderToggleNarration()),
+                  onToggleSoundscape: () =>
+                      _session.dispatch(const ReaderToggleSoundscape()),
                 ),
-              // Confetti celebration
               Align(
                 alignment: Alignment.topCenter,
                 child: ConfettiWidget(
@@ -251,7 +247,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   ],
                 ),
               ),
-              // GIF celebration overlay — topmost, bottom-right corner
               Positioned(
                 right: 16,
                 bottom: MediaQuery.paddingOf(context).bottom + 100,
@@ -273,7 +268,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         loading: () => const _ReaderLoadingState(),
         error: (error, _) => _ReaderErrorState(
           error: '$error',
-          onRetry: () => ref.invalidate(currentBookProvider(widget.bookId)),
+          onRetry: () {
+            _initializedBookId = null;
+            ref.invalidate(currentBookProvider(widget.bookId));
+          },
         ),
       ),
     );
@@ -287,55 +285,49 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (context) {
-        return Consumer(
-          builder: (context, ref, child) {
-            final audioState = ref.watch(readerAudioStateProvider);
-            final notifier = ref.read(readerAudioStateProvider.notifier);
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 46,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD7D7D2),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 46,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD7D7D2),
+                    borderRadius: BorderRadius.circular(999),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Audio Mix',
-                    style: Theme.of(context).textTheme.headlineLarge,
-                  ),
-                  const SizedBox(height: 18),
-                  _VolumeRow(
-                    icon: Icons.record_voice_over_rounded,
-                    label: 'Narration',
-                    semanticsLabel: 'Narration volume',
-                    value: audioState.narrationVolume,
-                    onChanged: (value) {
-                      notifier.setNarrationVolume(value);
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  _VolumeRow(
-                    icon: Icons.surround_sound_rounded,
-                    label: 'Ambience',
-                    semanticsLabel: 'Ambience volume',
-                    value: audioState.soundscapeVolume,
-                    onChanged: (value) {
-                      notifier.setSoundscapeVolume(value);
-                    },
-                  ),
-                ],
+                ),
               ),
-            );
-          },
+              const SizedBox(height: 16),
+              Text(
+                'Audio Mix',
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              const SizedBox(height: 18),
+              _VolumeRow(
+                icon: Icons.record_voice_over_rounded,
+                label: 'Narration',
+                semanticsLabel: 'Narration volume',
+                value: _runtimeState.narrationVolume,
+                onChanged: (value) {
+                  _session.dispatch(ReaderSetNarrationVolume(value));
+                },
+              ),
+              const SizedBox(height: 14),
+              _VolumeRow(
+                icon: Icons.surround_sound_rounded,
+                label: 'Ambience',
+                semanticsLabel: 'Ambience volume',
+                value: _runtimeState.soundscapeVolume,
+                onChanged: (value) {
+                  _session.dispatch(ReaderSetSoundscapeVolume(value));
+                },
+              ),
+            ],
+          ),
         );
       },
     );
