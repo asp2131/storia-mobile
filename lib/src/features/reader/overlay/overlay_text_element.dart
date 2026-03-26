@@ -7,12 +7,14 @@ class OverlayTextElement extends StatelessWidget {
   final OverlayElementFrame element;
   final bool isActive;
   final void Function(String word, int globalIndex)? onWordTap;
+  final void Function(String word, int globalIndex)? onWordLongPress;
 
   const OverlayTextElement({
     super.key,
     required this.element,
     required this.isActive,
     this.onWordTap,
+    this.onWordLongPress,
   });
 
   @override
@@ -87,6 +89,7 @@ class OverlayTextElement extends StatelessWidget {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () => onWordTap?.call(token.raw, index),
+              onLongPress: () => onWordLongPress?.call(token.raw, index),
               child: wordWidget,
             ),
           ),

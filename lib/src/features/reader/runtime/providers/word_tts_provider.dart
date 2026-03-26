@@ -85,6 +85,41 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
     }
   }
 
+  /// Called when a word is long-pressed in the overlay.
+  /// Sounds out the word syllable-by-syllable, then says it normally.
+  Future<void> onWordLongPressed(String word, int globalIndex) async {
+    // Same interrupt + pause logic as onWordTapped
+    await _service.stop();
+    state = WordTtsState(tappedWordIndex: globalIndex);
+
+    _wasNarrationPlaying = _lastState.isNarrationPlaying;
+    if (_wasNarrationPlaying) {
+      await _session.dispatch(const ReaderToggleNarration());
+    }
+
+    _wasListening = _lastState.isListening;
+    if (_wasListening) {
+      await _session.dispatch(const ReaderPracticePrimaryAction());
+    }
+
+    // Sound out the word (syllable-by-syllable then whole word)
+    await _service.soundOut(word);
+
+    if (state.tappedWordIndex == globalIndex) {
+      state = const WordTtsState();
+    }
+
+    if (_wasNarrationPlaying && !_lastState.isNarrationPlaying) {
+      await _session.dispatch(const ReaderToggleNarration());
+      _wasNarrationPlaying = false;
+    }
+
+    if (_wasListening && !_lastState.isListening) {
+      await _session.dispatch(const ReaderPracticePrimaryAction());
+      _wasListening = false;
+    }
+  }
+
   @override
   void dispose() {
     _stateSubscription?.cancel();

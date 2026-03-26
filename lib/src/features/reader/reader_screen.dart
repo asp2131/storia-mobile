@@ -235,6 +235,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                             onWordTap: (word, globalIndex) {
                               ref.read(wordTtsProvider.notifier).onWordTapped(word, globalIndex);
                             },
+                            onWordLongPress: (word, globalIndex) {
+                              ref.read(wordTtsProvider.notifier).onWordLongPressed(word, globalIndex);
+                            },
                           );
                         },
                       ),

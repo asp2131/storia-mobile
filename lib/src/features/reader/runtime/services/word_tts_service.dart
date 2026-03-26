@@ -78,6 +78,78 @@ class WordTtsService {
     return 'en-US';
   }
 
+  /// Sound out a word syllable-by-syllable, then say it normally.
+  /// Used for long-press "help me read this" interaction.
+  Future<void> soundOut(String word) async {
+    await init();
+    await stop();
+
+    // Split into syllables
+    final syllableList = _splitSyllables(word.toLowerCase());
+
+    if (syllableList.length <= 1) {
+      // Single syllable word — just speak it slowly
+      await _tts.setSpeechRate(0.3);
+      _speakCompleter = Completer<void>();
+      await _tts.speak(word);
+      await _speakCompleter!.future;
+      await _tts.setSpeechRate(0.45);
+      return;
+    }
+
+    // Speak syllables with pauses
+    final syllabified = syllableList.join('... ');
+    await _tts.setSpeechRate(0.3);
+    _speakCompleter = Completer<void>();
+    await _tts.speak(syllabified);
+    await _speakCompleter!.future;
+
+    // Brief pause then say the whole word normally
+    await Future.delayed(const Duration(milliseconds: 400));
+    await _tts.setSpeechRate(0.45);
+    _speakCompleter = Completer<void>();
+    await _tts.speak(word);
+    await _speakCompleter!.future;
+  }
+
+  /// Simple heuristic syllable splitter for English words.
+  /// Splits on vowel-consonant-vowel boundaries (before the consonant).
+  List<String> _splitSyllables(String word) {
+    const vowels = {'a', 'e', 'i', 'o', 'u', 'y'};
+    if (word.length <= 3) return [word];
+
+    final syllables = <String>[];
+    var current = StringBuffer();
+
+    for (var i = 0; i < word.length; i++) {
+      current.write(word[i]);
+
+      if (i < word.length - 2) {
+        final isCurrentVowel = vowels.contains(word[i].toLowerCase());
+        final isNextConsonant = !vowels.contains(word[i + 1].toLowerCase());
+        final isAfterNextVowel = vowels.contains(word[i + 2].toLowerCase());
+
+        if (isCurrentVowel &&
+            isNextConsonant &&
+            isAfterNextVowel &&
+            current.length >= 2) {
+          syllables.add(current.toString());
+          current = StringBuffer();
+        }
+      }
+    }
+
+    if (current.isNotEmpty) {
+      if (syllables.isNotEmpty && current.length == 1) {
+        syllables.last = syllables.last + current.toString();
+      } else {
+        syllables.add(current.toString());
+      }
+    }
+
+    return syllables.isEmpty ? [word] : syllables;
+  }
+
   void dispose() {
     stop();
     _tts.stop();

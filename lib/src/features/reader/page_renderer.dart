@@ -19,6 +19,7 @@ class PageRenderer extends ConsumerStatefulWidget {
   final bool isActive;
   final String? heroTag;
   final void Function(String word, int globalIndex)? onWordTap;
+  final void Function(String word, int globalIndex)? onWordLongPress;
   final Set<int> spokenWordIndices;
 
   const PageRenderer({
@@ -28,6 +29,7 @@ class PageRenderer extends ConsumerStatefulWidget {
     required this.isActive,
     this.heroTag,
     this.onWordTap,
+    this.onWordLongPress,
     this.spokenWordIndices = const {},
   });
 
@@ -143,6 +145,7 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
                     tappedWordIndex: tappedWordIndex,
                   ),
                   onWordTap: widget.onWordTap,
+                  onWordLongPress: widget.onWordLongPress,
                 ),
               ),
             if (!hasOverlay && hasFallbackText)
