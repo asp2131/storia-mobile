@@ -11,6 +11,7 @@ abstract interface class OverlayLayoutEngine {
     required int activeWordIndex,
     required Set<int> spokenWordIndices,
     required bool isActive,
+    int? tappedWordIndex,
   });
 }
 
@@ -24,6 +25,7 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
     required int activeWordIndex,
     required Set<int> spokenWordIndices,
     required bool isActive,
+    int? tappedWordIndex,
   }) {
     final elements = <OverlayElementFrame>[];
     var wordCursor = 0;
@@ -74,10 +76,17 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
         final globalIndex = wordCursor;
         wordCursor += 1;
 
+        final isTapped = globalIndex == tappedWordIndex;
         final isNarrationHighlighted = globalIndex == activeWordIndex;
         final isSpoken = spokenWordIndices.contains(globalIndex);
 
-        final style = isSpoken
+        final style = isTapped
+            ? baseStyle.copyWith(
+                backgroundColor: const Color.fromRGBO(139, 92, 246, 0.85),
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              )
+            : isSpoken
             ? baseStyle.copyWith(
                 backgroundColor: const Color.fromRGBO(255, 213, 79, 0.85),
                 fontWeight: FontWeight.w800,
@@ -95,6 +104,7 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
             isWord: true,
             style: style,
             globalWordIndex: globalIndex,
+            isTapped: isTapped,
           ),
         );
       }
@@ -125,6 +135,10 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
       );
     }
 
-    return OverlayFrame(elements: elements, isActive: isActive);
+    return OverlayFrame(
+      elements: elements,
+      isActive: isActive,
+      tappedWordIndex: tappedWordIndex,
+    );
   }
 }

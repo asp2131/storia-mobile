@@ -17,6 +17,7 @@ import '../../data/providers.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
 import 'runtime/providers/reader_session_provider.dart';
+import 'runtime/providers/word_tts_provider.dart';
 import 'runtime/reader_intent.dart';
 import 'runtime/reader_session.dart';
 import 'runtime/reader_view_state.dart';
@@ -51,6 +52,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     super.initState();
     _session = ref.read(readerSessionProvider);
     _sessionSubscription = _session.states.listen(_onRuntimeStateChanged);
+
+    // Attach state stream to word TTS notifier for narration/mic coordination
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(wordTtsProvider.notifier).attachStateStream(_session.states);
+    });
 
     _pageController.addListener(_onPageScroll);
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
@@ -226,6 +232,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                             isActive: index == activeIndex,
                             heroTag: heroTag,
                             spokenWordIndices: _runtimeState.spokenWordIndices,
+                            onWordTap: (word, globalIndex) {
+                              ref.read(wordTtsProvider.notifier).onWordTapped(word, globalIndex);
+                            },
                           );
                         },
                       ),

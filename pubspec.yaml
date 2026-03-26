@@ -55,6 +55,7 @@ dependencies:
   wakelock_plus: ^1.4.0
   flutter_animate: ^4.5.2
   speech_to_text: ^7.0.0
+  flutter_tts: ^4.2.0
   confetti: ^0.8.0
   gif_player: ^0.1.0
   flutter_svg: ^2.2.1

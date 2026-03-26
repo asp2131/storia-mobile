@@ -71,6 +71,15 @@ class OverlayTextElement extends StatelessWidget {
 
       final index = token.globalWordIndex;
       if (onWordTap != null && index != null) {
+        Widget wordWidget = Text(token.raw, style: token.style);
+        if (token.isTapped) {
+          wordWidget = AnimatedScale(
+            scale: 1.15,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutBack,
+            child: wordWidget,
+          );
+        }
         spans.add(
           WidgetSpan(
             alignment: PlaceholderAlignment.baseline,
@@ -78,7 +87,7 @@ class OverlayTextElement extends StatelessWidget {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () => onWordTap?.call(token.raw, index),
-              child: Text(token.raw, style: token.style),
+              child: wordWidget,
             ),
           ),
         );

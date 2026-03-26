@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 
 @immutable
 class OverlayFrame {
-  const OverlayFrame({required this.elements, required this.isActive});
+  const OverlayFrame({
+    required this.elements,
+    required this.isActive,
+    this.tappedWordIndex,
+  });
 
   final List<OverlayElementFrame> elements;
   final bool isActive;
+  final int? tappedWordIndex;
 }
 
 @immutable
@@ -40,12 +45,14 @@ class OverlayTokenFrame {
     required this.isWord,
     required this.style,
     this.globalWordIndex,
+    this.isTapped = false,
   });
 
   final String raw;
   final bool isWord;
   final TextStyle style;
   final int? globalWordIndex;
+  final bool isTapped;
 }
 
 @immutable
