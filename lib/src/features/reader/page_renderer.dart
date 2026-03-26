@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/resilient_cache_manager.dart';
 import '../../data/models.dart';
+import 'overlay/overlay_layout_engine.dart';
 import 'overlay/overlay_text_layer.dart';
 import 'overlay/text_overlay_utils.dart';
 
@@ -33,6 +34,8 @@ class PageRenderer extends StatefulWidget {
 }
 
 class _PageRendererState extends State<PageRenderer> {
+  static const OverlayLayoutEngine _overlayEngine = OverlayLayoutEngineImpl();
+
   Size? _sourceImageSize;
 
   @override
@@ -128,11 +131,13 @@ class _PageRendererState extends State<PageRenderer> {
                 width: imageRect.width,
                 height: imageRect.height,
                 child: OverlayTextLayer(
-                  overlay: page.overlay!,
-                  imageSize: imageRect.size,
-                  activeWordIndex: activeWordIndex,
-                  spokenWordIndices: widget.spokenWordIndices,
-                  isActive: widget.isActive,
+                  frame: _overlayEngine.build(
+                    overlay: page.overlay!,
+                    imageSize: imageRect.size,
+                    activeWordIndex: activeWordIndex,
+                    spokenWordIndices: widget.spokenWordIndices,
+                    isActive: widget.isActive,
+                  ),
                   onWordTap: widget.onWordTap,
                 ),
               ),

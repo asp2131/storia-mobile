@@ -67,21 +67,6 @@ int computeActiveWordIndex(
   return foundIndex;
 }
 
-Map<String, int> calculateWordStartsByElementId(TextOverlayConfig overlay) {
-  final map = <String, int>{};
-  var wordCount = 0;
-
-  for (final element in overlay.elements) {
-    map[element.id] = wordCount;
-    final trimmed = element.text.trim();
-    if (trimmed.isNotEmpty) {
-      wordCount += trimmed.split(RegExp(r'\s+')).length;
-    }
-  }
-
-  return map;
-}
-
 Color parseHexColor(String value, {Color fallback = Colors.white}) {
   var hex = value.trim();
   if (hex.isEmpty) {

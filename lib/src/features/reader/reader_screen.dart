@@ -33,6 +33,9 @@ class ReaderScreen extends ConsumerStatefulWidget {
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final PageController _pageController = PageController();
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
+  final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
+    Duration.zero,
+  );
   double _scrollOffset = 0.0;
   late final ConfettiController _confettiController;
   bool _showCelebrationGif = false;
@@ -61,10 +64,25 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   }
 
   void _onRuntimeStateChanged(ReaderViewState next) {
-    final wasCelebrating = _runtimeState.showCelebration;
+    final previous = _runtimeState;
+    final wasCelebrating = previous.showCelebration;
     final isCelebrating = next.showCelebration;
 
-    if (mounted) {
+    _narrationPositionNotifier.value = next.narrationPosition;
+
+    final needsStructuralRebuild =
+        previous.isReady != next.isReady ||
+        previous.activePageIndex != next.activePageIndex ||
+        previous.isNarrationPlaying != next.isNarrationPlaying ||
+        previous.isSoundscapePlaying != next.isSoundscapePlaying ||
+        previous.narrationVolume != next.narrationVolume ||
+        previous.soundscapeVolume != next.soundscapeVolume ||
+        previous.isPracticeMode != next.isPracticeMode ||
+        previous.isListening != next.isListening ||
+        previous.showCelebration != next.showCelebration ||
+        !_sameWordIndices(previous.spokenWordIndices, next.spokenWordIndices);
+
+    if (mounted && needsStructuralRebuild) {
       setState(() {
         _runtimeState = next;
       });
@@ -96,10 +114,26 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     if (page != null) setState(() => _scrollOffset = page);
   }
 
+  bool _sameWordIndices(Set<int> a, Set<int> b) {
+    if (identical(a, b)) {
+      return true;
+    }
+    if (a.length != b.length) {
+      return false;
+    }
+    for (final value in a) {
+      if (!b.contains(value)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @override
   void dispose() {
     _sessionSubscription?.cancel();
     _showChromeNotifier.dispose();
+    _narrationPositionNotifier.dispose();
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
     _confettiController.dispose();
@@ -183,12 +217,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         progress: progress,
                         revealFromTop: revealFromTop,
                       ),
-                      child: PageRenderer(
-                        page: page,
-                        narrationPosition: _runtimeState.narrationPosition,
-                        isActive: index == activeIndex,
-                        heroTag: heroTag,
-                        spokenWordIndices: _runtimeState.spokenWordIndices,
+                      child: ValueListenableBuilder<Duration>(
+                        valueListenable: _narrationPositionNotifier,
+                        builder: (context, narrationPosition, _) {
+                          return PageRenderer(
+                            page: page,
+                            narrationPosition: narrationPosition,
+                            isActive: index == activeIndex,
+                            heroTag: heroTag,
+                            spokenWordIndices: _runtimeState.spokenWordIndices,
+                          );
+                        },
                       ),
                     );
                   },
