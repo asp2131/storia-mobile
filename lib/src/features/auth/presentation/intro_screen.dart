@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:gif_player/gif_player.dart';
+import 'package:rive/rive.dart' as rive;
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -18,31 +18,27 @@ class IntroScreen extends StatefulWidget {
 
 class _IntroScreenState extends State<IntroScreen>
     with SingleTickerProviderStateMixin {
-  static const _heroSize = 256.0;
+  static const _heroSize = 320.0;
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(seconds: 20),
   )..repeat();
 
-  late final GifPlayerController _gifController = GifPlayerController(
-    dataSource: GifPlayerDataSource.asset('assets/gifs/landing.gif'),
-    isAutoPlay: true,
-    loop: true,
-    showControls: false,
-    showPlayButton: false,
+  late final rive.FileLoader _landingRiveLoader = rive.FileLoader.fromAsset(
+    'assets/gifs/landing_anim.riv',
+    riveFactory: rive.Factory.flutter,
   );
 
   @override
   void dispose() {
     _controller.dispose();
-    _gifController.dispose();
+    _landingRiveLoader.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    const bg = StoriaColors.paper;
     const primary = StoriaColors.ink;
     const fg = StoriaColors.inkMuted;
     const btn = StoriaColors.sage;
@@ -50,13 +46,21 @@ class _IntroScreenState extends State<IntroScreen>
     final screenHeight = MediaQuery.sizeOf(context).height;
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: Colors.transparent,
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
           return Stack(
             children: [
-              Positioned.fill(child: ColoredBox(color: bg)),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: SvgPicture.asset(
+                    'assets/svgs/landing_bg.svg',
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                  ),
+                ),
+              ),
               Positioned.fill(
                 child: IgnorePointer(
                   child: DecoratedBox(
@@ -64,7 +68,10 @@ class _IntroScreenState extends State<IntroScreen>
                       gradient: RadialGradient(
                         center: const Alignment(0, -0.45),
                         radius: 0.45,
-                        colors: [Colors.white.withValues(alpha: 0.62), bg],
+                        colors: [
+                          Colors.white.withValues(alpha: 0.24),
+                          Colors.transparent,
+                        ],
                       ),
                     ),
                   ),
@@ -188,9 +195,28 @@ class _IntroScreenState extends State<IntroScreen>
                                   ),
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(32),
-                                    child: GifPlayer(
-                                      controller: _gifController,
-                                      fit: BoxFit.cover,
+                                    child: rive.RiveWidgetBuilder(
+                                      fileLoader: _landingRiveLoader,
+                                      // Some .riv files have an invalid "default" state machine index.
+                                      // Select the first state machine explicitly to avoid runtime RangeError.
+                                      controller: (file) => rive.RiveWidgetController(
+                                        file,
+                                        stateMachineSelector:
+                                            rive.StateMachineSelector.byIndex(0),
+                                      ),
+                                      onFailed: (error, stackTrace) {
+                                        debugPrint(
+                                          'Failed to load landing Rive: $error',
+                                        );
+                                      },
+                                      builder: (context, state) => switch (state) {
+                                        rive.RiveLoading() => const SizedBox.expand(),
+                                        rive.RiveFailed() => const SizedBox.expand(),
+                                        rive.RiveLoaded() => rive.RiveWidget(
+                                          controller: state.controller,
+                                          fit: rive.Fit.cover,
+                                        ),
+                                      },
                                     ),
                                   ),
                                   _sparkle(
