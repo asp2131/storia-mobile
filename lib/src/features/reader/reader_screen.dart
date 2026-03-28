@@ -59,7 +59,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     });
 
     _pageController.addListener(_onPageScroll);
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
     _gifPlayerController = GifPlayerController(
       dataSource: GifPlayerDataSource.asset('assets/gifs/green_screen.gif'),
       isAutoPlay: false,
@@ -195,10 +197,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   itemBuilder: (context, index) {
                     final isInVirtualizationWindow =
                         (index - activeIndex).abs() <= 1;
-                    if (!isInVirtualizationWindow) return const SizedBox.shrink();
+                    if (!isInVirtualizationWindow) {
+                      return const SizedBox.shrink();
+                    }
 
                     final page = book.pages[index];
-                    final heroTag = index == 0 && (book.coverUrl ?? '').isNotEmpty
+                    final heroTag =
+                        index == 0 && (book.coverUrl ?? '').isNotEmpty
                         ? 'book-cover-${book.id}'
                         : null;
 
@@ -233,10 +238,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                             heroTag: heroTag,
                             spokenWordIndices: _runtimeState.spokenWordIndices,
                             onWordTap: (word, globalIndex) {
-                              ref.read(wordTtsProvider.notifier).onWordTapped(word, globalIndex);
+                              ref
+                                  .read(wordTtsProvider.notifier)
+                                  .onWordTapped(word, globalIndex);
                             },
                             onWordLongPress: (word, globalIndex) {
-                              ref.read(wordTtsProvider.notifier).onWordLongPressed(word, globalIndex);
+                              ref
+                                  .read(wordTtsProvider.notifier)
+                                  .onWordLongPressed(word, globalIndex);
                             },
                           );
                         },
@@ -262,25 +271,36 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         isPracticeMode: _runtimeState.isPracticeMode,
                         isListening: _runtimeState.isListening,
                         onPracticeToggle: () {
-                          _session.dispatch(const ReaderPracticePrimaryAction());
+                          _session.dispatch(
+                            const ReaderPracticePrimaryAction(),
+                          );
                         },
                       ),
                     ),
                   );
                 },
               ),
-              if (hasNarration || hasSoundscape)
-                _AudioControlsPill(
-                  hasNarration: hasNarration,
-                  hasSoundscape: hasSoundscape,
-                  isNarrationPlaying: _runtimeState.isNarrationPlaying,
-                  isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
-                  isVisible: true,
-                  onToggleNarration: () =>
-                      _session.dispatch(const ReaderToggleNarration()),
-                  onToggleSoundscape: () =>
-                      _session.dispatch(const ReaderToggleSoundscape()),
-                ),
+              ValueListenableBuilder<bool>(
+                valueListenable: _showChromeNotifier,
+                builder: (context, showChrome, _) {
+                  if (!hasNarration && !hasSoundscape) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return _AudioControlsPill(
+                    hasNarration: hasNarration,
+                    hasSoundscape: hasSoundscape,
+                    isNarrationPlaying: _runtimeState.isNarrationPlaying,
+                    isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
+                    isVisible: true,
+                    showGrip: showChrome,
+                    onToggleNarration: () =>
+                        _session.dispatch(const ReaderToggleNarration()),
+                    onToggleSoundscape: () =>
+                        _session.dispatch(const ReaderToggleSoundscape()),
+                  );
+                },
+              ),
               Align(
                 alignment: Alignment.topCenter,
                 child: ConfettiWidget(
@@ -305,7 +325,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 child: IgnorePointer(
                   child: AnimatedOpacity(
                     opacity: _showCelebrationGif ? 1.0 : 0.0,
-                    duration: Duration(milliseconds: _showCelebrationGif ? 300 : 500),
+                    duration: Duration(
+                      milliseconds: _showCelebrationGif ? 300 : 500,
+                    ),
                     child: GifPlayer(
                       controller: _gifPlayerController,
                       fit: BoxFit.contain,
@@ -511,11 +533,13 @@ class _ReaderTopBar extends StatelessWidget {
                 icon: isListening
                     ? Icons.mic_rounded
                     : isPracticeMode
-                        ? Icons.mic_none_rounded
-                        : Icons.menu_book_rounded,
+                    ? Icons.mic_none_rounded
+                    : Icons.menu_book_rounded,
                 color: isPracticeMode ? const Color(0xFFF59E0B) : Colors.white,
                 onTap: onPracticeToggle,
-                semanticLabel: isPracticeMode ? 'Stop practice' : 'Practice reading',
+                semanticLabel: isPracticeMode
+                    ? 'Stop practice'
+                    : 'Practice reading',
                 semanticHint: isPracticeMode
                     ? 'Tap to stop reading practice'
                     : 'Tap to start reading practice',
@@ -542,12 +566,13 @@ class _ReaderTopBar extends StatelessWidget {
 const _narrationColor = Color(0xFFF59E0B); // Warm amber
 const _soundscapeColor = Color(0xFF14B8A6); // Teal
 
-class _AudioControlsPill extends StatelessWidget {
+class _AudioControlsPill extends StatefulWidget {
   final bool hasNarration;
   final bool hasSoundscape;
   final bool isNarrationPlaying;
   final bool isSoundscapePlaying;
   final bool isVisible;
+  final bool showGrip;
   final Future<void> Function() onToggleNarration;
   final Future<void> Function() onToggleSoundscape;
 
@@ -557,95 +582,306 @@ class _AudioControlsPill extends StatelessWidget {
     required this.isNarrationPlaying,
     required this.isSoundscapePlaying,
     required this.isVisible,
+    required this.showGrip,
     required this.onToggleNarration,
     required this.onToggleSoundscape,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
+  State<_AudioControlsPill> createState() => _AudioControlsPillState();
+}
 
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: math.max(28, bottomInset + 12),
+class _AudioControlsPillState extends State<_AudioControlsPill> {
+  final GlobalKey _pillKey = GlobalKey();
+  Offset _dragOffset = Offset.zero;
+  Size _pillSize = Size.zero;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleMeasure();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AudioControlsPill oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hasNarration != widget.hasNarration ||
+        oldWidget.hasSoundscape != widget.hasSoundscape ||
+        oldWidget.showGrip != widget.showGrip) {
+      _scheduleMeasure();
+    }
+  }
+
+  void _scheduleMeasure() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final renderObject = _pillKey.currentContext?.findRenderObject();
+      if (renderObject is! RenderBox || !renderObject.hasSize) {
+        return;
+      }
+      final nextSize = renderObject.size;
+      if (nextSize != _pillSize) {
+        setState(() => _pillSize = nextSize);
+      }
+    });
+  }
+
+  Offset _clampOffset({
+    required Offset candidate,
+    required Size viewportSize,
+    required EdgeInsets safePadding,
+    required double baseBottom,
+  }) {
+    if (_pillSize == Size.zero) {
+      return candidate;
+    }
+
+    final baseLeft = (viewportSize.width - _pillSize.width) / 2;
+    final baseTop = viewportSize.height - baseBottom - _pillSize.height;
+
+    final minLeft = 8.0;
+    final maxLeft = math.max(
+      minLeft,
+      viewportSize.width - _pillSize.width - 8.0,
+    );
+    final minTop = safePadding.top + 12.0;
+    final maxTop = math.max(
+      minTop,
+      viewportSize.height - safePadding.bottom - _pillSize.height - 12.0,
+    );
+
+    final left = (baseLeft + candidate.dx).clamp(minLeft, maxLeft);
+    final top = (baseTop + candidate.dy).clamp(minTop, maxTop);
+
+    return Offset(left - baseLeft, top - baseTop);
+  }
+
+  Widget _buildPillBody() {
+    return ClipPath(
+      clipper: ShapeBorderClipper(
+        shape: const SketchBorderShape(
+          side: BorderSide(
+            color: Color.fromRGBO(255, 255, 255, 0.18),
+            width: 1.1,
+          ),
+          radiusScale: 0.9,
+        ),
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            color: const Color.fromRGBO(10, 15, 25, 0.40),
+            shape: SketchBorderShape(
+              side: BorderSide(
+                color: _isDragging
+                    ? const Color.fromRGBO(255, 255, 255, 0.34)
+                    : const Color.fromRGBO(255, 255, 255, 0.18),
+                width: _isDragging ? 1.4 : 1.1,
+              ),
+              radiusScale: 0.9,
+            ),
+            shadows: [
+              BoxShadow(
+                color: Colors.black.withValues(
+                  alpha: _isDragging ? 0.34 : 0.18,
+                ),
+                blurRadius: _isDragging ? 28 : 18,
+                offset: Offset(0, _isDragging ? 16 : 8),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.hasNarration)
+                  _AudioIconButton(
+                    icon: widget.isNarrationPlaying
+                        ? Icons.pause_rounded
+                        : Icons.headphones_rounded,
+                    accentColor: _narrationColor,
+                    isPlaying: widget.isNarrationPlaying,
+                    label: 'Story',
+                    semanticLabel: 'Narration',
+                    onTap: widget.onToggleNarration,
+                  ),
+                if (widget.hasNarration && widget.hasSoundscape)
+                  Container(
+                    width: 1,
+                    height: 24,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    color: const Color.fromRGBO(255, 255, 255, 0.12),
+                  ),
+                if (widget.hasSoundscape)
+                  _AudioIconButton(
+                    icon: widget.isSoundscapePlaying
+                        ? Icons.volume_up_rounded
+                        : Icons.waves_rounded,
+                    accentColor: _soundscapeColor,
+                    isPlaying: widget.isSoundscapePlaying,
+                    label: 'Music',
+                    semanticLabel: 'Ambience',
+                    onTap: widget.onToggleSoundscape,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGripHandle({
+    required Size viewportSize,
+    required EdgeInsets safePadding,
+    required double baseBottom,
+  }) {
+    return Semantics(
+      button: true,
+      label: 'Move audio controls',
+      hint: 'Drag to reposition the narration and soundscape controls',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanStart: (_) {
+          setState(() => _isDragging = true);
+        },
+        onPanUpdate: (details) {
+          final next = _clampOffset(
+            candidate: _dragOffset + details.delta,
+            viewportSize: viewportSize,
+            safePadding: safePadding,
+            baseBottom: baseBottom,
+          );
+          setState(() => _dragOffset = next);
+        },
+        onPanEnd: (_) {
+          setState(() => _isDragging = false);
+        },
+        onPanCancel: () {
+          setState(() => _isDragging = false);
+        },
+        child: AnimatedScale(
+          scale: _isDragging ? 1.06 : 1.0,
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: const Color.fromRGBO(22, 28, 40, 0.94),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: const Color.fromRGBO(255, 255, 255, 0.22),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.26),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(
+                  3,
+                  (_) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Container(
+                      width: 4,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(255, 255, 255, 0.72),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final safePadding = MediaQuery.paddingOf(context);
+    final viewportSize = MediaQuery.sizeOf(context);
+    final baseBottom = math.max(28.0, safePadding.bottom + 12.0);
+    final clampedOffset = _clampOffset(
+      candidate: _dragOffset,
+      viewportSize: viewportSize,
+      safePadding: safePadding,
+      baseBottom: baseBottom,
+    );
+
+    if (clampedOffset != _dragOffset) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() => _dragOffset = clampedOffset);
+      });
+    }
+
+    return Positioned.fill(
       child: IgnorePointer(
-        ignoring: !isVisible,
+        ignoring: !widget.isVisible,
         child: AnimatedOpacity(
-          opacity: isVisible ? 1 : 0,
+          opacity: widget.isVisible ? 1 : 0,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
           child: AnimatedSlide(
-            offset: isVisible ? Offset.zero : const Offset(0, 0.3),
+            offset: widget.isVisible ? Offset.zero : const Offset(0, 0.3),
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
-            child: Center(
-              child: ClipPath(
-                clipper: ShapeBorderClipper(
-                  shape: const SketchBorderShape(
-                    side: BorderSide(
-                      color: Color.fromRGBO(255, 255, 255, 0.18),
-                      width: 1.1,
-                    ),
-                    radiusScale: 0.9,
-                  ),
-                ),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                  child: DecoratedBox(
-                    decoration: const ShapeDecoration(
-                      color: Color.fromRGBO(10, 15, 25, 0.40),
-                      shape: SketchBorderShape(
-                        side: BorderSide(
-                          color: Color.fromRGBO(255, 255, 255, 0.18),
-                          width: 1.1,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Transform.translate(
+                offset: clampedOffset,
+                child: AnimatedScale(
+                  scale: _isDragging ? 1.035 : 1.0,
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  child: Stack(
+                    key: _pillKey,
+                    clipBehavior: Clip.none,
+                    children: [
+                      if (_isDragging)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: Transform.translate(
+                              offset: const Offset(0, 10),
+                              child: Opacity(
+                                opacity: 0.18,
+                                child: _buildPillBody(),
+                              ),
+                            ),
+                          ),
                         ),
-                        radiusScale: 0.9,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (hasNarration)
-                            _AudioIconButton(
-                              icon: isNarrationPlaying
-                                  ? Icons.pause_rounded
-                                  : Icons.headphones_rounded,
-                              accentColor: _narrationColor,
-                              isPlaying: isNarrationPlaying,
-                              label: 'Story',
-                              semanticLabel: 'Narration',
-                              onTap: onToggleNarration,
-                            ),
-                          if (hasNarration && hasSoundscape)
-                            Container(
-                              width: 1,
-                              height: 24,
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              color: const Color.fromRGBO(255, 255, 255, 0.12),
-                            ),
-                          if (hasSoundscape)
-                            _AudioIconButton(
-                              icon: isSoundscapePlaying
-                                  ? Icons.volume_up_rounded
-                                  : Icons.waves_rounded,
-                              accentColor: _soundscapeColor,
-                              isPlaying: isSoundscapePlaying,
-                              label: 'Music',
-                              semanticLabel: 'Ambience',
-                              onTap: onToggleSoundscape,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
+                      _buildPillBody(),
+                      if (widget.showGrip)
+                        Positioned(
+                          top: -12,
+                          right: -8,
+                          child: _buildGripHandle(
+                            viewportSize: viewportSize,
+                            safePadding: safePadding,
+                            baseBottom: baseBottom,
+                          ),
+                        ),
+                    ],
+                  ).animate().fadeIn(duration: StoriaMotion.medium),
                 ),
-              ).animate().fadeIn(duration: StoriaMotion.medium),
+              ),
             ),
           ),
         ),
@@ -705,9 +941,10 @@ class _AudioIconButtonState extends State<_AudioIconButton>
       lowerBound: 0.0,
       upperBound: 1.0,
     );
-    _pressAnimation = Tween<double>(begin: 1.0, end: 0.88).animate(
-      CurvedAnimation(parent: _pressController, curve: Curves.easeOut),
-    );
+    _pressAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.88,
+    ).animate(CurvedAnimation(parent: _pressController, curve: Curves.easeOut));
   }
 
   @override
@@ -749,7 +986,8 @@ class _AudioIconButtonState extends State<_AudioIconButton>
       button: true,
       toggled: widget.isPlaying,
       label: widget.semanticLabel,
-      hint: 'Double tap to ${widget.isPlaying ? 'pause' : 'play'} ${widget.semanticLabel}',
+      hint:
+          'Double tap to ${widget.isPlaying ? 'pause' : 'play'} ${widget.semanticLabel}',
       value: widget.isPlaying ? 'On' : 'Off',
       child: GestureDetector(
         onTapDown: _onTapDown,
@@ -759,10 +997,7 @@ class _AudioIconButtonState extends State<_AudioIconButton>
           animation: Listenable.merge([_breathAnimation, _pressAnimation]),
           builder: (context, child) {
             final scale = _pressAnimation.value * _breathAnimation.value;
-            return Transform.scale(
-              scale: scale,
-              child: child,
-            );
+            return Transform.scale(scale: scale, child: child);
           },
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -876,7 +1111,10 @@ class _PulsingDotState extends State<_PulsingDot>
             child: Container(
               width: 6,
               height: 6,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: widget.color),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: widget.color,
+              ),
             ),
           ),
         );
