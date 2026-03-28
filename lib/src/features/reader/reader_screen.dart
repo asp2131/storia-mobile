@@ -769,38 +769,163 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
           scale: _isDragging ? 1.06 : 1.0,
           duration: const Duration(milliseconds: 160),
           curve: Curves.easeOut,
-          child: DecoratedBox(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
             decoration: BoxDecoration(
-              color: const Color.fromRGBO(22, 28, 40, 0.94),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: const Color.fromRGBO(255, 255, 255, 0.22),
-                width: 1,
-              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.26),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
+                  color: Colors.black.withValues(
+                    alpha: _isDragging ? 0.32 : 0.24,
+                  ),
+                  blurRadius: _isDragging ? 18 : 14,
+                  offset: Offset(0, _isDragging ? 8 : 6),
+                ),
+                BoxShadow(
+                  color: const Color.fromRGBO(
+                    180,
+                    220,
+                    255,
+                    0.12,
+                  ).withValues(alpha: _isDragging ? 0.18 : 0.10),
+                  blurRadius: _isDragging ? 18 : 12,
+                  offset: const Offset(0, 1),
                 ),
               ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(
-                  3,
-                  (_) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Container(
-                      width: 4,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: const Color.fromRGBO(255, 255, 255, 0.72),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: _isDragging ? 16 : 12,
+                  sigmaY: _isDragging ? 16 : 12,
+                ),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color.fromRGBO(96, 116, 150, _isDragging ? 0.34 : 0.28),
+                        Color.fromRGBO(23, 29, 40, _isDragging ? 0.70 : 0.62),
+                      ],
                     ),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Color.fromRGBO(
+                        255,
+                        255,
+                        255,
+                        _isDragging ? 0.32 : 0.24,
+                      ),
+                      width: 1.1,
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 1,
+                        right: 1,
+                        top: 1,
+                        child: IgnorePointer(
+                          child: Container(
+                            height: 12,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Color.fromRGBO(
+                                    255,
+                                    255,
+                                    255,
+                                    _isDragging ? 0.16 : 0.12,
+                                  ),
+                                  const Color.fromRGBO(255, 255, 255, 0.0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: const Color.fromRGBO(
+                                  170,
+                                  220,
+                                  255,
+                                  0.10,
+                                ).withValues(alpha: _isDragging ? 0.16 : 0.08),
+                                width: 0.8,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 13,
+                          vertical: 9,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
+                            3,
+                            (_) => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 2,
+                              ),
+                              child: Container(
+                                width: 4,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Color.fromRGBO(
+                                        235,
+                                        246,
+                                        255,
+                                        _isDragging ? 0.90 : 0.82,
+                                      ),
+                                      Color.fromRGBO(
+                                        196,
+                                        225,
+                                        255,
+                                        _isDragging ? 0.76 : 0.66,
+                                      ),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(999),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          const Color.fromRGBO(
+                                            215,
+                                            235,
+                                            255,
+                                            0.18,
+                                          ).withValues(
+                                            alpha: _isDragging ? 0.26 : 0.14,
+                                          ),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 0.5),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
