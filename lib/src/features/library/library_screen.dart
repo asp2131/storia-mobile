@@ -212,12 +212,14 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ValueListenableBuilder<double>(
             valueListenable: _game!.cameraXNotifier,
             builder: (context, _, __) {
+              final previewBook = _previewBook!;
               return BookPreviewOverlay(
-                book: _previewBook!,
-                position: _overlayPosition(_previewBook!),
+                book: previewBook,
+                position: _overlayPosition(previewBook),
                 onRead: () {
+                  final bookId = previewBook.id;
                   _dismissPreview();
-                  context.push('/reader/${_previewBook!.id}');
+                  context.push('/reader/$bookId');
                 },
                 onDismiss: _dismissPreview,
               );
