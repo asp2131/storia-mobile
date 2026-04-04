@@ -62,6 +62,7 @@ dependencies:
   flutter_svg: ^2.2.1
   cupertino_icons: ^1.0.8
   flame: ^1.21.0
+  flame_tiled: ^1.20.0
 
 dev_dependencies:
   flutter_test:
@@ -86,6 +87,7 @@ flutter:
     - assets/gifs/
     - assets/svgs/
     - assets/images/
+    - assets/tiles/
 
 flutter_launcher_icons:
   android: true

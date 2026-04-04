@@ -4,10 +4,12 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../../../core/resilient_cache_manager.dart';
 import '../../../data/models.dart';
 import 'ambient_particles.dart';
+import 'isometric_ground_component.dart';
 import 'map_book_node_component.dart';
 import 'map_route_component.dart';
 import 'player_component.dart';
@@ -93,6 +95,16 @@ class LibraryGame extends FlameGame with TapCallbacks {
     await add(_world);
 
     final worldHeight = size.y;
+
+    // Add isometric TMX ground map behind everything else.
+    final groundBaseline = worldHeight * 0.72;
+    _world.add(
+      IsometricGroundComponent(
+        groundBaselineY: groundBaseline,
+        worldWidth: worldWidth,
+        screenHeight: worldHeight,
+      )..priority = -1,
+    );
 
     _player = PlayerComponent(
       startPosition: Vector2(worldWidth * 0.15, worldHeight * 0.72),
@@ -460,7 +472,10 @@ class LibraryGame extends FlameGame with TapCallbacks {
     _cameraX = nextCameraX;
 
     if ((cameraXNotifier.value - _cameraX).abs() > 0.01) {
-      cameraXNotifier.value = _cameraX;
+      final newX = _cameraX;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        cameraXNotifier.value = newX;
+      });
     }
   }
 

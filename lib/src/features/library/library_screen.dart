@@ -270,7 +270,7 @@ class _RoomBackground extends StatelessWidget {
         return RepaintBoundary(
           child: CustomPaint(
             size: Size.infinite,
-            painter: _AdventureMapPainter(
+            painter: _SkyHillsPainter(
               worldWidth: worldWidth,
               cameraX: cameraX,
             ),
@@ -281,31 +281,28 @@ class _RoomBackground extends StatelessWidget {
   }
 }
 
-/// Single [CustomPainter] that draws three parallax layers for the adventure
-/// map background: sky (0.2x), hills (0.5x), and ground (1.0x).
-class _AdventureMapPainter extends CustomPainter {
-  _AdventureMapPainter({required this.worldWidth, required this.cameraX});
+/// [CustomPainter] that draws sky (0.2x parallax) and hills (0.5x parallax).
+/// Ground rendering is handled by the isometric TMX map inside the Flame world.
+class _SkyHillsPainter extends CustomPainter {
+  _SkyHillsPainter({
+    required this.worldWidth,
+    required this.cameraX,
+  });
 
   final double worldWidth;
   final double cameraX;
 
-  // ── Color tokens (from spec) ──────────────────────────────────────────
   static const _skyTop = Color(0xFFB3E5FC);
   static const _skyHorizon = Color(0xFFFFE0B2);
   static const _hillBack = Color(0xFFA5D6A7);
   static const _hillFront = Color(0xFFC8E6C9);
-  static const _groundLight = Color(0xFFD7CCC8);
-  static const _groundDark = Color(0xFFBCAAA4);
-  static const _groundLine = Color(0xFF8D6E63);
 
   @override
   void paint(Canvas canvas, Size size) {
     _paintSky(canvas, size);
     _paintHills(canvas, size);
-    _paintGround(canvas, size);
   }
 
-  // ── Sky layer (parallax 0.2x) ─────────────────────────────────────────
   void _paintSky(Canvas canvas, Size size) {
     final horizonY = size.height * 0.6;
     final skyOffset = -cameraX * 0.2;
@@ -313,7 +310,6 @@ class _AdventureMapPainter extends CustomPainter {
     canvas.save();
     canvas.translate(skyOffset, 0);
 
-    // Gradient fill.
     final skyRect = Rect.fromLTWH(0, 0, size.width - skyOffset, horizonY);
     final skyPaint = Paint()
       ..shader = const LinearGradient(
@@ -323,8 +319,7 @@ class _AdventureMapPainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, size.width, horizonY));
     canvas.drawRect(skyRect, skyPaint);
 
-    // Soft cloud ovals.
-    final cloudPaint = Paint()..color = const Color(0x33FFFFFF); // white 20%
+    final cloudPaint = Paint()..color = const Color(0x33FFFFFF);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(size.width * 0.25, size.height * 0.15),
@@ -353,16 +348,14 @@ class _AdventureMapPainter extends CustomPainter {
     canvas.restore();
   }
 
-  // ── Hills layer (parallax 0.5x) ──────────────────────────────────────
   void _paintHills(Canvas canvas, Size size) {
     final hillsOffset = -cameraX * 0.5;
-    final spanWidth = worldWidth * 1.5; // prevent edge gaps
+    final spanWidth = worldWidth * 1.5;
     final groundTop = size.height * 0.70;
 
     canvas.save();
     canvas.translate(hillsOffset, 0);
 
-    // Back hills — darker, taller.
     final backPath = Path()
       ..moveTo(0, groundTop)
       ..quadraticBezierTo(
@@ -391,7 +384,6 @@ class _AdventureMapPainter extends CustomPainter {
       Paint()..color = _hillBack.withValues(alpha: 0.6),
     );
 
-    // Front hills — lighter, lower.
     final frontPath = Path()
       ..moveTo(0, groundTop)
       ..quadraticBezierTo(
@@ -423,76 +415,10 @@ class _AdventureMapPainter extends CustomPainter {
     canvas.restore();
   }
 
-  // ── Ground layer (parallax 1.0x — locked to camera) ──────────────────
-  void _paintGround(Canvas canvas, Size size) {
-    final groundTop = size.height * 0.70;
-    final groundOffset = -cameraX; // 1:1 with camera
-
-    canvas.save();
-    canvas.translate(groundOffset, 0);
-
-    final groundWidth = worldWidth + size.width; // cover full scroll range
-
-    // Ground fill gradient.
-    final groundRect = Rect.fromLTWH(
-      0,
-      groundTop,
-      groundWidth,
-      size.height - groundTop,
-    );
-    final groundPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: const [_groundLight, _groundDark],
-      ).createShader(groundRect);
-    canvas.drawRect(groundRect, groundPaint);
-
-    // Subtle ground edge line.
-    canvas.drawLine(
-      Offset(0, groundTop),
-      Offset(groundWidth, groundTop),
-      Paint()
-        ..color = _groundLine.withValues(alpha: 0.4)
-        ..strokeWidth = 1.5
-        ..strokeCap = StrokeCap.round,
-    );
-
-    _paintGrassTufts(canvas, groundTop, groundWidth);
-
-    canvas.restore();
-  }
-
-  void _paintGrassTufts(Canvas canvas, double groundTop, double groundWidth) {
-    final tuftPaint = Paint()
-      ..color = const Color(0xFF7AAE73).withValues(alpha: 0.55)
-      ..strokeWidth = 1.4
-      ..strokeCap = StrokeCap.round;
-
-    for (double x = 20; x < groundWidth; x += 32) {
-      final sway = (x % 64) / 64;
-      final tuftHeight = 6 + (x % 3);
-      canvas.drawLine(
-        Offset(x, groundTop + 1),
-        Offset(x - 3 - sway, groundTop - tuftHeight),
-        tuftPaint,
-      );
-      canvas.drawLine(
-        Offset(x, groundTop + 1),
-        Offset(x, groundTop - tuftHeight - 2),
-        tuftPaint,
-      );
-      canvas.drawLine(
-        Offset(x, groundTop + 1),
-        Offset(x + 3 + sway, groundTop - tuftHeight + 1),
-        tuftPaint,
-      );
-    }
-  }
-
   @override
-  bool shouldRepaint(_AdventureMapPainter oldDelegate) =>
-      worldWidth != oldDelegate.worldWidth || cameraX != oldDelegate.cameraX;
+  bool shouldRepaint(_SkyHillsPainter oldDelegate) =>
+      worldWidth != oldDelegate.worldWidth ||
+      cameraX != oldDelegate.cameraX;
 }
 
 // ── Floating controls ───────────────────────────────────────────────────
