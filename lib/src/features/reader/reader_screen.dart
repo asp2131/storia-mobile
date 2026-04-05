@@ -268,13 +268,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         activePageNumber: activePage.pageNumber,
                         onClose: () => Navigator.of(context).maybePop(),
                         onAudioSettingsTap: () => _showAudioSettings(context),
-                        isPracticeMode: _runtimeState.isPracticeMode,
-                        isListening: _runtimeState.isListening,
-                        onPracticeToggle: () {
-                          _session.dispatch(
-                            const ReaderPracticePrimaryAction(),
-                          );
-                        },
                       ),
                     ),
                   );
@@ -287,17 +280,25 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     return const SizedBox.shrink();
                   }
 
+                  final practiceKeepsVisible =
+                      _runtimeState.isPracticeMode ||
+                      _runtimeState.isListening;
+
                   return _AudioControlsPill(
                     hasNarration: hasNarration,
                     hasSoundscape: hasSoundscape,
                     isNarrationPlaying: _runtimeState.isNarrationPlaying,
                     isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
-                    isVisible: true,
+                    isPracticeActive: _runtimeState.isPracticeMode,
+                    isListening: _runtimeState.isListening,
+                    isVisible: showChrome || practiceKeepsVisible,
                     showGrip: showChrome,
                     onToggleNarration: () =>
                         _session.dispatch(const ReaderToggleNarration()),
                     onToggleSoundscape: () =>
                         _session.dispatch(const ReaderToggleSoundscape()),
+                    onTogglePractice: () =>
+                        _session.dispatch(const ReaderPracticePrimaryAction()),
                   );
                 },
               ),
@@ -416,18 +417,12 @@ class _ReaderTopBar extends StatelessWidget {
   final int activePageNumber;
   final VoidCallback onClose;
   final VoidCallback onAudioSettingsTap;
-  final bool isPracticeMode;
-  final bool isListening;
-  final VoidCallback onPracticeToggle;
 
   const _ReaderTopBar({
     required this.book,
     required this.activePageNumber,
     required this.onClose,
     required this.onAudioSettingsTap,
-    required this.isPracticeMode,
-    required this.isListening,
-    required this.onPracticeToggle,
   });
 
   @override
@@ -530,22 +525,6 @@ class _ReaderTopBar extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               _ChromeButton(
-                icon: isListening
-                    ? Icons.mic_rounded
-                    : isPracticeMode
-                    ? Icons.mic_none_rounded
-                    : Icons.menu_book_rounded,
-                color: isPracticeMode ? const Color(0xFFF59E0B) : Colors.white,
-                onTap: onPracticeToggle,
-                semanticLabel: isPracticeMode
-                    ? 'Stop practice'
-                    : 'Practice reading',
-                semanticHint: isPracticeMode
-                    ? 'Tap to stop reading practice'
-                    : 'Tap to start reading practice',
-              ),
-              const SizedBox(width: 10),
-              _ChromeButton(
                 icon: Icons.tune_rounded,
                 onTap: onAudioSettingsTap,
                 semanticLabel: 'Audio settings',
@@ -560,31 +539,44 @@ class _ReaderTopBar extends StatelessWidget {
 }
 
 // =============================================================================
-// Bottom audio controls pill — separate narration & soundscape toggles
+// Bottom audio controls — circular pie-wedge design
 // =============================================================================
 
 const _narrationColor = Color(0xFFF59E0B); // Warm amber
 const _soundscapeColor = Color(0xFF14B8A6); // Teal
+const _practiceColor = Color(0xFFF87171); // Coral
+
+const _circleSize = 120.0;
+const _gripSize = 36.0;
+
+/// Which pie wedge was tapped.
+enum _WedgeZone { left, right, bottom }
 
 class _AudioControlsPill extends StatefulWidget {
   final bool hasNarration;
   final bool hasSoundscape;
   final bool isNarrationPlaying;
   final bool isSoundscapePlaying;
+  final bool isPracticeActive;
+  final bool isListening;
   final bool isVisible;
   final bool showGrip;
   final Future<void> Function() onToggleNarration;
   final Future<void> Function() onToggleSoundscape;
+  final Future<void> Function() onTogglePractice;
 
   const _AudioControlsPill({
     required this.hasNarration,
     required this.hasSoundscape,
     required this.isNarrationPlaying,
     required this.isSoundscapePlaying,
+    required this.isPracticeActive,
+    required this.isListening,
     required this.isVisible,
     required this.showGrip,
     required this.onToggleNarration,
     required this.onToggleSoundscape,
+    required this.onTogglePractice,
   });
 
   @override
@@ -615,17 +607,11 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
 
   void _scheduleMeasure() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      final renderObject = _pillKey.currentContext?.findRenderObject();
-      if (renderObject is! RenderBox || !renderObject.hasSize) {
-        return;
-      }
-      final nextSize = renderObject.size;
-      if (nextSize != _pillSize) {
-        setState(() => _pillSize = nextSize);
-      }
+      if (!mounted) return;
+      final ro = _pillKey.currentContext?.findRenderObject();
+      if (ro is! RenderBox || !ro.hasSize) return;
+      final next = ro.size;
+      if (next != _pillSize) setState(() => _pillSize = next);
     });
   }
 
@@ -635,18 +621,13 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     required EdgeInsets safePadding,
     required double baseBottom,
   }) {
-    if (_pillSize == Size.zero) {
-      return candidate;
-    }
+    if (_pillSize == Size.zero) return candidate;
 
     final baseLeft = (viewportSize.width - _pillSize.width) / 2;
     final baseTop = viewportSize.height - baseBottom - _pillSize.height;
 
     final minLeft = 8.0;
-    final maxLeft = math.max(
-      minLeft,
-      viewportSize.width - _pillSize.width - 8.0,
-    );
+    final maxLeft = math.max(minLeft, viewportSize.width - _pillSize.width - 8.0);
     final minTop = safePadding.top + 12.0;
     final maxTop = math.max(
       minTop,
@@ -655,80 +636,184 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
 
     final left = (baseLeft + candidate.dx).clamp(minLeft, maxLeft);
     final top = (baseTop + candidate.dy).clamp(minTop, maxTop);
-
     return Offset(left - baseLeft, top - baseTop);
   }
 
-  Widget _buildPillBody() {
-    return ClipPath(
-      clipper: ShapeBorderClipper(
-        shape: const SketchBorderShape(
-          side: BorderSide(
-            color: Color.fromRGBO(255, 255, 255, 0.18),
-            width: 1.1,
+  /// Determine which wedge was tapped based on angle from center.
+  _WedgeZone? _hitTestWedge(Offset localPosition) {
+    final center = Offset(_circleSize / 2, _circleSize / 2);
+    final delta = localPosition - center;
+    final distance = delta.distance;
+    if (distance > _circleSize / 2) return null;
+    // Ignore taps in the grip center zone.
+    if (distance < 18) return null;
+
+    // Angle: 0 = right, pi/2 = down, -pi/2 = up.
+    final angle = math.atan2(delta.dy, delta.dx);
+
+    // Wedge layout (matching sketch):
+    // Left wedge (narration):  150° to 270° (-210° to -90°)
+    // Right wedge (soundscape): 30° to 150° (top-right to bottom-right)
+    // Bottom wedge (practice): 270° to 390° (i.e. -90° to 30°)
+    //
+    // In radians, using atan2 range (-pi, pi]:
+    // Left:   angle > 5pi/6 or angle < -pi/2   → roughly left half
+    // Right:  angle > pi/6 and angle <= 5pi/6   → roughly right half
+    // Bottom: angle >= -pi/2 and angle <= pi/6  → top (grip area + bottom)
+
+    // Simpler 3-way split: 120° each, rotated so dividers go from center
+    // at -30°, 90°, 210° (matching the sketch's Y-shaped dividers).
+    // Wedge 0 (top/bottom-center = practice): -90° ± 60° → -150° to -30°
+    // Wedge 1 (right = soundscape): -30° ± 120° → -30° to 90°
+    // Wedge 2 (left = narration): 90° to 210° (= 90° to -150°)
+
+    // Normalize angle to [0, 2pi)
+    final norm = angle < 0 ? angle + 2 * math.pi : angle;
+
+    // Three 120° wedges, starting from -30° (= 330° = 11pi/6)
+    // Wedge boundaries at 330°, 90°, 210°
+    if (norm >= 11 * math.pi / 6 || norm < math.pi / 2) {
+      return _WedgeZone.right; // Soundscape (right side)
+    } else if (norm >= math.pi / 2 && norm < 7 * math.pi / 6) {
+      return _WedgeZone.bottom; // Practice (bottom)
+    } else {
+      return _WedgeZone.left; // Narration (left side)
+    }
+  }
+
+  void _onWedgeTap(_WedgeZone zone) {
+    switch (zone) {
+      case _WedgeZone.left:
+        widget.onToggleNarration();
+      case _WedgeZone.right:
+        widget.onToggleSoundscape();
+      case _WedgeZone.bottom:
+        widget.onTogglePractice();
+    }
+  }
+
+  /// Icon position: center of a wedge at a given angle and radial distance.
+  Offset _wedgeIconOffset(double angleDeg) {
+    final angleRad = angleDeg * math.pi / 180;
+    // Place icons at ~60% of the radius, between center grip and outer edge.
+    const iconRadius = (_circleSize / 2 - _gripSize / 2) / 2 + _gripSize / 2;
+    return Offset(
+      _circleSize / 2 + iconRadius * math.cos(angleRad) - 11,
+      _circleSize / 2 + iconRadius * math.sin(angleRad) - 11,
+    );
+  }
+
+  Widget _buildCircleBody({
+    required Size viewportSize,
+    required EdgeInsets safePadding,
+    required double baseBottom,
+  }) {
+    // Icon positions: center of each 120° wedge.
+    // Left (narration): wedge from 150° to 270° → center at 210°
+    // Right (soundscape): wedge from 270° to 390° → center at 330°
+    // Bottom (practice): wedge from 30° to 150° → center at 90°
+    //
+    // Using our wedge layout: dividers at -30°, 90°, 210°
+    // Right (soundscape): -30° to 90° → center at 30°
+    // Bottom (practice): 90° to 210° → center at 150°
+    // Left (narration): 210° to 330° → center at 270°
+    final narrationIconPos = _wedgeIconOffset(270); // left
+    final soundscapeIconPos = _wedgeIconOffset(30); // right
+    final practiceIconPos = _wedgeIconOffset(150); // bottom
+
+    return GestureDetector(
+      onTapUp: (details) {
+        final zone = _hitTestWedge(details.localPosition);
+        if (zone != null) _onWedgeTap(zone);
+      },
+      child: Container(
+        width: _circleSize,
+        height: _circleSize,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color.fromRGBO(10, 15, 25, 0.50),
+          border: Border.all(
+            color: _isDragging
+                ? const Color.fromRGBO(255, 255, 255, 0.34)
+                : const Color.fromRGBO(255, 255, 255, 0.18),
+            width: _isDragging ? 1.4 : 1.1,
           ),
-          radiusScale: 0.9,
-        ),
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: const Color.fromRGBO(10, 15, 25, 0.40),
-            shape: SketchBorderShape(
-              side: BorderSide(
-                color: _isDragging
-                    ? const Color.fromRGBO(255, 255, 255, 0.34)
-                    : const Color.fromRGBO(255, 255, 255, 0.18),
-                width: _isDragging ? 1.4 : 1.1,
-              ),
-              radiusScale: 0.9,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: _isDragging ? 0.34 : 0.18),
+              blurRadius: _isDragging ? 28 : 18,
+              offset: Offset(0, _isDragging ? 16 : 8),
             ),
-            shadows: [
-              BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: _isDragging ? 0.34 : 0.18,
-                ),
-                blurRadius: _isDragging ? 28 : 18,
-                offset: Offset(0, _isDragging ? 16 : 8),
+          ],
+        ),
+        child: ClipOval(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: CustomPaint(
+              painter: _WedgePainter(
+                isNarrationActive: widget.isNarrationPlaying,
+                isSoundscapeActive: widget.isSoundscapePlaying,
+                isPracticeActive: widget.isPracticeActive || widget.isListening,
+                gripRadius: _gripSize / 2,
               ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (widget.hasNarration)
-                  _AudioIconButton(
-                    icon: widget.isNarrationPlaying
-                        ? Icons.pause_rounded
-                        : Icons.headphones_rounded,
-                    accentColor: _narrationColor,
-                    isPlaying: widget.isNarrationPlaying,
-                    label: 'Story',
-                    semanticLabel: 'Narration',
-                    onTap: widget.onToggleNarration,
-                  ),
-                if (widget.hasNarration && widget.hasSoundscape)
-                  Container(
-                    width: 1,
-                    height: 24,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    color: const Color.fromRGBO(255, 255, 255, 0.12),
-                  ),
-                if (widget.hasSoundscape)
-                  _AudioIconButton(
-                    icon: widget.isSoundscapePlaying
-                        ? Icons.volume_up_rounded
-                        : Icons.waves_rounded,
-                    accentColor: _soundscapeColor,
-                    isPlaying: widget.isSoundscapePlaying,
-                    label: 'Music',
-                    semanticLabel: 'Ambience',
-                    onTap: widget.onToggleSoundscape,
-                  ),
-              ],
+              child: SizedBox(
+                width: _circleSize,
+                height: _circleSize,
+                child: Stack(
+                  children: [
+                    // Left wedge icon (narration)
+                    Positioned(
+                      left: narrationIconPos.dx,
+                      top: narrationIconPos.dy,
+                      child: Icon(
+                        widget.isNarrationPlaying
+                            ? Icons.pause_rounded
+                            : Icons.headphones_rounded,
+                        size: 22,
+                        color: widget.isNarrationPlaying
+                            ? _narrationColor
+                            : const Color.fromRGBO(255, 255, 255, 0.85),
+                      ),
+                    ),
+                    // Right wedge icon (soundscape)
+                    Positioned(
+                      left: soundscapeIconPos.dx,
+                      top: soundscapeIconPos.dy,
+                      child: Icon(
+                        widget.isSoundscapePlaying
+                            ? Icons.volume_up_rounded
+                            : Icons.waves_rounded,
+                        size: 22,
+                        color: widget.isSoundscapePlaying
+                            ? _soundscapeColor
+                            : const Color.fromRGBO(255, 255, 255, 0.85),
+                      ),
+                    ),
+                    // Bottom wedge icon (practice/mic)
+                    Positioned(
+                      left: practiceIconPos.dx,
+                      top: practiceIconPos.dy,
+                      child: Icon(
+                        widget.isListening
+                            ? Icons.mic_rounded
+                            : Icons.mic_off_rounded,
+                        size: 22,
+                        color: (widget.isPracticeActive || widget.isListening)
+                            ? _practiceColor
+                            : const Color.fromRGBO(255, 255, 255, 0.85),
+                      ),
+                    ),
+                    // Center grip handle
+                    Center(
+                      child: _buildGripHandle(
+                        viewportSize: viewportSize,
+                        safePadding: safePadding,
+                        baseBottom: baseBottom,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -744,12 +829,10 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     return Semantics(
       button: true,
       label: 'Move audio controls',
-      hint: 'Drag to reposition the narration and soundscape controls',
+      hint: 'Drag to reposition the audio controls',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onPanStart: (_) {
-          setState(() => _isDragging = true);
-        },
+        onPanStart: (_) => setState(() => _isDragging = true),
         onPanUpdate: (details) {
           final next = _clampOffset(
             candidate: _dragOffset + details.delta,
@@ -759,173 +842,52 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
           );
           setState(() => _dragOffset = next);
         },
-        onPanEnd: (_) {
-          setState(() => _isDragging = false);
-        },
-        onPanCancel: () {
-          setState(() => _isDragging = false);
-        },
+        onPanEnd: (_) => setState(() => _isDragging = false),
+        onPanCancel: () => setState(() => _isDragging = false),
         child: AnimatedScale(
           scale: _isDragging ? 1.06 : 1.0,
           duration: const Duration(milliseconds: 160),
           curve: Curves.easeOut,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOut,
+          child: Container(
+            width: _gripSize,
+            height: _gripSize,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.fromRGBO(96, 116, 150, _isDragging ? 0.40 : 0.32),
+                  Color.fromRGBO(23, 29, 40, _isDragging ? 0.78 : 0.68),
+                ],
+              ),
+              border: Border.all(
+                color: Color.fromRGBO(255, 255, 255, _isDragging ? 0.36 : 0.26),
+                width: 1.2,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: _isDragging ? 0.32 : 0.24,
-                  ),
-                  blurRadius: _isDragging ? 18 : 14,
-                  offset: Offset(0, _isDragging ? 8 : 6),
-                ),
-                BoxShadow(
-                  color: const Color.fromRGBO(
-                    180,
-                    220,
-                    255,
-                    0.12,
-                  ).withValues(alpha: _isDragging ? 0.18 : 0.10),
-                  blurRadius: _isDragging ? 18 : 12,
-                  offset: const Offset(0, 1),
+                  color: Colors.black.withValues(alpha: _isDragging ? 0.32 : 0.24),
+                  blurRadius: _isDragging ? 12 : 8,
+                  offset: Offset(0, _isDragging ? 4 : 2),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(999),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: _isDragging ? 16 : 12,
-                  sigmaY: _isDragging ? 16 : 12,
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color.fromRGBO(96, 116, 150, _isDragging ? 0.34 : 0.28),
-                        Color.fromRGBO(23, 29, 40, _isDragging ? 0.70 : 0.62),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                3,
+                (_) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                  child: Container(
+                    width: 3,
+                    height: 12,
+                    decoration: BoxDecoration(
                       color: Color.fromRGBO(
-                        255,
-                        255,
-                        255,
-                        _isDragging ? 0.32 : 0.24,
+                        235, 246, 255, _isDragging ? 0.90 : 0.75,
                       ),
-                      width: 1.1,
+                      borderRadius: BorderRadius.circular(999),
                     ),
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: 1,
-                        right: 1,
-                        top: 1,
-                        child: IgnorePointer(
-                          child: Container(
-                            height: 12,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(999),
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Color.fromRGBO(
-                                    255,
-                                    255,
-                                    255,
-                                    _isDragging ? 0.16 : 0.12,
-                                  ),
-                                  const Color.fromRGBO(255, 255, 255, 0.0),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(
-                                color: const Color.fromRGBO(
-                                  170,
-                                  220,
-                                  255,
-                                  0.10,
-                                ).withValues(alpha: _isDragging ? 0.16 : 0.08),
-                                width: 0.8,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 13,
-                          vertical: 9,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(
-                            3,
-                            (_) => Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                              ),
-                              child: Container(
-                                width: 4,
-                                height: 14,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Color.fromRGBO(
-                                        235,
-                                        246,
-                                        255,
-                                        _isDragging ? 0.90 : 0.82,
-                                      ),
-                                      Color.fromRGBO(
-                                        196,
-                                        225,
-                                        255,
-                                        _isDragging ? 0.76 : 0.66,
-                                      ),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(999),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          const Color.fromRGBO(
-                                            215,
-                                            235,
-                                            255,
-                                            0.18,
-                                          ).withValues(
-                                            alpha: _isDragging ? 0.26 : 0.14,
-                                          ),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 0.5),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),
@@ -950,9 +912,7 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
 
     if (clampedOffset != _dragOffset) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
+        if (!mounted) return;
         setState(() => _dragOffset = clampedOffset);
       });
     }
@@ -976,34 +936,35 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
                   scale: _isDragging ? 1.035 : 1.0,
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeOutCubic,
-                  child: Stack(
+                  child: SizedBox(
                     key: _pillKey,
-                    clipBehavior: Clip.none,
-                    children: [
-                      if (_isDragging)
-                        Positioned.fill(
-                          child: IgnorePointer(
+                    width: _circleSize,
+                    height: _circleSize,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        if (_isDragging)
+                          IgnorePointer(
                             child: Transform.translate(
                               offset: const Offset(0, 10),
                               child: Opacity(
                                 opacity: 0.18,
-                                child: _buildPillBody(),
+                                child: _buildCircleBody(
+                                  viewportSize: viewportSize,
+                                  safePadding: safePadding,
+                                  baseBottom: baseBottom,
+                                ),
                               ),
                             ),
                           ),
+                        _buildCircleBody(
+                          viewportSize: viewportSize,
+                          safePadding: safePadding,
+                          baseBottom: baseBottom,
                         ),
-                      _buildPillBody(),
-                      if (widget.showGrip)
-                        Positioned(
-                          top: -12,
-                          right: -8,
-                          child: _buildGripHandle(
-                            viewportSize: viewportSize,
-                            safePadding: safePadding,
-                            baseBottom: baseBottom,
-                          ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ).animate().fadeIn(duration: StoriaMotion.medium),
                 ),
               ),
@@ -1015,237 +976,72 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
   }
 }
 
-class _AudioIconButton extends StatefulWidget {
-  final IconData icon;
-  final Color accentColor;
-  final bool isPlaying;
-  final String label;
-  final String semanticLabel;
-  final Future<void> Function() onTap;
+/// Paints the 3 pie wedges with active-state fills and divider lines.
+class _WedgePainter extends CustomPainter {
+  final bool isNarrationActive;
+  final bool isSoundscapeActive;
+  final bool isPracticeActive;
+  final double gripRadius;
 
-  const _AudioIconButton({
-    required this.icon,
-    required this.accentColor,
-    required this.isPlaying,
-    required this.label,
-    required this.semanticLabel,
-    required this.onTap,
+  _WedgePainter({
+    required this.isNarrationActive,
+    required this.isSoundscapeActive,
+    required this.isPracticeActive,
+    required this.gripRadius,
   });
 
   @override
-  State<_AudioIconButton> createState() => _AudioIconButtonState();
-}
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final rect = Rect.fromCircle(center: center, radius: radius);
 
-class _AudioIconButtonState extends State<_AudioIconButton>
-    with TickerProviderStateMixin {
-  late final AnimationController _breathController;
-  late final AnimationController _pressController;
-  late final Animation<double> _breathAnimation;
-  late final Animation<double> _pressAnimation;
+    // Three 120° wedges. Start angles (from 3-o'clock, clockwise):
+    // Right (soundscape): -30° to 90°   → startAngle = -30°
+    // Bottom (practice):  90° to 210°   → startAngle = 90°
+    // Left (narration):   210° to 330°  → startAngle = 210°
+    const sweep = 2 * math.pi / 3; // 120°
 
-  @override
-  void initState() {
-    super.initState();
+    final wedges = [
+      (startAngle: -math.pi / 6, color: _soundscapeColor, active: isSoundscapeActive),
+      (startAngle: math.pi / 2, color: _practiceColor, active: isPracticeActive),
+      (startAngle: 7 * math.pi / 6, color: _narrationColor, active: isNarrationActive),
+    ];
 
-    // Breathing idle pulse — gentle scale when not playing
-    _breathController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
-    _breathAnimation = Tween<double>(begin: 1.0, end: 1.07).animate(
-      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
-    );
-    if (!widget.isPlaying) {
-      _breathController.repeat(reverse: true);
+    // Draw active wedge fills.
+    for (final w in wedges) {
+      if (!w.active) continue;
+      final paint = Paint()
+        ..color = w.color.withValues(alpha: 0.25)
+        ..style = PaintingStyle.fill;
+      canvas.drawArc(rect, w.startAngle, sweep, true, paint);
     }
 
-    // Press bounce
-    _pressController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 120),
-      lowerBound: 0.0,
-      upperBound: 1.0,
-    );
-    _pressAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.88,
-    ).animate(CurvedAnimation(parent: _pressController, curve: Curves.easeOut));
-  }
+    // Draw divider lines from grip edge to outer edge at boundary angles.
+    final dividerPaint = Paint()
+      ..color = const Color.fromRGBO(255, 255, 255, 0.15)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
 
-  @override
-  void didUpdateWidget(_AudioIconButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isPlaying != oldWidget.isPlaying) {
-      if (widget.isPlaying) {
-        _breathController.stop();
-        _breathController.animateTo(0);
-      } else {
-        _breathController.repeat(reverse: true);
-      }
+    final dividerAngles = [-math.pi / 6, math.pi / 2, 7 * math.pi / 6];
+    for (final a in dividerAngles) {
+      final start = Offset(
+        center.dx + gripRadius * math.cos(a),
+        center.dy + gripRadius * math.sin(a),
+      );
+      final end = Offset(
+        center.dx + radius * math.cos(a),
+        center.dy + radius * math.sin(a),
+      );
+      canvas.drawLine(start, end, dividerPaint);
     }
   }
 
   @override
-  void dispose() {
-    _breathController.dispose();
-    _pressController.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(TapDownDetails _) {
-    _pressController.forward();
-  }
-
-  void _onTapUp(TapUpDetails _) {
-    _pressController.reverse();
-    widget.onTap();
-  }
-
-  void _onTapCancel() {
-    _pressController.reverse();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      toggled: widget.isPlaying,
-      label: widget.semanticLabel,
-      hint:
-          'Double tap to ${widget.isPlaying ? 'pause' : 'play'} ${widget.semanticLabel}',
-      value: widget.isPlaying ? 'On' : 'Off',
-      child: GestureDetector(
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTapCancel: _onTapCancel,
-        child: AnimatedBuilder(
-          animation: Listenable.merge([_breathAnimation, _pressAnimation]),
-          builder: (context, child) {
-            final scale = _pressAnimation.value * _breathAnimation.value;
-            return Transform.scale(scale: scale, child: child);
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Glow ring behind button when active.
-                  AnimatedOpacity(
-                    opacity: widget.isPlaying ? 1 : 0,
-                    duration: const Duration(milliseconds: 300),
-                    child: Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: widget.accentColor.withValues(alpha: 0.28),
-                      ),
-                    ),
-                  ),
-                  // Button circle — filled with accent when playing.
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: widget.isPlaying
-                          ? widget.accentColor.withValues(alpha: 0.88)
-                          : const Color.fromRGBO(255, 255, 255, 0.08),
-                      border: Border.all(
-                        color: widget.isPlaying
-                            ? widget.accentColor
-                            : const Color.fromRGBO(255, 255, 255, 0.22),
-                        width: widget.isPlaying ? 2.0 : 1.0,
-                      ),
-                    ),
-                    child: Icon(
-                      widget.icon,
-                      size: 24,
-                      color: widget.isPlaying
-                          ? Colors.white
-                          : const Color.fromRGBO(255, 255, 255, 0.85),
-                    ),
-                  ),
-                  // Pulsing dot indicator when playing.
-                  if (widget.isPlaying)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: _PulsingDot(color: widget.accentColor),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Text(
-                widget.label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PulsingDot extends StatefulWidget {
-  final Color color;
-
-  const _PulsingDot({required this.color});
-
-  @override
-  State<_PulsingDot> createState() => _PulsingDotState();
-}
-
-class _PulsingDotState extends State<_PulsingDot>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final t = _controller.value;
-        return Opacity(
-          opacity: 0.4 + t * 0.6,
-          child: Transform.scale(
-            scale: 0.6 + t * 0.4,
-            child: Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: widget.color,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  bool shouldRepaint(_WedgePainter oldDelegate) =>
+      oldDelegate.isNarrationActive != isNarrationActive ||
+      oldDelegate.isSoundscapeActive != isSoundscapeActive ||
+      oldDelegate.isPracticeActive != isPracticeActive;
 }
 
 // =============================================================================

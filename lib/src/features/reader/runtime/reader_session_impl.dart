@@ -47,6 +47,8 @@ class ReaderSessionImpl implements ReaderSession {
   bool _speechAvailable = false;
   Map<String, List<int>> _wordToIndices = const {};
   CancelableTask? _celebrationTask;
+  bool _wasNarrationPlayingBeforePractice = false;
+  double _soundscapeVolumeBeforePractice = 0.6;
 
   @override
   Stream<ReaderViewState> get states async* {
@@ -148,30 +150,57 @@ class ReaderSessionImpl implements ReaderSession {
   }
 
   Future<void> _handlePracticePrimaryAction() async {
-    if (!_state.isPracticeMode) {
+    if (!_state.isListening) {
+      // Start practice: save state, duck audio, begin listening.
       await _ensureSpeechInitialized();
       if (!_speechAvailable) {
         return;
       }
+
+      _wasNarrationPlayingBeforePractice = _state.isNarrationPlaying;
+      _soundscapeVolumeBeforePractice = _state.soundscapeVolume;
+
+      // Pause narration if currently playing.
+      if (_state.isNarrationPlaying) {
+        await _audioPort.toggleNarration();
+      }
+
+      // Duck soundscape volume.
+      await _audioPort.setSoundscapeVolume(0.3);
+
       _emit(
         _state.copyWith(
           isPracticeMode: true,
           isListening: false,
           showCelebration: false,
           spokenWordIndices: const {},
+          soundscapeVolume: 0.3,
         ),
       );
       await _startListening();
       return;
     }
 
-    if (_state.isListening) {
-      await _speechPort.stopListening();
-      _onListeningDone();
-      return;
-    }
+    // Stop practice: stop listening, restore audio state.
+    await _speechPort.stopListening();
+    await _restorePracticeAudioState();
+    _onListeningDone();
+  }
 
-    await _startListening();
+  Future<void> _restorePracticeAudioState() async {
+    // Restore soundscape volume.
+    await _audioPort.setSoundscapeVolume(_soundscapeVolumeBeforePractice);
+    _emit(
+      _state.copyWith(
+        soundscapeVolume: _soundscapeVolumeBeforePractice,
+        isPracticeMode: false,
+      ),
+    );
+
+    // Resume narration if it was playing before practice started.
+    if (_wasNarrationPlayingBeforePractice && !_state.isNarrationPlaying) {
+      await _audioPort.toggleNarration();
+    }
   }
 
   Future<void> _ensureSpeechInitialized() async {
@@ -220,7 +249,7 @@ class ReaderSessionImpl implements ReaderSession {
     _emit(_state.copyWith(isListening: true, showCelebration: false));
   }
 
-  void _onListeningDone() {
+  Future<void> _onListeningDone() async {
     if (!_state.isListening) {
       return;
     }
@@ -232,6 +261,11 @@ class ReaderSessionImpl implements ReaderSession {
 
     if (shouldCelebrate) {
       _scheduleCelebrationClear();
+    }
+
+    // Restore audio state when listening ends naturally.
+    if (_state.isPracticeMode) {
+      await _restorePracticeAudioState();
     }
   }
 
