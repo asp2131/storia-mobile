@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/resilient_cache_manager.dart';
@@ -10,13 +11,15 @@ import '../../data/models.dart';
 import 'overlay/overlay_layout_engine.dart';
 import 'overlay/overlay_text_layer.dart';
 import 'overlay/text_overlay_utils.dart';
+import 'runtime/providers/word_tts_provider.dart';
 
-class PageRenderer extends StatefulWidget {
+class PageRenderer extends ConsumerStatefulWidget {
   final PageData page;
   final Duration narrationPosition;
   final bool isActive;
   final String? heroTag;
   final void Function(String word, int globalIndex)? onWordTap;
+  final void Function(String word, int globalIndex)? onWordLongPress;
   final Set<int> spokenWordIndices;
 
   const PageRenderer({
@@ -26,14 +29,15 @@ class PageRenderer extends StatefulWidget {
     required this.isActive,
     this.heroTag,
     this.onWordTap,
+    this.onWordLongPress,
     this.spokenWordIndices = const {},
   });
 
   @override
-  State<PageRenderer> createState() => _PageRendererState();
+  ConsumerState<PageRenderer> createState() => _PageRendererState();
 }
 
-class _PageRendererState extends State<PageRenderer> {
+class _PageRendererState extends ConsumerState<PageRenderer> {
   static const OverlayLayoutEngine _overlayEngine = OverlayLayoutEngineImpl();
 
   Size? _sourceImageSize;
@@ -94,6 +98,7 @@ class _PageRendererState extends State<PageRenderer> {
 
   @override
   Widget build(BuildContext context) {
+    final tappedWordIndex = ref.watch(wordTtsProvider).tappedWordIndex;
     final page = widget.page;
     final hasOverlay =
         page.overlay != null && page.overlay!.elements.isNotEmpty;
@@ -137,8 +142,10 @@ class _PageRendererState extends State<PageRenderer> {
                     activeWordIndex: activeWordIndex,
                     spokenWordIndices: widget.spokenWordIndices,
                     isActive: widget.isActive,
+                    tappedWordIndex: tappedWordIndex,
                   ),
                   onWordTap: widget.onWordTap,
+                  onWordLongPress: widget.onWordLongPress,
                 ),
               ),
             if (!hasOverlay && hasFallbackText)

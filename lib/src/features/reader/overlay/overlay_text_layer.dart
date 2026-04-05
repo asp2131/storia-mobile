@@ -6,11 +6,13 @@ import 'overlay_text_element.dart';
 class OverlayTextLayer extends StatelessWidget {
   final OverlayFrame frame;
   final void Function(String word, int globalIndex)? onWordTap;
+  final void Function(String word, int globalIndex)? onWordLongPress;
 
   const OverlayTextLayer({
     super.key,
     required this.frame,
     this.onWordTap,
+    this.onWordLongPress,
   });
 
   @override
@@ -27,6 +29,7 @@ class OverlayTextLayer extends StatelessWidget {
             element: element,
             isActive: frame.isActive,
             onWordTap: onWordTap,
+            onWordLongPress: onWordLongPress,
           ),
       ],
     );

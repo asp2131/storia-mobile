@@ -1,25 +1,40 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/resilient_cache_manager.dart';
 import '../../core/theme/storia_colors.dart';
-import '../../core/theme/storia_motion.dart';
-import '../../core/widgets/leaf_accent.dart';
 import '../../core/widgets/parental_gate.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../core/widgets/sketch_card.dart';
 import '../../core/widgets/sketch_icon_button.dart';
-import '../../core/widgets/watercolor_scaffold.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import 'game/book_preview_overlay.dart';
+import 'game/library_game.dart';
 
+// ── Shelf filter ────────────────────────────────────────────────────────
 enum _ShelfFilter { all, quick, longer }
+
+// ── Layout constants ────────────────────────────────────────────────────
+const double _kNodeWidth = 80;
+const double _kMinWorldWidth = 600;
+
+/// Adventure-map world width: enough room for nodes to spread with generous
+/// spacing (~160px per node), ensuring 4-5 nodes visible per viewport.
+double _worldWidthForBooks(int count, double screenWidth) {
+  final needed = (count + 1) * 160.0;
+  return needed.clamp(
+    screenWidth.clamp(_kMinWorldWidth, double.infinity),
+    double.infinity,
+  );
+}
+
+// ── Main screen ─────────────────────────────────────────────────────────
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
@@ -34,26 +49,76 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Timer? _searchDebounce;
   String _searchQuery = '';
   _ShelfFilter _activeFilter = _ShelfFilter.all;
+  Set<String> _visibleBookIds = const <String>{};
+
+  LibraryGame? _game;
+  Book? _previewBook;
 
   void _handleSearchChanged(String value) {
     _searchDebounce?.cancel();
     if (value.trim().isEmpty) {
       setState(() => _searchQuery = '');
+      _applyFilter();
       return;
     }
-
     _searchDebounce = Timer(_searchDebounceDuration, () {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       setState(() => _searchQuery = value);
+      _applyFilter();
     });
+  }
+
+  void _applyFilter() {
+    final books = ref.read(bookLibraryProvider).valueOrNull ?? [];
+    final filtered = _filterBooks(books, _searchQuery, _activeFilter);
+    final visibleIds = filtered.map((b) => b.id).toSet();
+    _visibleBookIds = visibleIds;
+    _game?.applyFilter(visibleIds);
+  }
+
+  bool get _hasActiveBrowseQuery =>
+      _searchQuery.trim().isNotEmpty || _activeFilter != _ShelfFilter.all;
+
+  bool get _showBrowsePanel =>
+      _hasActiveBrowseQuery && _broaderBrowseResults.isNotEmpty;
+
+  List<Book> get _broaderBrowseResults =>
+      _game?.broaderBrowseResults(
+        searchQuery: _searchQuery,
+        filter: _activeFilter,
+        visibleIds: _visibleBookIds,
+      ) ??
+      const [];
+
+  void _onArrivedAtBook() {
+    final book = _game?.arrivedAtBook.value;
+    if (book != null && mounted) {
+      setState(() => _previewBook = book);
+    }
+  }
+
+  void _dismissPreview() {
+    setState(() => _previewBook = null);
+    _game?.arrivedAtBook.value = null;
+  }
+
+  void _onBrowsePanelBookTap(Book book) {
+    _dismissPreview();
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _searchController.clear();
+      _searchQuery = '';
+      _activeFilter = _ShelfFilter.all;
+    });
+    _applyFilter();
+    _game?.navigateToBookNode(book);
   }
 
   @override
   void dispose() {
     _searchDebounce?.cancel();
     _searchController.dispose();
+    _game?.arrivedAtBook.removeListener(_onArrivedAtBook);
     super.dispose();
   }
 
@@ -63,56 +128,60 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     return Scaffold(
       backgroundColor: StoriaColors.paper,
-      body: WatercolorScaffold(
-        child: booksAsync.when(
-          data: (books) => _LibraryView(
-            books: books,
-            activeFilter: _activeFilter,
-            searchController: _searchController,
-            searchQuery: _searchQuery,
-            onFilterChanged: (filter) => setState(() => _activeFilter = filter),
-            onSearchChanged: _handleSearchChanged,
-          ),
-          loading: () => const _LoadingState(),
-          error: (error, _) => _ErrorState(
-            error: '$error',
-            onRetry: () => ref.invalidate(bookLibraryProvider),
-          ),
+      body: booksAsync.when(
+        data: (books) => _buildGameView(context, books),
+        loading: () => const _LoadingState(),
+        error: (error, _) => _ErrorState(
+          error: '$error',
+          onRetry: () => ref.invalidate(bookLibraryProvider),
         ),
       ),
     );
   }
-}
 
-class _LibraryView extends StatelessWidget {
-  const _LibraryView({
-    required this.books,
-    required this.activeFilter,
-    required this.searchController,
-    required this.searchQuery,
-    required this.onFilterChanged,
-    required this.onSearchChanged,
-  });
+  Widget _buildGameView(BuildContext context, List<Book> books) {
+    final screenW = MediaQuery.sizeOf(context).width;
+    final worldWidth = _worldWidthForBooks(books.length, screenW);
 
-  final List<Book> books;
-  final _ShelfFilter activeFilter;
-  final TextEditingController searchController;
-  final String searchQuery;
-  final ValueChanged<_ShelfFilter> onFilterChanged;
-  final ValueChanged<String> onSearchChanged;
+    // Create game once, reload books when list changes.
+    if (_game == null || _game!.worldWidth != worldWidth) {
+      _game?.arrivedAtBook.removeListener(_onArrivedAtBook);
+      _game = LibraryGame(worldWidth: worldWidth);
+      _game!.arrivedAtBook.addListener(_onArrivedAtBook);
 
-  @override
-  Widget build(BuildContext context) {
-    final filteredBooks = _filterBooks(books, searchQuery, activeFilter);
+      // Schedule book placement after game is loaded.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final screenH = MediaQuery.sizeOf(context).height;
+        _game!.loadBooks(books, screenHeight: screenH);
+        _applyFilter();
+      });
+    }
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverToBoxAdapter(
-          child: _LibraryHero(
-            totalBooks: books.length,
-            searchController: searchController,
-            onSearchChanged: onSearchChanged,
+    return Stack(
+      children: [
+        // Layer 1: Flutter-drawn room background (synced to camera).
+        _RoomBackground(
+          worldWidth: worldWidth,
+          cameraNotifier: _game!.cameraXNotifier,
+        ),
+
+        // Layer 2: Flame game (transparent, character + book tap targets).
+        Positioned.fill(child: GameWidget(game: _game!)),
+
+        // Layer 3: Floating search + filter UI.
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: _FloatingControls(
+            searchController: _searchController,
+            activeFilter: _activeFilter,
+            onSearchChanged: _handleSearchChanged,
+            onFilterChanged: (filter) {
+              setState(() => _activeFilter = filter);
+              _applyFilter();
+            },
             onSettingsTap: () async {
               final passed = await ParentalGate.verify(context);
               if (!context.mounted || !passed) return;
@@ -120,140 +189,302 @@ class _LibraryView extends StatelessWidget {
             },
           ),
         ),
-        SliverToBoxAdapter(
-          child: _ShelfFilters(
-            activeFilter: activeFilter,
-            onSelected: onFilterChanged,
-          ),
+
+        // Layer 4: Browse panel for search/filter results.
+        _BrowsePanel(
+          show: _showBrowsePanel,
+          books: _broaderBrowseResults,
+          searchQuery: _searchQuery,
+          activeFilter: _activeFilter,
+          onBookTap: _onBrowsePanelBookTap,
         ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    searchQuery.trim().isEmpty
-                        ? _sectionLabel(activeFilter)
-                        : 'Search Results',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                ),
-                _CountBadge(count: filteredBooks.length),
-              ],
+
+        // Layer 5: Book preview overlay (reactive to camera movement).
+        if (_previewBook != null) ...[
+          // Dismiss scrim.
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _dismissPreview,
+              behavior: HitTestBehavior.opaque,
+              child: const ColoredBox(color: Color(0x22000000)),
             ),
           ),
-        ),
-        if (filteredBooks.isEmpty)
-          const SliverToBoxAdapter(child: _EmptyState())
-        else
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-            sliver: SliverLayoutBuilder(
-              builder: (context, constraints) {
-                final crossAxisCount = _gridColumnsForWidth(
-                  constraints.crossAxisExtent,
-                );
-                return SliverGrid.builder(
-                  itemCount: filteredBooks.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 18,
-                    childAspectRatio: 0.62,
-                  ),
-                  itemBuilder: (context, index) {
-                    final book = filteredBooks[index];
-                    return _BookCard(
-                      key: ValueKey(book.id),
-                      book: book,
-                      index: index,
-                    );
-                  },
-                );
-              },
-            ),
+          ValueListenableBuilder<double>(
+            valueListenable: _game!.cameraXNotifier,
+            builder: (context, _, __) {
+              final previewBook = _previewBook!;
+              return BookPreviewOverlay(
+                book: previewBook,
+                position: _overlayPosition(previewBook),
+                onRead: () {
+                  final bookId = previewBook.id;
+                  _dismissPreview();
+                  context.push('/reader/$bookId');
+                },
+                onDismiss: _dismissPreview,
+              );
+            },
           ),
+        ],
       ],
+    );
+  }
+
+  Offset _overlayPosition(Book book) {
+    final screenPos = _game?.screenPositionOfBook(book.id);
+    final screenSize = MediaQuery.sizeOf(context);
+    if (screenPos == null) {
+      return Offset(screenSize.width / 2, 200);
+    }
+    // Center horizontally above the book/node.
+    const cardHalfWidth = 280 / 2; // matches BookPreviewOverlay._cardWidth
+    const edgePadding = 12.0;
+    const minTop = 16.0;
+    final rawX = screenPos.dx + _kNodeWidth / 2;
+    // Clamp so card doesn't overflow left or right screen edges.
+    final clampedX = rawX.clamp(
+      cardHalfWidth + edgePadding,
+      screenSize.width - cardHalfWidth - edgePadding,
+    );
+    final clampedY = (screenPos.dy - 160).clamp(minTop, double.infinity);
+    return Offset(clampedX, clampedY);
+  }
+}
+
+// ── Room background ─────────────────────────────────────────────────────
+
+class _RoomBackground extends StatelessWidget {
+  const _RoomBackground({
+    required this.worldWidth,
+    required this.cameraNotifier,
+  });
+
+  final double worldWidth;
+  final ValueNotifier<double> cameraNotifier;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<double>(
+      valueListenable: cameraNotifier,
+      builder: (context, cameraX, _) {
+        return RepaintBoundary(
+          child: CustomPaint(
+            size: Size.infinite,
+            painter: _SkyHillsPainter(
+              worldWidth: worldWidth,
+              cameraX: cameraX,
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-class _LibraryHero extends StatelessWidget {
-  const _LibraryHero({
-    required this.totalBooks,
+/// [CustomPainter] that draws sky (0.2x parallax) and hills (0.5x parallax).
+/// Ground rendering is handled by the isometric TMX map inside the Flame world.
+class _SkyHillsPainter extends CustomPainter {
+  _SkyHillsPainter({
+    required this.worldWidth,
+    required this.cameraX,
+  });
+
+  final double worldWidth;
+  final double cameraX;
+
+  static const _skyTop = Color(0xFFB3E5FC);
+  static const _skyHorizon = Color(0xFFFFE0B2);
+  static const _hillBack = Color(0xFFA5D6A7);
+  static const _hillFront = Color(0xFFC8E6C9);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _paintSky(canvas, size);
+    _paintHills(canvas, size);
+  }
+
+  void _paintSky(Canvas canvas, Size size) {
+    final horizonY = size.height * 0.6;
+    final skyOffset = -cameraX * 0.2;
+
+    canvas.save();
+    canvas.translate(skyOffset, 0);
+
+    final skyRect = Rect.fromLTWH(0, 0, size.width - skyOffset, horizonY);
+    final skyPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [_skyTop, _skyHorizon],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, horizonY));
+    canvas.drawRect(skyRect, skyPaint);
+
+    final cloudPaint = Paint()..color = const Color(0x33FFFFFF);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.25, size.height * 0.15),
+        width: 180,
+        height: 50,
+      ),
+      cloudPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.65, size.height * 0.10),
+        width: 220,
+        height: 55,
+      ),
+      cloudPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.85, size.height * 0.22),
+        width: 140,
+        height: 40,
+      ),
+      cloudPaint,
+    );
+
+    canvas.restore();
+  }
+
+  void _paintHills(Canvas canvas, Size size) {
+    final hillsOffset = -cameraX * 0.5;
+    final spanWidth = worldWidth * 1.5;
+    final groundTop = size.height * 0.70;
+
+    canvas.save();
+    canvas.translate(hillsOffset, 0);
+
+    final backPath = Path()
+      ..moveTo(0, groundTop)
+      ..quadraticBezierTo(
+        spanWidth * 0.15,
+        groundTop - 120,
+        spanWidth * 0.30,
+        groundTop - 40,
+      )
+      ..quadraticBezierTo(
+        spanWidth * 0.45,
+        groundTop - 100,
+        spanWidth * 0.60,
+        groundTop - 30,
+      )
+      ..quadraticBezierTo(
+        spanWidth * 0.80,
+        groundTop - 90,
+        spanWidth,
+        groundTop,
+      )
+      ..lineTo(spanWidth, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(
+      backPath,
+      Paint()..color = _hillBack.withValues(alpha: 0.6),
+    );
+
+    final frontPath = Path()
+      ..moveTo(0, groundTop)
+      ..quadraticBezierTo(
+        spanWidth * 0.10,
+        groundTop - 50,
+        spanWidth * 0.25,
+        groundTop - 15,
+      )
+      ..quadraticBezierTo(
+        spanWidth * 0.40,
+        groundTop - 60,
+        spanWidth * 0.55,
+        groundTop - 10,
+      )
+      ..quadraticBezierTo(
+        spanWidth * 0.70,
+        groundTop - 45,
+        spanWidth * 0.90,
+        groundTop,
+      )
+      ..lineTo(spanWidth, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(
+      frontPath,
+      Paint()..color = _hillFront.withValues(alpha: 0.8),
+    );
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_SkyHillsPainter oldDelegate) =>
+      worldWidth != oldDelegate.worldWidth ||
+      cameraX != oldDelegate.cameraX;
+}
+
+// ── Floating controls ───────────────────────────────────────────────────
+
+class _FloatingControls extends StatelessWidget {
+  const _FloatingControls({
     required this.searchController,
+    required this.activeFilter,
     required this.onSearchChanged,
+    required this.onFilterChanged,
     required this.onSettingsTap,
   });
 
-  final int totalBooks;
   final TextEditingController searchController;
+  final _ShelfFilter activeFilter;
   final ValueChanged<String> onSearchChanged;
+  final ValueChanged<_ShelfFilter> onFilterChanged;
   final VoidCallback onSettingsTap;
 
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.paddingOf(context).top;
-    final titleStyle = Theme.of(context).textTheme.displayMedium;
-    final bodyStyle = Theme.of(context).textTheme.bodyLarge;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, topPadding + 12, 20, 12),
-      child: SketchCard(
-        color: StoriaColors.paperRaised.withValues(alpha: 0.92),
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -4,
-              right: 8,
-              child: Opacity(
-                opacity: 0.82,
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: StoriaColors.dustyPink.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const LeafAccent(size: 44),
-                ),
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: Text('Story Library', style: titleStyle)),
-                    SketchIconButton(
-                      icon: Icons.settings_outlined,
-                      onPressed: onSettingsTap,
-                      tooltip: 'Open settings',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  '$totalBooks books ready for a gentle story time.',
-                  style: bodyStyle?.copyWith(
-                    color: StoriaColors.ink.withValues(alpha: 0.72),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                _SearchField(
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, topPadding + 8, 16, 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            StoriaColors.paper.withValues(alpha: 0.95),
+            StoriaColors.paper.withValues(alpha: 0.0),
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _SearchField(
                   controller: searchController,
                   onChanged: onSearchChanged,
                 ),
-              ],
-            ),
-          ],
-        ),
-      ).animate().fadeIn(duration: StoriaMotion.medium).slideY(begin: -0.04),
+              ),
+              const SizedBox(width: 8),
+              SketchIconButton(
+                icon: Icons.settings_outlined,
+                onPressed: onSettingsTap,
+                tooltip: 'Open settings',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _ShelfFilters(
+            activeFilter: activeFilter,
+            onSelected: onFilterChanged,
+          ),
+        ],
+      ),
     );
   }
 }
+
+// ── Search field ────────────────────────────────────────────────────────
 
 class _SearchField extends StatelessWidget {
   const _SearchField({required this.controller, required this.onChanged});
@@ -265,7 +496,7 @@ class _SearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: ShapeDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.92),
         shape: const SketchBorderShape(
           side: BorderSide(color: StoriaColors.line, width: 1.2),
           radiusScale: 0.82,
@@ -300,8 +531,9 @@ class _SearchField extends StatelessWidget {
                   : null,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: 14,
+                vertical: 12,
               ),
+              isDense: true,
             ),
           );
         },
@@ -309,6 +541,8 @@ class _SearchField extends StatelessWidget {
     );
   }
 }
+
+// ── Shelf filters ───────────────────────────────────────────────────────
 
 class _ShelfFilters extends StatelessWidget {
   const _ShelfFilters({required this.activeFilter, required this.onSelected});
@@ -319,9 +553,8 @@ class _ShelfFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 50,
+      height: 38,
       child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         children: [
@@ -330,13 +563,13 @@ class _ShelfFilters extends StatelessWidget {
             isActive: activeFilter == _ShelfFilter.all,
             onTap: () => onSelected(_ShelfFilter.all),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           _FilterChip(
             label: 'Quick Reads',
             isActive: activeFilter == _ShelfFilter.quick,
             onTap: () => onSelected(_ShelfFilter.quick),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           _FilterChip(
             label: 'Longer Reads',
             isActive: activeFilter == _ShelfFilter.longer,
@@ -365,29 +598,25 @@ class _FilterChip extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        customBorder: const SketchBorderShape(
-          side: BorderSide(color: StoriaColors.line, width: 1.1),
-          radiusScale: 0.78,
-        ),
+        borderRadius: BorderRadius.circular(16),
         child: AnimatedContainer(
-          duration: StoriaMotion.quick,
-          curve: StoriaMotion.emphasized,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-          decoration: ShapeDecoration(
-            color: isActive ? StoriaColors.ink : StoriaColors.paperAlt,
-            shape: SketchBorderShape(
-              side: BorderSide(
-                color: isActive ? StoriaColors.ink : StoriaColors.line,
-                width: 1.1,
-              ),
-              radiusScale: 0.78,
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: isActive
+                ? StoriaColors.ink
+                : Colors.white.withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isActive ? StoriaColors.ink : StoriaColors.line,
+              width: 1.1,
             ),
           ),
           child: Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: isActive ? StoriaColors.paper : StoriaColors.ink,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -396,358 +625,27 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _BookCard extends StatelessWidget {
-  const _BookCard({required this.book, required this.index, super.key});
-
-  final Book book;
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    final coverRadius = sketchBorderRadius(
-      0.72,
-    ).resolve(Directionality.of(context));
-    final accent = switch (index % 3) {
-      0 => StoriaColors.dustyPink,
-      1 => StoriaColors.mustard,
-      _ => StoriaColors.sage,
-    };
-    final shadowColor = Colors.black.withValues(alpha: 0.08);
-
-    final card = GestureDetector(
-      onTap: () => context.push('/reader/${book.id}'),
-      child: SketchCard(
-        color: Colors.white.withValues(alpha: 0.92),
-        elevation: 0.1,
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: coverRadius,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: StoriaColors.paperAlt,
-                        borderRadius: coverRadius,
-                        boxShadow: [
-                          BoxShadow(
-                            color: shadowColor,
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      top: -16,
-                      left: -18,
-                      child: _CoverBlob(
-                        color: accent.withValues(alpha: 0.32),
-                        width: 110,
-                        height: 120,
-                      ),
-                    ),
-                    Positioned(
-                      right: -10,
-                      bottom: -18,
-                      child: _CoverBlob(
-                        color: StoriaColors.ink.withValues(alpha: 0.08),
-                        width: 90,
-                        height: 90,
-                      ),
-                    ),
-                    if ((book.coverUrl ?? '').isNotEmpty)
-                      Hero(
-                        tag: 'book-cover-${book.id}',
-                        child: CachedNetworkImage(
-                          imageUrl: book.coverUrl!,
-                          cacheManager: ResilientCacheManager.instance,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => const _CoverPlaceholder(),
-                          errorWidget: (_, __, ___) =>
-                              const ColoredBox(color: StoriaColors.paperAlt),
-                        ),
-                      )
-                    else
-                      const _LibraryCoverFallback(),
-                    Positioned(
-                      top: 10,
-                      right: 10,
-                      child: DecoratedBox(
-                        decoration: ShapeDecoration(
-                          color: Colors.white.withValues(alpha: 0.84),
-                          shape: const CircleBorder(),
-                          shadows: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.06),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.bookmark_border_rounded,
-                            size: 18,
-                            color: accent.darken(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _readingBand(book.pageCount),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: accent.darken(),
-                letterSpacing: 0.4,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              book.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontSize: 16, height: 1.18),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              book.author ?? 'Unknown author',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: StoriaColors.ink.withValues(alpha: 0.68),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 10),
-            DecoratedBox(
-              decoration: ShapeDecoration(
-                color: accent.withValues(alpha: 0.14),
-                shape: const StadiumBorder(),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                child: Text(
-                  '${book.pageCount} pages',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: accent.darken(),
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    return card
-        .animate(delay: Duration(milliseconds: 40 * (index % 6)))
-        .fadeIn(duration: StoriaMotion.medium)
-        .slideY(begin: 0.05, curve: StoriaMotion.emphasized);
-  }
-}
-
-class _CoverBlob extends StatelessWidget {
-  const _CoverBlob({
-    required this.color,
-    required this.width,
-    required this.height,
-  });
-
-  final Color color;
-  final double width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return ImageFiltered(
-      imageFilter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-      child: Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(width * 0.44),
-        ),
-      ),
-    );
-  }
-}
-
-class _LibraryCoverFallback extends StatelessWidget {
-  const _LibraryCoverFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Icon(
-        Icons.auto_stories_rounded,
-        size: 46,
-        color: StoriaColors.ink.withValues(alpha: 0.22),
-      ),
-    );
-  }
-}
-
-class _CoverPlaceholder extends StatelessWidget {
-  const _CoverPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFF1E4D9), Color(0xFFECD4D4), Color(0xFFDDE7D8)],
-            ),
-          ),
-        )
-        .animate(onPlay: (controller) => controller.repeat())
-        .shimmer(duration: 1400.ms);
-  }
-}
-
-class _CountBadge extends StatelessWidget {
-  const _CountBadge({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const ShapeDecoration(
-        color: StoriaColors.ink,
-        shape: StadiumBorder(),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Text(
-          '$count',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: StoriaColors.paper,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-      child: SketchCard(
-        child: Column(
-          children: [
-            Icon(
-              Icons.menu_book_rounded,
-              size: 36,
-              color: StoriaColors.ink.withValues(alpha: 0.42),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'No books matched your shelf',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Try a different title, author, or reading filter.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: StoriaColors.ink.withValues(alpha: 0.66),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// ── Loading state ───────────────────────────────────────────────────────
 
 class _LoadingState extends StatelessWidget {
   const _LoadingState();
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              MediaQuery.paddingOf(context).top + 12,
-              20,
-              18,
-            ),
-            child:
-                Container(
-                      height: 214,
-                      decoration: ShapeDecoration(
-                        color: Colors.white.withValues(alpha: 0.86),
-                        shape: const SketchBorderShape(
-                          side: BorderSide(
-                            color: StoriaColors.line,
-                            width: 1.2,
-                          ),
-                        ),
-                      ),
-                    )
-                    .animate(onPlay: (controller) => controller.repeat())
-                    .shimmer(duration: 1450.ms),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-          sliver: SliverGrid.builder(
-            itemCount: 6,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 14,
-              mainAxisSpacing: 18,
-              childAspectRatio: 0.62,
-            ),
-            itemBuilder: (_, __) =>
-                Container(
-                      decoration: ShapeDecoration(
-                        color: Colors.white.withValues(alpha: 0.84),
-                        shape: const SketchBorderShape(
-                          side: BorderSide(
-                            color: StoriaColors.line,
-                            width: 1.1,
-                          ),
-                        ),
-                      ),
-                    )
-                    .animate(onPlay: (controller) => controller.repeat())
-                    .shimmer(duration: 1300.ms),
-          ),
-        ),
-      ],
+    return const Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(color: StoriaColors.ink),
+          SizedBox(height: 16),
+          Text('Loading your library...'),
+        ],
+      ),
     );
   }
 }
+
+// ── Error state ─────────────────────────────────────────────────────────
 
 class _ErrorState extends StatelessWidget {
   const _ErrorState({required this.error, required this.onRetry});
@@ -796,57 +694,226 @@ class _ErrorState extends StatelessWidget {
   }
 }
 
+// ── Filter logic ────────────────────────────────────────────────────────
+
+class _BrowsePanel extends StatelessWidget {
+  const _BrowsePanel({
+    required this.show,
+    required this.books,
+    required this.searchQuery,
+    required this.activeFilter,
+    required this.onBookTap,
+  });
+
+  final bool show;
+  final List<Book> books;
+  final String searchQuery;
+  final _ShelfFilter activeFilter;
+  final ValueChanged<Book> onBookTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+
+    return IgnorePointer(
+      ignoring: !show,
+      child: AnimatedSlide(
+        offset: show ? Offset.zero : const Offset(0, 1),
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+        child: AnimatedOpacity(
+          opacity: show ? 1 : 0,
+          duration: const Duration(milliseconds: 180),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12, 140, 12, 12 + bottomPadding),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: SketchCard(
+                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.explore_rounded,
+                            size: 18,
+                            color: StoriaColors.ink,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _browseTitle,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap a result to guide your avatar there on the map.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: StoriaColors.inkMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 220),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: books.length,
+                          separatorBuilder: (_, __) =>
+                              const Divider(height: 12),
+                          itemBuilder: (context, index) {
+                            final book = books[index];
+                            return _BrowseResultTile(
+                              book: book,
+                              onTap: () => onBookTap(book),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String get _browseTitle {
+    if (searchQuery.trim().isNotEmpty) {
+      return 'More matches for “${searchQuery.trim()}”';
+    }
+    return switch (activeFilter) {
+      _ShelfFilter.quick => 'More quick reads',
+      _ShelfFilter.longer => 'More longer reads',
+      _ShelfFilter.all => 'More books to browse',
+    };
+  }
+}
+
+class _BrowseResultTile extends StatelessWidget {
+  const _BrowseResultTile({required this.book, required this.onTap});
+
+  final Book book;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 44,
+                  height: 60,
+                  child: book.coverUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: book.coverUrl!,
+                          cacheManager: ResilientCacheManager.instance,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) =>
+                              _BrowseCoverPlaceholder(),
+                          placeholder: (_, __) =>
+                              Container(color: StoriaColors.paperAlt),
+                        )
+                      : const _BrowseCoverPlaceholder(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      book.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if ((book.author ?? '').isNotEmpty)
+                      Text(
+                        book.author!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: StoriaColors.inkMuted,
+                        ),
+                      ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${book.pageCount} pages',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: StoriaColors.inkMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.route_rounded, color: StoriaColors.inkMuted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BrowseCoverPlaceholder extends StatelessWidget {
+  const _BrowseCoverPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: StoriaColors.paperAlt,
+      child: const Center(
+        child: Icon(
+          Icons.menu_book_rounded,
+          color: StoriaColors.inkMuted,
+          size: 20,
+        ),
+      ),
+    );
+  }
+}
+
 List<Book> _filterBooks(
   List<Book> books,
   String searchQuery,
   _ShelfFilter filter,
 ) {
   final normalizedQuery = searchQuery.trim().toLowerCase();
-
   return books
       .where((book) {
-        final matchesSearch = normalizedQuery.isEmpty
-            ? true
-            : book.title.toLowerCase().contains(normalizedQuery) ||
-                  (book.author ?? '').toLowerCase().contains(normalizedQuery);
-
+        final matchesSearch =
+            normalizedQuery.isEmpty ||
+            book.title.toLowerCase().contains(normalizedQuery) ||
+            (book.author ?? '').toLowerCase().contains(normalizedQuery);
         final matchesFilter = switch (filter) {
           _ShelfFilter.all => true,
           _ShelfFilter.quick => book.pageCount <= 12,
           _ShelfFilter.longer => book.pageCount > 12,
         };
-
         return matchesSearch && matchesFilter;
       })
       .toList(growable: false);
-}
-
-String _sectionLabel(_ShelfFilter filter) {
-  return switch (filter) {
-    _ShelfFilter.all => 'All Tales',
-    _ShelfFilter.quick => 'Quick Reads',
-    _ShelfFilter.longer => 'Longer Reads',
-  };
-}
-
-String _readingBand(int pageCount) {
-  if (pageCount <= 8) {
-    return 'SOFT STARTER';
-  }
-  if (pageCount <= 12) {
-    return 'BEDTIME FAVORITE';
-  }
-  return 'LONGER ADVENTURE';
-}
-
-int _gridColumnsForWidth(double width) {
-  if (width < 460) return 2;
-  if (width < 780) return 3;
-  return 4;
-}
-
-extension on Color {
-  Color darken() {
-    return Color.lerp(this, Colors.black, 0.28) ?? this;
-  }
 }
