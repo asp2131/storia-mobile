@@ -53,3 +53,7 @@ app.*.map.json
 android/key.properties
 *.jks
 *.keystore
+
+.pi
+.wolf
+.superdesign
