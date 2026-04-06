@@ -63,7 +63,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   flame: ^1.21.0
   flame_tiled: ^1.20.0
-  liquid_swipe: ^3.1.0
+  liquid_swipe:
+    git:
+      url: https://github.com/asp2131/liquid_swipe_flutter.git
+      ref: 0936ef7e4a09b668403d1d4308eebf013572377d
 
 dev_dependencies:
   flutter_test:

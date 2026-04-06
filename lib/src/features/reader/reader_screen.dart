@@ -189,10 +189,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   ignoreUserGestureWhileAnimating: true,
                   fullTransitionValue: 380,
                   waveType: WaveType.liquidReveal,
+                  swipeAxis: Axis.vertical,
                   slideIconWidget: const Icon(
-                    Icons.arrow_back_ios_rounded,
+                    Icons.keyboard_arrow_up_rounded,
                     color: Color.fromRGBO(255, 255, 255, 0.72),
-                    size: 18,
+                    size: 22,
                   ),
                   positionSlideIcon: 0.5,
                   onPageChangeCallback: (index) async {
@@ -1048,14 +1049,12 @@ class _ChromeButton extends StatelessWidget {
   final VoidCallback onTap;
   final String semanticLabel;
   final String semanticHint;
-  final Color color;
 
   const _ChromeButton({
     required this.icon,
     required this.onTap,
     required this.semanticLabel,
     required this.semanticHint,
-    this.color = Colors.white,
   });
 
   @override
@@ -1088,7 +1087,7 @@ class _ChromeButton extends StatelessWidget {
               child: SizedBox(
                 width: 48,
                 height: 48,
-                child: Icon(icon, color: color, size: 21),
+                child: Icon(icon, color: Colors.white, size: 21),
               ),
             ),
           ),
