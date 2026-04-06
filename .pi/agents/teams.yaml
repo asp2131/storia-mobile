@@ -29,3 +29,66 @@ pi-pi:
   - tui-expert
   - prompt-expert
   - agent-expert
+
+# ── Storia-Mobile Agent Harness ──────────────────────────────────
+# Three-tier architecture: Orchestrator → Leads → Workers
+
+# Full storia team — orchestrator delegates to all leads
+storia-full:
+  - storia-orchestrator
+  - ui-lead
+  - feature-lead
+  - infra-lead
+  - quality-lead
+
+# UI team — presentation layer work
+storia-ui:
+  - ui-lead
+  - view-generator
+  - animation-specialist
+  - theme-enforcer
+
+# Feature team — business logic and state
+storia-feature:
+  - feature-lead
+  - state-architect
+  - reader-engine
+  - game-builder
+  - route-wirer
+
+# Infrastructure team — data, auth, platform
+storia-infra:
+  - infra-lead
+
+# Quality team — testing and validation
+storia-quality:
+  - quality-lead
+  - test-writer
+  - a11y-auditor
+  - perf-validator
+
+# Evolution team — self-improvement cycle
+storia-evolution:
+  - self-improver
+
+# Rapid feature — skip quality for prototyping
+storia-rapid:
+  - storia-orchestrator
+  - ui-lead
+  - feature-lead
+  - infra-lead
+
+# Reader-focused — for reader feature work
+storia-reader:
+  - feature-lead
+  - reader-engine
+  - state-architect
+  - ui-lead
+  - view-generator
+
+# Game-focused — for gamification work
+storia-game:
+  - feature-lead
+  - game-builder
+  - ui-lead
+  - animation-specialist

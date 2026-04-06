@@ -54,6 +54,7 @@ android/key.properties
 *.jks
 *.keystore
 
-.pi
+.pi/skills/
+
 .wolf
 .superdesign

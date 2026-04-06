@@ -47,3 +47,73 @@ full-review:
       prompt: "Implement this plan:\n\n$INPUT"
     - agent: reviewer
       prompt: "Review this implementation:\n\n$INPUT"
+
+# ── Storia-Mobile Harness Pipelines ─────────────────────────────
+
+storia-build-feature:
+  description: "End-to-end feature development with quality gate and self-improvement"
+  steps:
+    - agent: storia-orchestrator
+      prompt: "Decompose this feature request into domain tasks with acceptance criteria. Delegate to leads via query_experts. Feature: $INPUT"
+    - agent: quality-lead
+      prompt: "Validate all work from the feature build. Run hard and soft validation. Report: $INPUT"
+    - agent: self-improver
+      prompt: "Collect retrospective from all agents on the completed feature. Update expertise files and log evolution. Goal completed: $ORIGINAL"
+
+storia-rapid-build:
+  description: "Fast feature build without quality gate, with self-improvement"
+  steps:
+    - agent: storia-orchestrator
+      prompt: "Decompose and delegate this task. Use rapid team (no quality gate). Task: $INPUT"
+    - agent: self-improver
+      prompt: "Quick retrospective on rapid build. Log any issues for next time. Task: $ORIGINAL"
+
+storia-fix-bug:
+  description: "Investigate bug, fix it, verify, and log learnings"
+  steps:
+    - agent: storia-orchestrator
+      prompt: "Investigate this bug. Identify the domain (UI, feature, infra) and delegate to the appropriate lead. Bug: $INPUT"
+    - agent: quality-lead
+      prompt: "Verify the bug fix. Ensure regression test was added. Report: $INPUT"
+    - agent: self-improver
+      prompt: "Log this bug fix to evolution. Was it a pattern we should have caught? Update expertise to prevent recurrence. Bug: $ORIGINAL"
+
+storia-audit:
+  description: "Full quality audit of recent changes"
+  steps:
+    - agent: quality-lead
+      prompt: "Run full audit on recent changes. Delegate to test-writer, a11y-auditor, and perf-validator in parallel. Scope: $INPUT"
+    - agent: self-improver
+      prompt: "Review audit results. Update quality-lead expertise with new findings. Audit: $ORIGINAL"
+
+storia-evolve:
+  description: "Manual self-improvement cycle — review and strengthen weakest agent"
+  steps:
+    - agent: self-improver
+      prompt: "Review all expertise files, recent failures, and changelog. Identify the weakest agent and make ONE targeted improvement. Context: $INPUT"
+
+storia-plan:
+  description: "Decompose a goal into tasks without executing"
+  steps:
+    - agent: storia-orchestrator
+      prompt: "Decompose this goal into a full task plan with dependencies, domains, and acceptance criteria. Do NOT delegate — just plan. Goal: $INPUT"
+
+storia-build-reader:
+  description: "Reader-specific feature development with evolution"
+  steps:
+    - agent: feature-lead
+      prompt: "Plan reader feature work. Delegate to reader-engine for runtime, state-architect for providers, coordinate with ui-lead for overlay UI. Feature: $INPUT"
+    - agent: quality-lead
+      prompt: "Validate reader feature. Pay special attention to TTS edge cases and port/adapter boundaries. Report: $INPUT"
+    - agent: self-improver
+      prompt: "Retrospective on reader build. Update reader-engine and feature-lead expertise. Goal: $ORIGINAL"
+
+storia-build-game:
+  description: "Gamification-specific feature development with evolution"
+  steps:
+    - agent: feature-lead
+      prompt: "Plan game feature work. Delegate to game-builder for Flame, state-architect for game state, coordinate with ui-lead for Flutter/Flame boundary. Feature: $INPUT"
+    - agent: quality-lead
+      prompt: "Validate game feature. Check Flame/Flutter boundary, sprite performance, camera behavior. Report: $INPUT"
+    - agent: self-improver
+      prompt: "Retrospective on game build. Update game-builder expertise. Goal: $ORIGINAL"
