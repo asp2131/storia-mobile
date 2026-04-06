@@ -8,13 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:liquid_swipe/liquid_swipe.dart';
 
 import '../../core/theme/storia_colors.dart';
 import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
-import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
 import 'runtime/providers/reader_session_provider.dart';
 import 'runtime/providers/word_tts_provider.dart';
@@ -32,12 +32,11 @@ class ReaderScreen extends ConsumerStatefulWidget {
 }
 
 class _ReaderScreenState extends ConsumerState<ReaderScreen> {
-  final PageController _pageController = PageController();
+  final LiquidController _liquidController = LiquidController();
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
   final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
     Duration.zero,
   );
-  double _scrollOffset = 0.0;
   late final ConfettiController _confettiController;
   bool _showCelebrationGif = false;
   late GifPlayerController _gifPlayerController;
@@ -58,7 +57,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       ref.read(wordTtsProvider.notifier).attachStateStream(_session.states);
     });
 
-    _pageController.addListener(_onPageScroll);
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
@@ -117,11 +115,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     }
   }
 
-  void _onPageScroll() {
-    final page = _pageController.page;
-    if (page != null) setState(() => _scrollOffset = page);
-  }
-
   bool _sameWordIndices(Set<int> a, Set<int> b) {
     if (identical(a, b)) {
       return true;
@@ -142,8 +135,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     _sessionSubscription?.cancel();
     _showChromeNotifier.dispose();
     _narrationPositionNotifier.dispose();
-    _pageController.removeListener(_onPageScroll);
-    _pageController.dispose();
     _confettiController.dispose();
     _gifPlayerController.dispose();
     super.dispose();
@@ -187,51 +178,39 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 excludeFromSemantics: true,
                 onTap: () =>
                     _showChromeNotifier.value = !_showChromeNotifier.value,
-                child: PageView.builder(
-                  controller: _pageController,
-                  scrollDirection: Axis.vertical,
+                child: LiquidSwipe.builder(
+                  key: ValueKey('reader-liquid-${book.id}'),
+                  liquidController: _liquidController,
                   itemCount: book.pages.length,
-                  onPageChanged: (index) async {
+                  initialPage: activeIndex,
+                  enableLoop: false,
+                  enableSideReveal: true,
+                  preferDragFromRevealedArea: true,
+                  ignoreUserGestureWhileAnimating: true,
+                  fullTransitionValue: 380,
+                  waveType: WaveType.liquidReveal,
+                  slideIconWidget: const Icon(
+                    Icons.arrow_back_ios_rounded,
+                    color: Color.fromRGBO(255, 255, 255, 0.72),
+                    size: 18,
+                  ),
+                  positionSlideIcon: 0.5,
+                  onPageChangeCallback: (index) async {
                     await _session.dispatch(ReaderGoToPage(index));
                   },
                   itemBuilder: (context, index) {
-                    final isInVirtualizationWindow =
-                        (index - activeIndex).abs() <= 1;
-                    if (!isInVirtualizationWindow) {
-                      return const SizedBox.shrink();
-                    }
-
                     final page = book.pages[index];
                     final heroTag =
                         index == 0 && (book.coverUrl ?? '').isNotEmpty
                         ? 'book-cover-${book.id}'
                         : null;
 
-                    final localOffset = _scrollOffset - index;
-
-                    final double progress;
-                    final bool revealFromTop;
-
-                    if (localOffset < 0) {
-                      progress = (1.0 + localOffset).clamp(0.0, 1.0);
-                      revealFromTop = false;
-                    } else if (localOffset > 0) {
-                      progress = (1.0 - localOffset).clamp(0.0, 1.0);
-                      revealFromTop = true;
-                    } else {
-                      progress = 1.0;
-                      revealFromTop = false;
-                    }
-
-                    return ClipPath(
-                      clipper: VerticalLiquidClipper(
-                        progress: progress,
-                        revealFromTop: revealFromTop,
-                      ),
-                      child: ValueListenableBuilder<Duration>(
-                        valueListenable: _narrationPositionNotifier,
-                        builder: (context, narrationPosition, _) {
-                          return PageRenderer(
+                    return ValueListenableBuilder<Duration>(
+                      valueListenable: _narrationPositionNotifier,
+                      builder: (context, narrationPosition, _) {
+                        return ColoredBox(
+                          color: StoriaColors.readerBackground,
+                          child: PageRenderer(
                             page: page,
                             narrationPosition: narrationPosition,
                             isActive: index == activeIndex,
@@ -247,9 +226,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                   .read(wordTtsProvider.notifier)
                                   .onWordLongPressed(word, globalIndex);
                             },
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -280,10 +259,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     return const SizedBox.shrink();
                   }
 
-                  final practiceKeepsVisible =
-                      _runtimeState.isPracticeMode ||
-                      _runtimeState.isListening;
-
                   return _AudioControlsPill(
                     hasNarration: hasNarration,
                     hasSoundscape: hasSoundscape,
@@ -291,7 +266,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
                     isPracticeActive: _runtimeState.isPracticeMode,
                     isListening: _runtimeState.isListening,
-                    isVisible: showChrome || practiceKeepsVisible,
+                    isVisible: true,
                     showGrip: showChrome,
                     onToggleNarration: () =>
                         _session.dispatch(const ReaderToggleNarration()),
@@ -627,7 +602,10 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     final baseTop = viewportSize.height - baseBottom - _pillSize.height;
 
     final minLeft = 8.0;
-    final maxLeft = math.max(minLeft, viewportSize.width - _pillSize.width - 8.0);
+    final maxLeft = math.max(
+      minLeft,
+      viewportSize.width - _pillSize.width - 8.0,
+    );
     final minTop = safePadding.top + 12.0;
     final maxTop = math.max(
       minTop,
@@ -867,7 +845,9 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: _isDragging ? 0.32 : 0.24),
+                  color: Colors.black.withValues(
+                    alpha: _isDragging ? 0.32 : 0.24,
+                  ),
                   blurRadius: _isDragging ? 12 : 8,
                   offset: Offset(0, _isDragging ? 4 : 2),
                 ),
@@ -884,7 +864,10 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
                     height: 12,
                     decoration: BoxDecoration(
                       color: Color.fromRGBO(
-                        235, 246, 255, _isDragging ? 0.90 : 0.75,
+                        235,
+                        246,
+                        255,
+                        _isDragging ? 0.90 : 0.75,
                       ),
                       borderRadius: BorderRadius.circular(999),
                     ),
@@ -1003,9 +986,21 @@ class _WedgePainter extends CustomPainter {
     const sweep = 2 * math.pi / 3; // 120°
 
     final wedges = [
-      (startAngle: -math.pi / 6, color: _soundscapeColor, active: isSoundscapeActive),
-      (startAngle: math.pi / 2, color: _practiceColor, active: isPracticeActive),
-      (startAngle: 7 * math.pi / 6, color: _narrationColor, active: isNarrationActive),
+      (
+        startAngle: -math.pi / 6,
+        color: _soundscapeColor,
+        active: isSoundscapeActive,
+      ),
+      (
+        startAngle: math.pi / 2,
+        color: _practiceColor,
+        active: isPracticeActive,
+      ),
+      (
+        startAngle: 7 * math.pi / 6,
+        color: _narrationColor,
+        active: isNarrationActive,
+      ),
     ];
 
     // Draw active wedge fills.
