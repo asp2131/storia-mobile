@@ -204,25 +204,37 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
                   ),
                   const Spacer(),
 
-                  // Read button
-                  SizedBox(
-                    height: 30,
-                    child: FilledButton.icon(
-                      onPressed: widget.onRead,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _accentColor,
-                        foregroundColor: StoriaColors.ink,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        textStyle: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                  // Play button
+                  GestureDetector(
+                    onTap: widget.onRead,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4A90D9),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 3,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 3),
+                          child: Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 28,
+                          ),
                         ),
                       ),
-                      icon: const Icon(Icons.auto_stories, size: 14),
-                      label: const Text('Read'),
                     ),
                   ),
                 ],
