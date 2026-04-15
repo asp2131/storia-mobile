@@ -246,6 +246,7 @@ class Book {
   final String? coverUrl;
   final int pageCount;
   final List<PageData> pages;
+  final bool hasQuestions;
 
   const Book({
     required this.id,
@@ -254,6 +255,7 @@ class Book {
     this.coverUrl,
     required this.pageCount,
     required this.pages,
+    this.hasQuestions = false,
   });
 
   factory Book.fromLibraryJson(Map<String, dynamic> json) {
@@ -265,6 +267,9 @@ class Book {
       coverUrl: json['cover_url'] as String? ?? json['coverUrl'] as String?,
       pageCount: pageCount,
       pages: const [],
+      hasQuestions: json['hasQuestions'] as bool? ??
+          json['has_questions'] as bool? ??
+          false,
     );
   }
 
@@ -301,6 +306,9 @@ class Book {
       coverUrl: json['cover_url'] as String? ?? json['coverUrl'] as String?,
       pageCount: pagesWithResolvedSoundscapes.length,
       pages: pagesWithResolvedSoundscapes,
+      hasQuestions: json['hasQuestions'] as bool? ??
+          json['has_questions'] as bool? ??
+          false,
     );
   }
 }

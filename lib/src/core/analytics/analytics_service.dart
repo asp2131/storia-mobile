@@ -151,6 +151,55 @@ class AnalyticsService {
     });
   }
 
+  void trackComprehensionStarted({
+    required String childId,
+    required String bookId,
+    required String sessionId,
+    required int totalQuestions,
+  }) {
+    _track('comprehension_started', {
+      'childId': childId,
+      'bookId': bookId,
+      'sessionId': sessionId,
+      'totalQuestions': totalQuestions,
+      'source': 'mobile',
+    });
+  }
+
+  void trackComprehensionQuestionAnswered({
+    required String childId,
+    required String bookId,
+    required String questionId,
+    required bool isCorrect,
+  }) {
+    _track('comprehension_question_answered', {
+      'childId': childId,
+      'bookId': bookId,
+      'questionId': questionId,
+      'isCorrect': isCorrect,
+      'source': 'mobile',
+    });
+  }
+
+  void trackComprehensionCompleted({
+    required String childId,
+    required String bookId,
+    required String sessionId,
+    required int correctCount,
+    required int totalQuestions,
+    required int scorePercent,
+  }) {
+    _track('comprehension_completed', {
+      'childId': childId,
+      'bookId': bookId,
+      'sessionId': sessionId,
+      'correctCount': correctCount,
+      'totalQuestions': totalQuestions,
+      'scorePercent': scorePercent,
+      'source': 'mobile',
+    });
+  }
+
   void _track(String event, Map<String, dynamic> properties) {
     // MVP: debug logging. Replace with PostHog or backend call later.
     debugPrint('[Analytics] $event $properties');

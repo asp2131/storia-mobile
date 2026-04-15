@@ -38,6 +38,17 @@ class ReadingSessionCoordinator {
   ReadingSessionDraft? get currentDraft => _draft;
   bool get hasActiveSession => _draft != null;
 
+  /// Session ID available after [onBookCompleted] for comprehension linking.
+  String? get completedSessionId =>
+      (_draft?.completedBook ?? false) ? _draft?.sessionId : null;
+
+  /// Book ID available after [onBookCompleted] for comprehension linking.
+  String? get completedBookId =>
+      (_draft?.completedBook ?? false) ? _draft?.bookId : null;
+
+  /// Child profile ID from the active draft.
+  String? get activeChildProfileId => _draft?.childProfileId;
+
   /// Call when the reader opens. Creates a new session draft.
   void startSession({
     required String sessionId,

@@ -11,6 +11,7 @@ import '../features/library/library_screen.dart';
 import '../features/onboarding/data/app_review_flow_providers.dart';
 import '../features/onboarding/presentation/parent_birth_year_screen.dart';
 import '../features/onboarding/presentation/review_onboarding_screen.dart';
+import '../features/comprehension/presentation/comprehension_screen.dart';
 import '../features/reader/reader_screen.dart';
 import '../features/settings/settings_screen.dart';
 
@@ -102,6 +103,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final bookId = state.pathParameters['bookId'] ?? '';
           return ReaderScreen(bookId: bookId);
+        },
+      ),
+      GoRoute(
+        path: '/comprehension/:bookId',
+        builder: (context, state) {
+          final bookId = state.pathParameters['bookId'] ?? '';
+          final extra = state.extra as Map<String, String?>?;
+          final sessionId = extra?['sessionId'];
+          return ComprehensionScreen(
+            bookId: bookId,
+            sessionId: sessionId,
+          );
         },
       ),
       GoRoute(

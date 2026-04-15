@@ -9,6 +9,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../core/theme/storia_colors.dart';
 import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
@@ -16,6 +18,8 @@ import '../../data/models.dart';
 import '../../data/providers.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
+import 'presentation/widgets/completion_handoff_sheet.dart';
+import 'providers/reading_session_coordinator_provider.dart';
 import 'runtime/providers/reader_session_provider.dart';
 import 'runtime/providers/word_tts_provider.dart';
 import 'runtime/reader_intent.dart';
@@ -40,6 +44,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   double _scrollOffset = 0.0;
   late final ConfettiController _confettiController;
   bool _showCelebrationGif = false;
+  bool _handoffShown = false;
   late GifPlayerController _gifPlayerController;
 
   late final ReaderSession _session;
@@ -111,6 +116,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       _gifPlayerController.pause();
       if (mounted) {
         setState(() => _showCelebrationGif = false);
+        _showCompletionHandoff();
       } else {
         _showCelebrationGif = false;
       }
@@ -348,6 +354,54 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           },
         ),
       ),
+    );
+  }
+
+  void _showCompletionHandoff() {
+    if (_handoffShown || !mounted) return;
+    _handoffShown = true;
+
+    final bookAsync = ref.read(currentBookProvider(widget.bookId));
+    final book = bookAsync.value;
+    if (book == null) return;
+
+    final coordinator = ref.read(readingSessionCoordinatorProvider);
+    final sessionId = coordinator.completedSessionId;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: StoriaColors.paper,
+      isDismissible: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      builder: (sheetContext) {
+        return CompletionHandoffSheet(
+          bookTitle: book.title,
+          hasQuestions: book.hasQuestions,
+          onPlayAgain: () {
+            Navigator.of(sheetContext).pop();
+            context.go('/reader/${widget.bookId}');
+          },
+          onReadAgain: () {
+            Navigator.of(sheetContext).pop();
+            context.go('/reader/${widget.bookId}');
+          },
+          onQuickQuestions: () {
+            Navigator.of(sheetContext).pop();
+            context.go(
+              '/comprehension/${widget.bookId}',
+              extra: <String, String?>{
+                'sessionId': sessionId,
+              },
+            );
+          },
+          onBackToLibrary: () {
+            Navigator.of(sheetContext).pop();
+            context.go('/library');
+          },
+        );
+      },
     );
   }
 
