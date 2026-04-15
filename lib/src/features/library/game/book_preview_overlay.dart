@@ -5,6 +5,7 @@ import '../../../core/resilient_cache_manager.dart';
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../data/models.dart';
+import '../../progress/domain/book_progress.dart';
 
 /// A Flutter overlay widget that shows a popup preview card for a book.
 ///
@@ -17,11 +18,17 @@ class BookPreviewOverlay extends StatefulWidget {
     required this.onRead,
     required this.onDismiss,
     required this.position,
+    required this.onPlay,
+    this.progress,
+    this.showPlay = true,
   });
 
   final Book book;
   final VoidCallback onRead;
+  final VoidCallback? onPlay;
   final VoidCallback onDismiss;
+  final BookProgress? progress;
+  final bool showPlay;
 
   /// Screen-space offset where the card should appear (above the book).
   final Offset position;
@@ -72,8 +79,28 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
     return 'LONGER ADVENTURE';
   }
 
-  static const double _cardWidth = 280;
+  String get _statusLabel {
+    final progress = widget.progress;
+    if (progress == null) return 'New';
+    return switch (progress.status) {
+      BookProgressStatus.completed => 'Completed',
+      BookProgressStatus.inProgress => 'Continue · Page ${progress.currentPage}',
+      BookProgressStatus.newBook => 'New',
+    };
+  }
+
+  static const double _cardWidth = 300;
   static const double _arrowSize = 8;
+
+  String get _primaryActionLabel {
+    final progress = widget.progress;
+    if (progress == null) return 'Read';
+    return switch (progress.status) {
+      BookProgressStatus.inProgress => 'Resume',
+      BookProgressStatus.completed => 'Read Again',
+      BookProgressStatus.newBook => 'Read',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +113,6 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
           scale: _scaleAnim,
           alignment: Alignment.bottomCenter,
           child: GestureDetector(
-            // Prevent taps on the card from dismissing
             onTap: () {},
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -98,7 +124,6 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
                     child: _buildContent(context),
                   ),
                 ),
-                // Downward-pointing triangle arrow
                 CustomPaint(
                   size: const Size(_arrowSize * 2, _arrowSize),
                   painter: _ArrowPainter(color: StoriaColors.paperRaised),
@@ -117,12 +142,11 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Book cover thumbnail
         ClipRRect(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           child: SizedBox(
-            width: 60,
-            height: 90,
+            width: 68,
+            height: 96,
             child: widget.book.coverUrl != null
                 ? CachedNetworkImage(
                     imageUrl: widget.book.coverUrl!,
@@ -136,14 +160,11 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
           ),
         ),
         const SizedBox(width: 12),
-
-        // Book details
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Reading band label
               Text(
                 _readingBand,
                 style: textTheme.labelSmall?.copyWith(
@@ -154,8 +175,6 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
                 ),
               ),
               const SizedBox(height: 4),
-
-              // Title
               Text(
                 widget.book.title,
                 maxLines: 2,
@@ -166,10 +185,8 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
                   height: 1.2,
                 ),
               ),
-              const SizedBox(height: 2),
-
-              // Author
-              if (widget.book.author != null)
+              if ((widget.book.author ?? '').isNotEmpty) ...[
+                const SizedBox(height: 2),
                 Text(
                   widget.book.author!,
                   maxLines: 1,
@@ -179,62 +196,47 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
                     fontSize: 12,
                   ),
                 ),
-              const SizedBox(height: 6),
-
-              // Page count pill + Read button row
+              ],
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  _MetaPill(
+                    label: _statusLabel,
+                    background: _accentColor.withValues(alpha: 0.16),
+                  ),
+                  _MetaPill(label: '${widget.book.pageCount} pages'),
+                ],
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  // Page count badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _accentColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '${widget.book.pageCount} pages',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: StoriaColors.ink,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-
-                  // Play button
-                  GestureDetector(
-                    onTap: widget.onRead,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4A90D9),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 3,
+                  if (widget.showPlay && widget.onPlay != null) ...[
+                    SizedBox(
+                      width: 46,
+                      height: 46,
+                      child: IconButton.filled(
+                        onPressed: widget.onPlay,
+                        tooltip: 'Play',
+                        style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFF4A90D9),
+                          foregroundColor: Colors.white,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        icon: const Icon(Icons.play_arrow_rounded, size: 26),
                       ),
-                      child: const Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 3),
-                          child: Icon(
-                            Icons.play_arrow_rounded,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: widget.onRead,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: StoriaColors.ink,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(46),
                       ),
+                      child: Text(_primaryActionLabel),
                     ),
                   ),
                 ],
@@ -254,6 +256,31 @@ class _BookPreviewOverlayState extends State<BookPreviewOverlay>
           Icons.menu_book_rounded,
           color: StoriaColors.inkMuted,
           size: 24,
+        ),
+      ),
+    );
+  }
+}
+
+class _MetaPill extends StatelessWidget {
+  const _MetaPill({required this.label, this.background});
+
+  final String label;
+  final Color? background;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: background ?? StoriaColors.paperAlt,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: StoriaColors.ink,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

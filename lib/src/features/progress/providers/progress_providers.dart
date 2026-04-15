@@ -8,7 +8,8 @@ import '../domain/continue_reading_item.dart';
 
 final progressRepositoryProvider = Provider<ProgressRepository>((ref) {
   final supabase = ref.watch(supabaseClientProvider);
-  return ProgressRepository(supabase);
+  final apiClient = ref.watch(apiClientProvider);
+  return ProgressRepository(supabase, apiClient);
 });
 
 final continueReadingProvider = FutureProvider<ContinueReadingItem?>((

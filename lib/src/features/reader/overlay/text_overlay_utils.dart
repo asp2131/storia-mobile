@@ -110,24 +110,42 @@ TextStyle resolveFontStyle(
     orElse: () => .w400,
   );
 
-  switch (family) {
-    case 'Lora':
-      return GoogleFonts.lora(fontSize: size, color: color, fontWeight: fw);
-    case 'Playfair Display':
-      return GoogleFonts.playfairDisplay(
-        fontSize: size,
-        color: color,
-        fontWeight: fw,
-      );
-    case 'JetBrains Mono':
-      return GoogleFonts.jetBrainsMono(
-        fontSize: size,
-        color: color,
-        fontWeight: fw,
-      );
-    case 'Gaegu':
-      return GoogleFonts.gaegu(fontSize: size, color: color, fontWeight: fw);
-    default:
-      return GoogleFonts.inter(fontSize: size, color: color, fontWeight: fw);
+  final fallbackStyle = TextStyle(
+    fontFamily: family.isEmpty ? 'Inter' : family,
+    fontSize: size,
+    color: color,
+    fontWeight: fw,
+  );
+  final isTestBinding = WidgetsBinding.instance.runtimeType
+      .toString()
+      .contains('TestWidgetsFlutterBinding');
+
+  if (!GoogleFonts.config.allowRuntimeFetching || isTestBinding) {
+    return fallbackStyle;
+  }
+
+  try {
+    switch (family) {
+      case 'Lora':
+        return GoogleFonts.lora(fontSize: size, color: color, fontWeight: fw);
+      case 'Playfair Display':
+        return GoogleFonts.playfairDisplay(
+          fontSize: size,
+          color: color,
+          fontWeight: fw,
+        );
+      case 'JetBrains Mono':
+        return GoogleFonts.jetBrainsMono(
+          fontSize: size,
+          color: color,
+          fontWeight: fw,
+        );
+      case 'Gaegu':
+        return GoogleFonts.gaegu(fontSize: size, color: color, fontWeight: fw);
+      default:
+        return GoogleFonts.inter(fontSize: size, color: color, fontWeight: fw);
+    }
+  } catch (_) {
+    return fallbackStyle;
   }
 }

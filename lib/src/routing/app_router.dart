@@ -102,7 +102,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/reader/:bookId',
         builder: (context, state) {
           final bookId = state.pathParameters['bookId'] ?? '';
-          return ReaderScreen(bookId: bookId);
+          final extra = state.extra as Map<String, dynamic>?;
+          return ReaderScreen(
+            bookId: bookId,
+            initialPage: (extra?['initialPage'] as int?) ?? 0,
+            entryIntent:
+                extra?['entryIntent'] as String? ?? 'standard',
+          );
         },
       ),
       GoRoute(

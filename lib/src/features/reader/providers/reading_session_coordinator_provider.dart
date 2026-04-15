@@ -13,7 +13,8 @@ final analyticsServiceProvider = Provider<AnalyticsService>((ref) {
 final readingSessionRepositoryProvider =
     Provider<ReadingSessionRepository>((ref) {
   final supabase = ref.watch(supabaseClientProvider);
-  return ReadingSessionRepository(supabase);
+  final apiClient = ref.watch(apiClientProvider);
+  return ReadingSessionRepository(supabase, apiClient);
 });
 
 final readingSessionCoordinatorProvider =

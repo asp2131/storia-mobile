@@ -128,14 +128,16 @@ class _ComprehensionScreenState extends ConsumerState<ComprehensionScreen> {
 
     notifier.answerQuestion(questionId, optionKey);
 
-    final analytics = ref.read(analyticsServiceProvider);
-    final childId = ref.read(activeChildProvider).value?.id ?? '';
-    analytics.trackComprehensionQuestionAnswered(
-      childId: childId,
-      bookId: widget.bookId,
-      questionId: questionId,
-      isCorrect: false, // correctness determined server-side
-    );
+    final childId = ref.read(activeChildIdProvider);
+    if (childId != null) {
+      final analytics = ref.read(analyticsServiceProvider);
+      analytics.trackComprehensionQuestionAnswered(
+        childId: childId,
+        bookId: widget.bookId,
+        questionId: questionId,
+        isCorrect: false, // correctness determined server-side
+      );
+    }
 
     if (state.isLastQuestion) {
       _submitAnswers();
@@ -143,9 +145,17 @@ class _ComprehensionScreenState extends ConsumerState<ComprehensionScreen> {
   }
 
   Future<void> _submitAnswers() async {
-    final childId = ref.read(activeChildProvider).value?.id ?? '';
-    final notifier = ref.read(comprehensionFlowProvider.notifier);
+    final childId = ref.read(activeChildIdProvider);
+    if (childId == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Choose child profile before saving.')),
+      );
+      context.go('/library');
+      return;
+    }
 
+    final notifier = ref.read(comprehensionFlowProvider.notifier);
     final result = await notifier.submit(
       childProfileId: childId,
       bookId: widget.bookId,
@@ -166,8 +176,10 @@ class _ComprehensionScreenState extends ConsumerState<ComprehensionScreen> {
   }
 
   void _trackStart(int totalQuestions) {
+    final childId = ref.read(activeChildIdProvider);
+    if (childId == null) return;
+
     final analytics = ref.read(analyticsServiceProvider);
-    final childId = ref.read(activeChildProvider).value?.id ?? '';
     analytics.trackComprehensionStarted(
       childId: childId,
       bookId: widget.bookId,

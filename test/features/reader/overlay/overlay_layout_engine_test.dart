@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:storia_flutter/src/data/models.dart';
-import 'package:storia_flutter/src/features/reader/overlay/overlay_layout_engine.dart';
+import 'package:Storia_Kids/src/data/models.dart';
+import 'package:Storia_Kids/src/features/reader/overlay/overlay_layout_engine.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

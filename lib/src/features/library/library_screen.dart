@@ -14,8 +14,16 @@ import '../../core/widgets/sketch_card.dart';
 import '../../core/widgets/sketch_icon_button.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import '../child/domain/child_profile.dart';
+import '../child/providers/active_child_provider.dart';
+import '../progress/domain/book_progress.dart';
+import '../progress/domain/continue_reading_item.dart';
+import '../progress/providers/progress_providers.dart';
+import '../reader/domain/reader_entry_intent.dart';
+import '../reader/providers/reading_session_coordinator_provider.dart';
 import 'game/book_preview_overlay.dart';
 import 'game/library_game.dart';
+import 'widgets/continue_reading_card.dart';
 
 // ── Shelf filter ────────────────────────────────────────────────────────
 enum _ShelfFilter { all, quick, longer }
@@ -53,6 +61,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   LibraryGame? _game;
   Book? _previewBook;
+  String? _trackedLibraryChildId;
+  String? _trackedContinueReadingKey;
 
   void _handleSearchChanged(String value) {
     _searchDebounce?.cancel();
@@ -94,6 +104,23 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final book = _game?.arrivedAtBook.value;
     if (book != null && mounted) {
       setState(() => _previewBook = book);
+      final childId = ref.read(activeChildIdProvider);
+      if (childId != null) {
+        final progress = ref.read(bookProgressProvider(book.id)).valueOrNull;
+        final hasNarration =
+            ref
+                .read(currentBookProvider(book.id))
+                .valueOrNull
+                ?.pages
+                .any((page) => (page.narrationUrl ?? '').isNotEmpty) ??
+            true;
+        ref.read(analyticsServiceProvider).trackBookPreviewOpened(
+          childId: childId,
+          bookId: book.id,
+          progressStatus: progress?.status.value ?? BookProgressStatus.newBook.value,
+          hasNarration: hasNarration,
+        );
+      }
     }
   }
 
@@ -112,6 +139,72 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     });
     _applyFilter();
     _game?.navigateToBookNode(book);
+  }
+
+  void _pushReaderRoute(
+    Book book, {
+    required ReaderEntryIntent entryIntent,
+    int initialPage = 0,
+  }) {
+    _dismissPreview();
+    context.push(
+      '/reader/${book.id}',
+      extra: <String, dynamic>{
+        'initialPage': initialPage,
+        'entryIntent': entryIntent.value,
+      },
+    );
+  }
+
+  void _openContinueReading(
+    ContinueReadingItem item, {
+    required ReaderEntryIntent entryIntent,
+  }) {
+    final childId = ref.read(activeChildIdProvider);
+    if (childId != null) {
+      final analytics = ref.read(analyticsServiceProvider);
+      if (entryIntent == ReaderEntryIntent.autoplayNarration) {
+        analytics.trackContinueReadingPlayTapped(
+          childId: childId,
+          bookId: item.book.id,
+          currentPage: item.progress.currentPage,
+        );
+      } else {
+        analytics.trackContinueReadingResumeTapped(
+          childId: childId,
+          bookId: item.book.id,
+          currentPage: item.progress.currentPage,
+        );
+      }
+    }
+
+    _pushReaderRoute(
+      item.book,
+      entryIntent: entryIntent,
+      initialPage: (item.progress.currentPage - 1).clamp(0, 1 << 20).toInt(),
+    );
+  }
+
+  void _openPreviewReader(
+    Book book, {
+    required ReaderEntryIntent entryIntent,
+    required int initialPage,
+  }) {
+    final childId = ref.read(activeChildIdProvider);
+    if (childId != null) {
+      final analytics = ref.read(analyticsServiceProvider);
+      if (entryIntent == ReaderEntryIntent.autoplayNarration) {
+        analytics.trackBookPreviewPlayTapped(childId: childId, bookId: book.id);
+      } else {
+        analytics.trackBookPreviewReadTapped(childId: childId, bookId: book.id);
+      }
+    }
+
+    _pushReaderRoute(
+      book,
+      entryIntent: entryIntent,
+      initialPage: initialPage,
+    );
   }
 
   @override
@@ -142,6 +235,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Widget _buildGameView(BuildContext context, List<Book> books) {
     final screenW = MediaQuery.sizeOf(context).width;
     final worldWidth = _worldWidthForBooks(books.length, screenW);
+    final continueReadingAsync = ref.watch(continueReadingProvider);
+    final activeChildId = ref.watch(activeChildIdProvider);
+    final childProfilesAsync = ref.watch(childProfilesProvider);
+    final activeChildAsync = ref.watch(activeChildProvider);
+
+    if (activeChildId != null && _trackedLibraryChildId != activeChildId) {
+      _trackedLibraryChildId = activeChildId;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(analyticsServiceProvider).trackLibraryViewed(
+          childId: activeChildId,
+        );
+      });
+    }
 
     // Create game once, reload books when list changes.
     if (_game == null || _game!.worldWidth != worldWidth) {
@@ -182,6 +289,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               setState(() => _activeFilter = filter);
               _applyFilter();
             },
+            activeChildName: activeChildAsync.valueOrNull?.displayName,
+            childProfiles: childProfilesAsync.valueOrNull ?? const [],
+            onChildSelected: (childId) async {
+              await ref.read(activeChildProvider.notifier).selectChild(childId);
+              if (!mounted) return;
+              setState(() => _previewBook = null);
+            },
             onSettingsTap: () async {
               final passed = await ParentalGate.verify(context);
               if (!context.mounted || !passed) return;
@@ -190,7 +304,49 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
         ),
 
-        // Layer 4: Browse panel for search/filter results.
+        // Layer 4: Continue reading card.
+        continueReadingAsync.when(
+          data: (item) {
+            if (item == null) return const SizedBox.shrink();
+            if (activeChildId != null) {
+              final impressionKey =
+                  '$activeChildId:${item.book.id}:${item.progress.currentPage}';
+              if (_trackedContinueReadingKey != impressionKey) {
+                _trackedContinueReadingKey = impressionKey;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  ref.read(analyticsServiceProvider).trackContinueReadingImpression(
+                    childId: activeChildId,
+                    bookId: item.book.id,
+                    currentPage: item.progress.currentPage,
+                  );
+                });
+              }
+            }
+            return Positioned(
+              top: 88,
+              left: 16,
+              right: 16,
+              child: ContinueReadingCard(
+                item: item,
+                onResume: () => _openContinueReading(
+                  item,
+                  entryIntent: ReaderEntryIntent.standard,
+                ),
+                onPlay: item.hasNarration
+                    ? () => _openContinueReading(
+                        item,
+                        entryIntent: ReaderEntryIntent.autoplayNarration,
+                      )
+                    : null,
+              ),
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+        ),
+
+        // Layer 5: Browse panel for search/filter results.
         _BrowsePanel(
           show: _showBrowsePanel,
           books: _broaderBrowseResults,
@@ -199,7 +355,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           onBookTap: _onBrowsePanelBookTap,
         ),
 
-        // Layer 5: Book preview overlay (reactive to camera movement).
+        // Layer 6: Book preview overlay (reactive to camera movement).
         if (_previewBook != null) ...[
           // Dismiss scrim.
           Positioned.fill(
@@ -213,14 +369,39 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             valueListenable: _game!.cameraXNotifier,
             builder: (context, _, __) {
               final previewBook = _previewBook!;
+              final progressAsync = ref.watch(
+                bookProgressProvider(previewBook.id),
+              );
+              final bookDetailAsync = ref.watch(currentBookProvider(previewBook.id));
+              final showPlay = bookDetailAsync.valueOrNull?.pages.any(
+                    (page) => (page.narrationUrl ?? '').isNotEmpty,
+                  ) ??
+                  true;
+              final progress = progressAsync.valueOrNull;
+              final initialPage = switch (progress?.status) {
+                BookProgressStatus.inProgress =>
+                  (progress!.currentPage - 1).clamp(0, 1 << 20).toInt(),
+                BookProgressStatus.completed => 0,
+                _ => 0,
+              };
+
               return BookPreviewOverlay(
                 book: previewBook,
+                progress: progress,
+                showPlay: showPlay,
                 position: _overlayPosition(previewBook),
-                onRead: () {
-                  final bookId = previewBook.id;
-                  _dismissPreview();
-                  context.push('/reader/$bookId');
-                },
+                onPlay: showPlay
+                    ? () => _openPreviewReader(
+                        previewBook,
+                        entryIntent: ReaderEntryIntent.autoplayNarration,
+                        initialPage: initialPage,
+                      )
+                    : null,
+                onRead: () => _openPreviewReader(
+                  previewBook,
+                  entryIntent: ReaderEntryIntent.standard,
+                  initialPage: initialPage,
+                ),
                 onDismiss: _dismissPreview,
               );
             },
@@ -429,6 +610,9 @@ class _FloatingControls extends StatelessWidget {
     required this.activeFilter,
     required this.onSearchChanged,
     required this.onFilterChanged,
+    required this.activeChildName,
+    required this.childProfiles,
+    required this.onChildSelected,
     required this.onSettingsTap,
   });
 
@@ -436,6 +620,9 @@ class _FloatingControls extends StatelessWidget {
   final _ShelfFilter activeFilter;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<_ShelfFilter> onFilterChanged;
+  final String? activeChildName;
+  final List<ChildProfile> childProfiles;
+  final ValueChanged<String> onChildSelected;
   final VoidCallback onSettingsTap;
 
   @override
@@ -474,11 +661,91 @@ class _FloatingControls extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
+          _ActiveChildChip(
+            activeChildName: activeChildName,
+            childProfiles: childProfiles,
+            onSelected: onChildSelected,
+          ),
+          const SizedBox(height: 8),
           _ShelfFilters(
             activeFilter: activeFilter,
             onSelected: onFilterChanged,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ActiveChildChip extends StatelessWidget {
+  const _ActiveChildChip({
+    required this.activeChildName,
+    required this.childProfiles,
+    required this.onSelected,
+  });
+
+  final String? activeChildName;
+  final List<ChildProfile> childProfiles;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasProfiles = childProfiles.isNotEmpty;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: PopupMenuButton<String>(
+        enabled: hasProfiles,
+        tooltip: hasProfiles ? 'Switch child profile' : 'No child profiles',
+        onSelected: onSelected,
+        itemBuilder: (context) => childProfiles
+            .map(
+              (profile) => PopupMenuItem<String>(
+                value: profile.id,
+                child: Text(profile.displayName),
+              ),
+            )
+            .toList(growable: false),
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            color: Colors.white.withValues(alpha: 0.92),
+            shape: const SketchBorderShape(
+              side: BorderSide(color: StoriaColors.line, width: 1.2),
+              radiusScale: 0.82,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.child_care_rounded,
+                  size: 18,
+                  color: StoriaColors.inkMuted,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  activeChildName == null
+                      ? 'Choose child'
+                      : 'Reading as $activeChildName',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: StoriaColors.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  hasProfiles
+                      ? Icons.keyboard_arrow_down_rounded
+                      : Icons.info_outline_rounded,
+                  size: 18,
+                  color: StoriaColors.inkMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

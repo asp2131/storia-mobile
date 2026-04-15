@@ -103,6 +103,23 @@ class ReadingSessionCoordinator {
     _draft?.markPracticeModeUsed();
   }
 
+  Future<void> flushProgress() async {
+    final draft = _draft;
+    if (draft == null) return;
+
+    _progressDebounce?.cancel();
+    _progressDebounce = null;
+
+    await _progressRepo.saveBookProgress(
+      childProfileId: draft.childProfileId,
+      bookId: draft.bookId,
+      currentPage: draft.latestPage,
+      totalPages: _totalPages,
+      lastSessionId: draft.sessionId,
+      completed: draft.completedBook,
+    );
+  }
+
   /// Call when the child reaches the final page.
   void onBookCompleted() {
     final draft = _draft;

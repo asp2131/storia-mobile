@@ -16,6 +16,9 @@ import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import '../child/providers/active_child_provider.dart';
+import '../progress/providers/progress_providers.dart';
+import 'domain/reader_entry_intent.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
 import 'presentation/widgets/completion_handoff_sheet.dart';
@@ -28,14 +31,22 @@ import 'runtime/reader_view_state.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
   final String bookId;
+  final int initialPage;
+  final String entryIntent;
 
-  const ReaderScreen({super.key, required this.bookId});
+  const ReaderScreen({
+    super.key,
+    required this.bookId,
+    this.initialPage = 0,
+    this.entryIntent = 'standard',
+  });
 
   @override
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
 }
 
-class _ReaderScreenState extends ConsumerState<ReaderScreen> {
+class _ReaderScreenState extends ConsumerState<ReaderScreen>
+    with WidgetsBindingObserver {
   final PageController _pageController = PageController();
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
   final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
@@ -45,6 +56,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   late final ConfettiController _confettiController;
   bool _showCelebrationGif = false;
   bool _handoffShown = false;
+  bool _sessionInitialized = false;
+  bool _sessionFinalized = false;
+  bool _completionMarked = false;
   late GifPlayerController _gifPlayerController;
 
   late final ReaderSession _session;
@@ -55,6 +69,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _session = ref.read(readerSessionProvider);
     _sessionSubscription = _session.states.listen(_onRuntimeStateChanged);
 
@@ -80,6 +95,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final previous = _runtimeState;
     final wasCelebrating = previous.showCelebration;
     final isCelebrating = next.showCelebration;
+
+    if (next.isNarrationPlaying && !previous.isNarrationPlaying) {
+      ref.read(readingSessionCoordinatorProvider).onNarrationUsed();
+    }
+    if (next.isPracticeMode && !previous.isPracticeMode) {
+      ref.read(readingSessionCoordinatorProvider).onPracticeModeUsed();
+    }
 
     _narrationPositionNotifier.value = next.narrationPosition;
 
@@ -145,6 +167,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_finalizeSessionIfNeeded());
     _sessionSubscription?.cancel();
     _showChromeNotifier.dispose();
     _narrationPositionNotifier.dispose();
@@ -173,8 +197,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
           if (_initializedBookId != book.id) {
             _initializedBookId = book.id;
+            _sessionInitialized = false;
+            _sessionFinalized = false;
+            _completionMarked = false;
+            _handoffShown = false;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _session.dispatch(ReaderStart(book: book));
+              _initializeReader(book);
             });
           }
 
@@ -199,6 +227,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   itemCount: book.pages.length,
                   onPageChanged: (index) async {
                     await _session.dispatch(ReaderGoToPage(index));
+                    final pageNumber = book.pages[index].pageNumber;
+                    ref.read(readingSessionCoordinatorProvider).onPageChanged(
+                      pageNumber,
+                    );
+                    if (index == book.pages.length - 1 && !_completionMarked) {
+                      _completionMarked = true;
+                      ref.read(readingSessionCoordinatorProvider).onBookCompleted();
+                    }
                   },
                   itemBuilder: (context, index) {
                     final isInVirtualizationWindow =
@@ -272,7 +308,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       child: _ReaderTopBar(
                         book: book,
                         activePageNumber: activePage.pageNumber,
-                        onClose: () => Navigator.of(context).maybePop(),
+                        onClose: _handleClose,
                         onAudioSettingsTap: () => _showAudioSettings(context),
                       ),
                     ),
@@ -357,6 +393,86 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     );
   }
 
+  Future<void> _initializeReader(Book book) async {
+    if (!mounted || _sessionInitialized) return;
+
+    _sessionInitialized = true;
+    final initialIndex = widget.initialPage
+        .clamp(0, math.max(book.pages.length - 1, 0))
+        .toInt();
+    final initialPageNumber = book.pages[initialIndex].pageNumber;
+    final entryIntent = ReaderEntryIntent.fromString(widget.entryIntent);
+
+    await _session.dispatch(
+      ReaderStart(book: book, initialPageIndex: initialIndex),
+    );
+
+    if (!mounted) return;
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(initialIndex);
+    }
+
+    final child = await ref.read(activeChildProvider.future);
+    if (child == null) return;
+
+    final coordinator = ref.read(readingSessionCoordinatorProvider);
+    final sessionId = _newSessionId(book.id);
+    coordinator.startSession(
+      sessionId: sessionId,
+      childProfileId: child.id,
+      bookId: book.id,
+      startPage: initialPageNumber,
+      totalPages: book.pages.length,
+      entryIntent: entryIntent,
+    );
+
+    ref.read(analyticsServiceProvider).trackReaderOpened(
+      childId: child.id,
+      bookId: book.id,
+      sessionId: sessionId,
+      entryIntent: entryIntent,
+      resumePage: initialPageNumber,
+    );
+
+    if (entryIntent == ReaderEntryIntent.autoplayNarration) {
+      await _session.dispatch(const ReaderToggleNarration());
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        unawaited(ref.read(readingSessionCoordinatorProvider).flushProgress());
+      case AppLifecycleState.detached:
+        unawaited(_finalizeSessionIfNeeded());
+      case AppLifecycleState.resumed:
+        break;
+    }
+  }
+
+  Future<void> _handleClose() async {
+    await _finalizeSessionIfNeeded();
+    if (!mounted) return;
+    Navigator.of(context).maybePop();
+  }
+
+  Future<void> _finalizeSessionIfNeeded() async {
+    if (_sessionFinalized) return;
+    _sessionFinalized = true;
+    await ref.read(readingSessionCoordinatorProvider).finalizeAndSave();
+    ref.invalidate(continueReadingProvider);
+    ref.invalidate(bookProgressProvider(widget.bookId));
+  }
+
+  String _newSessionId(String bookId) {
+    final now = DateTime.now().microsecondsSinceEpoch;
+    final random = math.Random().nextInt(1 << 32).toRadixString(16);
+    return 'rs_${bookId}_$now$random';
+  }
+
   void _showCompletionHandoff() {
     if (_handoffShown || !mounted) return;
     _handoffShown = true;
@@ -381,11 +497,23 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           hasQuestions: book.hasQuestions,
           onPlayAgain: () {
             Navigator.of(sheetContext).pop();
-            context.go('/reader/${widget.bookId}');
+            context.go(
+              '/reader/${widget.bookId}',
+              extra: <String, dynamic>{
+                'initialPage': 0,
+                'entryIntent': ReaderEntryIntent.autoplayNarration.value,
+              },
+            );
           },
           onReadAgain: () {
             Navigator.of(sheetContext).pop();
-            context.go('/reader/${widget.bookId}');
+            context.go(
+              '/reader/${widget.bookId}',
+              extra: <String, dynamic>{
+                'initialPage': 0,
+                'entryIntent': ReaderEntryIntent.standard.value,
+              },
+            );
           },
           onQuickQuestions: () {
             Navigator.of(sheetContext).pop();
@@ -1107,14 +1235,12 @@ class _ChromeButton extends StatelessWidget {
   final VoidCallback onTap;
   final String semanticLabel;
   final String semanticHint;
-  final Color color;
 
   const _ChromeButton({
     required this.icon,
     required this.onTap,
     required this.semanticLabel,
     required this.semanticHint,
-    this.color = Colors.white,
   });
 
   @override
@@ -1147,7 +1273,7 @@ class _ChromeButton extends StatelessWidget {
               child: SizedBox(
                 width: 48,
                 height: 48,
-                child: Icon(icon, color: color, size: 21),
+                child: Icon(icon, color: Colors.white, size: 21),
               ),
             ),
           ),

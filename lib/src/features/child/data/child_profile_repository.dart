@@ -2,16 +2,31 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../data/api_client.dart';
 import '../domain/child_profile.dart';
 
 class ChildProfileRepository {
-  const ChildProfileRepository(this._supabase);
+  const ChildProfileRepository(this._supabase, this._apiClient);
 
   final SupabaseClient _supabase;
+  final ApiClient _apiClient;
 
   static const _activeChildKey = 'active_child_profile_id';
 
   Future<List<ChildProfile>> fetchChildProfiles() async {
+    try {
+      final apiData = await _apiClient.get('/api/child-profiles');
+      final rows = (apiData as Map<String, dynamic>?)?['childProfiles'] as List<dynamic>?;
+      if (rows != null) {
+        return rows
+            .whereType<Map<String, dynamic>>()
+            .map(ChildProfile.fromJson)
+            .toList(growable: false);
+      }
+    } catch (e) {
+      debugPrint('[ChildProfileRepository] API fetchChildProfiles failed: $e');
+    }
+
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return const [];
 

@@ -54,6 +54,7 @@ android/key.properties
 *.keystore
 
 .pi/skills/
+.pi/refactor-backups/
 
 .wolf
 .superdesign
