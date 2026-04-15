@@ -2,5 +2,11 @@
   "theme": "rose-pine",
   "prompts": [
     "../.claude/commands"
+  ],
+  "skills": [
+    "skills"
+  ],
+  "themes": [
+    "themes"
   ]
 }
