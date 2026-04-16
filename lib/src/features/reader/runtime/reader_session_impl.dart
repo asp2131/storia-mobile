@@ -90,6 +90,13 @@ class ReaderSessionImpl implements ReaderSession {
     }
     if (intent is ReaderAckCelebration) {
       _clearCelebration();
+      return;
+    }
+    if (intent is ReaderBookCompleted) {
+      if (!_state.showCelebration) {
+        _emit(_state.copyWith(showCelebration: true));
+        _scheduleCelebrationClear();
+      }
     }
   }
 

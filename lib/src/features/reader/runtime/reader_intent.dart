@@ -48,3 +48,7 @@ final class ReaderPracticePrimaryAction extends ReaderIntent {
 final class ReaderAckCelebration extends ReaderIntent {
   const ReaderAckCelebration();
 }
+
+final class ReaderBookCompleted extends ReaderIntent {
+  const ReaderBookCompleted();
+}

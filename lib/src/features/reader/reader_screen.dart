@@ -234,6 +234,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     if (index == book.pages.length - 1 && !_completionMarked) {
                       _completionMarked = true;
                       ref.read(readingSessionCoordinatorProvider).onBookCompleted();
+                      await _session.dispatch(const ReaderBookCompleted());
                     }
                   },
                   itemBuilder: (context, index) {
@@ -483,6 +484,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
     final coordinator = ref.read(readingSessionCoordinatorProvider);
     final sessionId = coordinator.completedSessionId;
+    final child = ref.read(activeChildProvider).valueOrNull;
+    final draft = coordinator.currentDraft;
+    final pagesRead = draft != null
+        ? (draft.latestPage - draft.startPage + 1).clamp(0, book.pages.length)
+        : null;
+    final readingDurationMinutes = draft != null
+        ? DateTime.now().difference(draft.startedAt).inMinutes
+        : null;
 
     showModalBottomSheet<void>(
       context: context,
@@ -495,6 +504,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         return CompletionHandoffSheet(
           bookTitle: book.title,
           hasQuestions: book.hasQuestions,
+          childName: child?.displayName,
+          pagesRead: pagesRead,
+          readingDurationMinutes: readingDurationMinutes,
           onPlayAgain: () {
             Navigator.of(sheetContext).pop();
             context.go(

@@ -12,6 +12,9 @@ class CompletionHandoffSheet extends StatelessWidget {
     required this.onReadAgain,
     required this.onQuickQuestions,
     required this.onBackToLibrary,
+    this.childName,
+    this.pagesRead,
+    this.readingDurationMinutes,
   });
 
   final String bookTitle;
@@ -20,9 +23,45 @@ class CompletionHandoffSheet extends StatelessWidget {
   final VoidCallback onReadAgain;
   final VoidCallback onQuickQuestions;
   final VoidCallback onBackToLibrary;
+  final String? childName;
+  final int? pagesRead;
+  final int? readingDurationMinutes;
+
+  String _buildTitle() {
+    final name = childName?.trim();
+    if (name != null && name.isNotEmpty) {
+      return 'Great job, $name!';
+    }
+    return 'Great job finishing the story!';
+  }
+
+  String? _buildSummary() {
+    final pages = pagesRead;
+    final minutes = readingDurationMinutes;
+    final hasPages = pages != null && pages > 0;
+    final hasMinutes = minutes != null && minutes > 0;
+
+    if (!hasPages && !hasMinutes) return null;
+
+    if (hasPages && hasMinutes) {
+      final pageLabel = pages == 1 ? 'page' : 'pages';
+      final minuteLabel = minutes == 1 ? 'minute' : 'minutes';
+      return 'You read $pages $pageLabel in $minutes $minuteLabel';
+    }
+
+    if (hasPages) {
+      final pageLabel = pages == 1 ? 'page' : 'pages';
+      return 'You read $pages $pageLabel';
+    }
+
+    final minuteLabel = minutes == 1 ? 'minute' : 'minutes';
+    return 'You read for $minutes $minuteLabel';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final summary = _buildSummary();
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
@@ -39,7 +78,7 @@ class CompletionHandoffSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Great job finishing the story!',
+              _buildTitle(),
               style: GoogleFonts.quicksand(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -59,6 +98,18 @@ class CompletionHandoffSheet extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
+            if (summary != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                summary,
+                style: GoogleFonts.quicksand(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: StoriaColors.inkMuted,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
             const SizedBox(height: 28),
             if (hasQuestions) ...[
               _HandoffAction(

@@ -8,7 +8,8 @@ import '../domain/comprehension_result.dart';
 final comprehensionRepositoryProvider =
     Provider<ComprehensionRepository>((ref) {
   final supabase = ref.watch(supabaseClientProvider);
-  return ComprehensionRepository(supabase);
+  final apiClient = ref.watch(apiClientProvider);
+  return ComprehensionRepository(supabase, apiClient);
 });
 
 final bookQuestionsProvider =
