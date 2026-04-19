@@ -7,6 +7,7 @@ import '../features/auth/presentation/auth_gate.dart';
 import '../features/auth/presentation/intro_screen.dart';
 import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/sign_up_screen.dart';
+import '../features/child/presentation/add_child_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/onboarding/data/app_review_flow_providers.dart';
 import '../features/onboarding/presentation/parent_birth_year_screen.dart';
@@ -99,6 +100,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LibraryScreen(),
       ),
       GoRoute(
+        path: '/children/new',
+        builder: (context, state) => const AddChildScreen(),
+      ),
+      GoRoute(
         path: '/reader/:bookId',
         builder: (context, state) {
           final bookId = state.pathParameters['bookId'] ?? '';
@@ -106,8 +111,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return ReaderScreen(
             bookId: bookId,
             initialPage: (extra?['initialPage'] as int?) ?? 0,
-            entryIntent:
-                extra?['entryIntent'] as String? ?? 'standard',
+            entryIntent: extra?['entryIntent'] as String? ?? 'standard',
           );
         },
       ),
@@ -117,10 +121,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final bookId = state.pathParameters['bookId'] ?? '';
           final extra = state.extra as Map<String, String?>?;
           final sessionId = extra?['sessionId'];
-          return ComprehensionScreen(
-            bookId: bookId,
-            sessionId: sessionId,
-          );
+          return ComprehensionScreen(bookId: bookId, sessionId: sessionId);
         },
       ),
       GoRoute(

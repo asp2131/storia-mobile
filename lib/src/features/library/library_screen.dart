@@ -114,12 +114,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ?.pages
                 .any((page) => (page.narrationUrl ?? '').isNotEmpty) ??
             true;
-        ref.read(analyticsServiceProvider).trackBookPreviewOpened(
-          childId: childId,
-          bookId: book.id,
-          progressStatus: progress?.status.value ?? BookProgressStatus.newBook.value,
-          hasNarration: hasNarration,
-        );
+        ref
+            .read(analyticsServiceProvider)
+            .trackBookPreviewOpened(
+              childId: childId,
+              bookId: book.id,
+              progressStatus:
+                  progress?.status.value ?? BookProgressStatus.newBook.value,
+              hasNarration: hasNarration,
+            );
       }
     }
   }
@@ -154,6 +157,25 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         'entryIntent': entryIntent.value,
       },
     );
+  }
+
+  Future<void> _openAddChildFlow() async {
+    final created = await context.push<bool>('/children/new');
+    if (!mounted || created != true) {
+      return;
+    }
+
+    ref.invalidate(childProfilesProvider);
+    ref.invalidate(continueReadingProvider);
+    ref.invalidate(bookLibraryProvider);
+    await ref.read(activeChildProvider.notifier).refresh();
+
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Child profile added.')));
   }
 
   void _openContinueReading(
@@ -200,11 +222,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       }
     }
 
-    _pushReaderRoute(
-      book,
-      entryIntent: entryIntent,
-      initialPage: initialPage,
-    );
+    _pushReaderRoute(book, entryIntent: entryIntent, initialPage: initialPage);
   }
 
   @override
@@ -244,9 +262,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       _trackedLibraryChildId = activeChildId;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        ref.read(analyticsServiceProvider).trackLibraryViewed(
-          childId: activeChildId,
-        );
+        ref
+            .read(analyticsServiceProvider)
+            .trackLibraryViewed(childId: activeChildId);
       });
     }
 
@@ -296,6 +314,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               if (!mounted) return;
               setState(() => _previewBook = null);
             },
+            onAddChildTap: _openAddChildFlow,
             onSettingsTap: () async {
               final passed = await ParentalGate.verify(context);
               if (!context.mounted || !passed) return;
@@ -315,11 +334,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 _trackedContinueReadingKey = impressionKey;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (!mounted) return;
-                  ref.read(analyticsServiceProvider).trackContinueReadingImpression(
-                    childId: activeChildId,
-                    bookId: item.book.id,
-                    currentPage: item.progress.currentPage,
-                  );
+                  ref
+                      .read(analyticsServiceProvider)
+                      .trackContinueReadingImpression(
+                        childId: activeChildId,
+                        bookId: item.book.id,
+                        currentPage: item.progress.currentPage,
+                      );
                 });
               }
             }
@@ -372,8 +393,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               final progressAsync = ref.watch(
                 bookProgressProvider(previewBook.id),
               );
-              final bookDetailAsync = ref.watch(currentBookProvider(previewBook.id));
-              final showPlay = bookDetailAsync.valueOrNull?.pages.any(
+              final bookDetailAsync = ref.watch(
+                currentBookProvider(previewBook.id),
+              );
+              final showPlay =
+                  bookDetailAsync.valueOrNull?.pages.any(
                     (page) => (page.narrationUrl ?? '').isNotEmpty,
                   ) ??
                   true;
@@ -451,10 +475,7 @@ class _RoomBackground extends StatelessWidget {
         return RepaintBoundary(
           child: CustomPaint(
             size: Size.infinite,
-            painter: _SkyHillsPainter(
-              worldWidth: worldWidth,
-              cameraX: cameraX,
-            ),
+            painter: _SkyHillsPainter(worldWidth: worldWidth, cameraX: cameraX),
           ),
         );
       },
@@ -465,10 +486,7 @@ class _RoomBackground extends StatelessWidget {
 /// [CustomPainter] that draws sky (0.2x parallax) and hills (0.5x parallax).
 /// Ground rendering is handled by the isometric TMX map inside the Flame world.
 class _SkyHillsPainter extends CustomPainter {
-  _SkyHillsPainter({
-    required this.worldWidth,
-    required this.cameraX,
-  });
+  _SkyHillsPainter({required this.worldWidth, required this.cameraX});
 
   final double worldWidth;
   final double cameraX;
@@ -598,8 +616,7 @@ class _SkyHillsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SkyHillsPainter oldDelegate) =>
-      worldWidth != oldDelegate.worldWidth ||
-      cameraX != oldDelegate.cameraX;
+      worldWidth != oldDelegate.worldWidth || cameraX != oldDelegate.cameraX;
 }
 
 // ── Floating controls ───────────────────────────────────────────────────
@@ -613,6 +630,7 @@ class _FloatingControls extends StatelessWidget {
     required this.activeChildName,
     required this.childProfiles,
     required this.onChildSelected,
+    required this.onAddChildTap,
     required this.onSettingsTap,
   });
 
@@ -623,6 +641,7 @@ class _FloatingControls extends StatelessWidget {
   final String? activeChildName;
   final List<ChildProfile> childProfiles;
   final ValueChanged<String> onChildSelected;
+  final Future<void> Function() onAddChildTap;
   final VoidCallback onSettingsTap;
 
   @override
@@ -665,6 +684,7 @@ class _FloatingControls extends StatelessWidget {
             activeChildName: activeChildName,
             childProfiles: childProfiles,
             onSelected: onChildSelected,
+            onAddChildTap: onAddChildTap,
           ),
           const SizedBox(height: 8),
           _ShelfFilters(
@@ -682,70 +702,121 @@ class _ActiveChildChip extends StatelessWidget {
     required this.activeChildName,
     required this.childProfiles,
     required this.onSelected,
+    required this.onAddChildTap,
   });
 
   final String? activeChildName;
   final List<ChildProfile> childProfiles;
   final ValueChanged<String> onSelected;
+  final Future<void> Function() onAddChildTap;
 
   @override
   Widget build(BuildContext context) {
     final hasProfiles = childProfiles.isNotEmpty;
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: PopupMenuButton<String>(
-        enabled: hasProfiles,
-        tooltip: hasProfiles ? 'Switch child profile' : 'No child profiles',
-        onSelected: onSelected,
-        itemBuilder: (context) => childProfiles
-            .map(
-              (profile) => PopupMenuItem<String>(
-                value: profile.id,
-                child: Text(profile.displayName),
+    final childChip = hasProfiles
+        ? PopupMenuButton<String>(
+            tooltip: 'Switch child profile',
+            onSelected: onSelected,
+            itemBuilder: (context) => childProfiles
+                .map(
+                  (profile) => PopupMenuItem<String>(
+                    value: profile.id,
+                    child: Text(profile.displayName),
+                  ),
+                )
+                .toList(growable: false),
+            child: _ChildChipShell(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.child_care_rounded,
+                    size: 18,
+                    color: StoriaColors.inkMuted,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    activeChildName == null
+                        ? 'Choose child'
+                        : 'Reading as $activeChildName',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: StoriaColors.ink,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: StoriaColors.inkMuted,
+                  ),
+                ],
               ),
-            )
-            .toList(growable: false),
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: Colors.white.withValues(alpha: 0.92),
-            shape: const SketchBorderShape(
-              side: BorderSide(color: StoriaColors.line, width: 1.2),
-              radiusScale: 0.82,
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.child_care_rounded,
-                  size: 18,
-                  color: StoriaColors.inkMuted,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  activeChildName == null
-                      ? 'Choose child'
-                      : 'Reading as $activeChildName',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: StoriaColors.ink,
-                    fontWeight: FontWeight.w700,
+          )
+        : Semantics(
+            button: true,
+            label: 'Add child',
+            child: _ChildChipShell(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    onAddChildTap();
+                  },
+                  borderRadius: BorderRadius.circular(18),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.person_add_alt_1_rounded,
+                        size: 18,
+                        color: StoriaColors.ink,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Add child',
+                        style: TextStyle(
+                          color: StoriaColors.ink,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 16,
+                        color: StoriaColors.inkMuted,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 6),
-                Icon(
-                  hasProfiles
-                      ? Icons.keyboard_arrow_down_rounded
-                      : Icons.info_outline_rounded,
-                  size: 18,
-                  color: StoriaColors.inkMuted,
-                ),
-              ],
+              ),
             ),
-          ),
+          );
+
+    return Align(alignment: Alignment.centerLeft, child: childChip);
+  }
+}
+
+class _ChildChipShell extends StatelessWidget {
+  const _ChildChipShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        color: Colors.white.withValues(alpha: 0.92),
+        shape: const SketchBorderShape(
+          side: BorderSide(color: StoriaColors.line, width: 1.2),
+          radiusScale: 0.82,
         ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: child,
       ),
     );
   }

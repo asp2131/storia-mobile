@@ -7,7 +7,7 @@ import '../data/reading_session_repository.dart';
 import '../../../data/providers.dart';
 
 final analyticsServiceProvider = Provider<AnalyticsService>((ref) {
-  return AnalyticsService();
+  return AnalyticsService(apiClient: ref.watch(apiClientProvider));
 });
 
 final readingSessionRepositoryProvider =

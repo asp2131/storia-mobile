@@ -1,12 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
+import '../../data/api_client.dart';
 import '../../features/reader/domain/reader_entry_intent.dart';
+
+typedef AnalyticsEventSink = Future<void> Function(
+  String event,
+  Map<String, dynamic> properties,
+);
 
 /// Centralized analytics service for proof-test event taxonomy.
 ///
-/// MVP implementation logs to debug console. Replace internals with PostHog
-/// or another analytics provider when ready — call sites stay unchanged.
+/// Events are logged locally and, when an [ApiClient] is available, also sent
+/// to the backend for persistence.
 class AnalyticsService {
+  AnalyticsService({
+    ApiClient? apiClient,
+    AnalyticsEventSink? sink,
+  }) : _apiClient = apiClient,
+       _sink = sink;
+
+  final ApiClient? _apiClient;
+  final AnalyticsEventSink? _sink;
   void trackLibraryViewed({required String childId}) {
     _track('library_viewed', {'childId': childId});
   }
@@ -201,7 +217,42 @@ class AnalyticsService {
   }
 
   void _track(String event, Map<String, dynamic> properties) {
-    // MVP: debug logging. Replace with PostHog or backend call later.
     debugPrint('[Analytics] $event $properties');
+    unawaited(_persist(event, properties));
+  }
+
+  Future<void> _persist(String event, Map<String, dynamic> properties) async {
+    final sink = _sink;
+    if (sink != null) {
+      await sink(event, properties);
+      return;
+    }
+
+    final apiClient = _apiClient;
+    if (apiClient == null || !apiClient.isConfigured) {
+      return;
+    }
+
+    final childId = properties['childId'] as String?;
+    if (childId == null || childId.isEmpty) {
+      return;
+    }
+
+    try {
+      await apiClient.post(
+        '/api/analytics/events',
+        body: {
+          'event': event,
+          'childProfileId': childId,
+          'bookId': properties['bookId'],
+          'sessionId': properties['sessionId'],
+          'source': properties['source'] ?? 'mobile',
+          'occurredAt': DateTime.now().toUtc().toIso8601String(),
+          'properties': properties,
+        },
+      );
+    } catch (error) {
+      debugPrint('[Analytics] failed to persist $event: $error');
+    }
   }
 }

@@ -34,6 +34,7 @@ class SketchTextField extends StatelessWidget {
     final labelStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
       fontWeight: FontWeight.w800,
       fontStyle: FontStyle.italic,
+      color: StoriaColors.ink,
     );
 
     return Column(
@@ -49,8 +50,10 @@ class SketchTextField extends StatelessWidget {
           textInputAction: textInputAction,
           obscureText: obscureText,
           onSubmitted: onSubmitted,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          cursorColor: StoriaColors.ink,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: StoriaColors.ink,
+            fontWeight: FontWeight.w700,
           ),
           decoration: InputDecoration(
             hintText: hintText,
@@ -59,6 +62,9 @@ class SketchTextField extends StatelessWidget {
             fillColor: StoriaColors.paperAlt,
             prefixIcon: leading,
             suffixIcon: suffix,
+            prefixIconColor: StoriaColors.ink,
+            suffixIconColor: StoriaColors.ink,
+            iconColor: StoriaColors.ink,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 18,
               vertical: 16,

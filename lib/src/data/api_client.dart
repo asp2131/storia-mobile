@@ -21,7 +21,7 @@ class ApiClientException implements Exception {
 }
 
 class ApiClient {
-  const ApiClient(this._supabase);
+  ApiClient(this._supabase);
 
   final SupabaseClient _supabase;
 
@@ -53,7 +53,39 @@ class ApiClient {
     );
   }
 
+  Future<String> getText(
+    String path, {
+    Map<String, String>? queryParameters,
+  }) async {
+    final response = await _requestResponse(
+      'GET',
+      path,
+      queryParameters: queryParameters,
+    );
+    return response.body;
+  }
+
   Future<dynamic> _request(
+    String method,
+    String path, {
+    Object? body,
+    Map<String, String>? queryParameters,
+  }) async {
+    final response = await _requestResponse(
+      method,
+      path,
+      body: body,
+      queryParameters: queryParameters,
+    );
+
+    if (response.body.isEmpty) {
+      return null;
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  Future<http.Response> _requestResponse(
     String method,
     String path, {
     Object? body,
@@ -69,24 +101,10 @@ class ApiClient {
           : queryParameters,
     );
 
-    final headers = <String, String>{
-      'Accept': 'application/json',
-      if (body != null) 'Content-Type': 'application/json',
-      ..._authHeaders(),
-    };
+    var response = await _send(method, uri, body, forceRefresh: false);
 
-    late final http.Response response;
-    switch (method) {
-      case 'GET':
-        response = await http.get(uri, headers: headers);
-      case 'POST':
-        response = await http.post(
-          uri,
-          headers: headers,
-          body: body == null ? null : jsonEncode(body),
-        );
-      default:
-        throw ApiClientException(message: 'Unsupported method: $method');
+    if (response.statusCode == 401) {
+      response = await _send(method, uri, body, forceRefresh: true);
     }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -97,15 +115,56 @@ class ApiClient {
       );
     }
 
-    if (response.body.isEmpty) {
-      return null;
-    }
-
-    return jsonDecode(response.body);
+    return response;
   }
 
-  Map<String, String> _authHeaders() {
-    final accessToken = _supabase.auth.currentSession?.accessToken;
+  Future<http.Response> _send(
+    String method,
+    Uri uri,
+    Object? body, {
+    required bool forceRefresh,
+  }) async {
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      if (body != null) 'Content-Type': 'application/json',
+      ...await _authHeaders(forceRefresh: forceRefresh),
+    };
+
+    switch (method) {
+      case 'GET':
+        return http.get(uri, headers: headers);
+      case 'POST':
+        return http.post(
+          uri,
+          headers: headers,
+          body: body == null ? null : jsonEncode(body),
+        );
+      default:
+        throw ApiClientException(message: 'Unsupported method: $method');
+    }
+  }
+
+  Future<Map<String, String>> _authHeaders({bool forceRefresh = false}) async {
+    var session = _supabase.auth.currentSession;
+
+    final needsRefresh =
+        forceRefresh ||
+        session == null ||
+        (session.expiresAt != null &&
+            DateTime.fromMillisecondsSinceEpoch(
+              session.expiresAt! * 1000,
+            ).isBefore(DateTime.now().add(const Duration(seconds: 30))));
+
+    if (needsRefresh && _supabase.auth.currentUser != null) {
+      try {
+        final refreshed = await _supabase.auth.refreshSession();
+        session = refreshed.session ?? _supabase.auth.currentSession;
+      } catch (_) {
+        session = _supabase.auth.currentSession;
+      }
+    }
+
+    final accessToken = session?.accessToken;
     if (accessToken == null || accessToken.isEmpty) {
       return const {};
     }

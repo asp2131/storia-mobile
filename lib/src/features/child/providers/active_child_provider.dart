@@ -15,6 +15,10 @@ final childProfilesProvider = FutureProvider<List<ChildProfile>>((ref) async {
   return repo.fetchChildProfiles();
 });
 
+final hasChildProfilesProvider = Provider<bool>((ref) {
+  return ref.watch(childProfilesProvider).valueOrNull?.isNotEmpty ?? false;
+});
+
 final activeChildProvider =
     AsyncNotifierProvider<ActiveChildNotifier, ChildProfile?>(
       ActiveChildNotifier.new,
@@ -33,8 +37,17 @@ class ActiveChildNotifier extends AsyncNotifier<ChildProfile?> {
   }
 
   Future<void> refresh() async {
+    ref.invalidate(childProfilesProvider);
     state = const AsyncLoading();
     state = await AsyncValue.guard(_repo.fetchDefaultChildProfile);
+  }
+
+  Future<ChildProfile> createChild(CreateChildProfileInput input) async {
+    final created = await _repo.createChildProfile(input);
+    await _repo.saveActiveChildId(created.id);
+    ref.invalidate(childProfilesProvider);
+    state = AsyncData(created);
+    return created;
   }
 
   Future<void> selectChild(String childProfileId) async {
