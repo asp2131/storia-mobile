@@ -1,8 +1,14 @@
+import 'package:cue/cue.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import 'overlay_frame.dart';
 
+/// Per-element word-stagger entrance (Feature 4).
+///
+/// When a page becomes active and this element mounts (virtualization window
+/// brings it into the tree), each word rises + fades in with a short stagger
+/// derived from its token index within the element. The stagger is
+/// entrance-only: once played, TTS word-highlight styling drives appearance.
 class OverlayTextElement extends StatelessWidget {
   final OverlayElementFrame element;
   final bool isActive;
@@ -19,7 +25,7 @@ class OverlayTextElement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget content = RichText(
+    final content = RichText(
       textAlign: element.textAlign,
       text: TextSpan(
         style: element.baseStyle,
@@ -27,38 +33,42 @@ class OverlayTextElement extends StatelessWidget {
       ),
     );
 
+    Widget decorated = content;
     final background = element.background;
     if (background != null) {
-      content = Container(
+      decorated = Container(
         padding: EdgeInsets.all(background.padding),
         decoration: BoxDecoration(
           color: background.color,
           borderRadius: BorderRadius.circular(background.borderRadius),
         ),
-        child: content,
+        child: decorated,
       );
     }
 
     final rotated = element.rotationRadians != 0
-        ? Transform.rotate(angle: element.rotationRadians, child: content)
-        : content;
+        ? Transform.rotate(angle: element.rotationRadians, child: decorated)
+        : decorated;
+
+    // Stagger: element index drives base delay. Cue.onToggle plays forward
+    // when this page becomes active and reverses when it leaves. Adjacent
+    // pages in the virtualization window stay hidden at progress 0 until they
+    // become active, matching the old flutter_animate behavior.
+    final delayMs = 180 + element.index * 40;
 
     return Positioned(
       left: element.left,
       top: element.top,
       width: element.width,
-      child: rotated
-          .animate(target: isActive ? 1 : 0)
-          .fadeIn(
-            duration: 350.ms,
-            delay: Duration(milliseconds: 180 + element.index * 40),
-          )
-          .slideY(
-            begin: 0.12,
-            end: 0,
-            duration: 350.ms,
-            delay: Duration(milliseconds: 180 + element.index * 40),
-          ),
+      child: Cue.onToggle(
+        toggled: isActive,
+        motion: .smooth(),
+        child: Actor(
+          delay: Duration(milliseconds: delayMs),
+          acts: const [OpacityAct.fadeIn(), SlideAct.y(from: 0.12)],
+          child: rotated,
+        ),
+      ),
     );
   }
 

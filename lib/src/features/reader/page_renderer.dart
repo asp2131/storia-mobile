@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,8 +14,19 @@ import 'overlay/overlay_text_layer.dart';
 import 'overlay/text_overlay_utils.dart';
 import 'runtime/providers/word_tts_provider.dart';
 
+// Parallax multipliers for depth-layer illusion (Feature 1).
+// The active page is at localOffset 0. As user scrolls, localOffset goes from
+// ~ -1 (page above) to 0 (active) to ~ +1 (page below). Layers translate by
+// `localOffset * pageHeight * multiplier` so slower layers lag, faster layers
+// lead, creating depth.
+const double _kBackgroundParallax = 0.5;
+const double _kTextParallax = 1.0;
+
 class PageRenderer extends ConsumerStatefulWidget {
   final PageData page;
+  final int pageIndex;
+  final String? coverUrl;
+  final ValueListenable<double>? scrollOffsetListenable;
   final Duration narrationPosition;
   final bool isActive;
   final String? heroTag;
@@ -25,6 +37,9 @@ class PageRenderer extends ConsumerStatefulWidget {
   const PageRenderer({
     super.key,
     required this.page,
+    this.pageIndex = 0,
+    this.coverUrl,
+    this.scrollOffsetListenable,
     required this.narrationPosition,
     required this.isActive,
     this.heroTag,
@@ -96,8 +111,22 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
     });
   }
 
+  double _localOffsetFor(double scrollOffset) =>
+      scrollOffset - widget.pageIndex;
+
   @override
   Widget build(BuildContext context) {
+    final isCoverPage =
+        widget.pageIndex == 0 && (widget.coverUrl ?? '').isNotEmpty;
+
+    if (isCoverPage) {
+      return _buildCoverPage();
+    }
+
+    return _buildStandardPage();
+  }
+
+  Widget _buildStandardPage() {
     final tappedWordIndex = ref.watch(wordTtsProvider).tappedWordIndex;
     final page = widget.page;
     final hasOverlay =
@@ -122,15 +151,14 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
           widget.narrationPosition,
         );
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            if (page.imageUrl != null && page.imageUrl!.isNotEmpty)
-              _buildPageImage(hasOverlay)
-            else
-              const ColoredBox(color: Color(0xFFDDDDD4)),
-            if (hasOverlay && page.overlay != null && imageRect != Rect.zero)
-              Positioned(
+        final Widget imageLayer =
+            page.imageUrl != null && page.imageUrl!.isNotEmpty
+            ? _buildPageImage(hasOverlay)
+            : const ColoredBox(color: Color(0xFFDDDDD4));
+
+        final Widget textLayer =
+            hasOverlay && page.overlay != null && imageRect != Rect.zero
+            ? Positioned(
                 left: imageRect.left,
                 top: imageRect.top,
                 width: imageRect.width,
@@ -147,95 +175,139 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
                   onWordTap: widget.onWordTap,
                   onWordLongPress: widget.onWordLongPress,
                 ),
-              ),
-            if (!hasOverlay && hasFallbackText)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(18, 24, 18, 112),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Color.fromRGBO(3, 8, 16, 0.56),
-                        Color.fromRGBO(2, 6, 12, 0.9),
-                      ],
-                      stops: [0, 0.33, 1],
-                    ),
-                  ),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 560),
-                      child:
-                          DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: const Color.fromRGBO(10, 18, 28, 0.52),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: const Color.fromRGBO(
-                                      255,
-                                      255,
-                                      255,
-                                      0.2,
-                                    ),
-                                  ),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Color.fromRGBO(0, 0, 0, 0.24),
-                                      blurRadius: 18,
-                                      offset: Offset(0, 8),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    16,
-                                    14,
-                                    16,
-                                    14,
-                                  ),
-                                  child: Text(
-                                    page.textContent ?? '',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.lora(
-                                      color: const Color(0xFFF8FAFC),
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w700,
-                                      height: 1.38,
-                                      shadows: const [
-                                        Shadow(
-                                          blurRadius: 10,
-                                          offset: Offset(0, 2),
-                                          color: Color.fromRGBO(0, 0, 0, 0.35),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .animate(target: widget.isActive ? 1 : 0)
-                              .fadeIn(
-                                delay: 120.ms,
-                                duration: 340.ms,
-                                curve: Curves.easeOut,
-                              )
-                              .slideY(
-                                begin: 0.08,
-                                end: 0,
-                                delay: 120.ms,
-                                duration: 340.ms,
-                                curve: Curves.easeOutCubic,
-                              ),
-                    ),
-                  ),
-                ),
-              ),
+              )
+            : (!hasOverlay && hasFallbackText)
+            ? _buildFallbackText(page)
+            : const SizedBox.shrink();
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _parallaxLayer(
+              multiplier: _kBackgroundParallax,
+              pageHeight: container.height,
+              child: imageLayer,
+            ),
+            // Text layer stays at neutral parallax (multiplier 1.0 = 0 shift)
+            // and must remain a direct child of Stack so Positioned works.
+            textLayer,
           ],
         );
       },
+    );
+  }
+
+  /// Wraps [child] in a scroll-driven parallax transform. If no scroll
+  /// listenable was provided, the child is rendered as-is (no extra rebuilds).
+  ///
+  /// Parallax range is bounded: the translation is `localOffset * pageHeight *
+  /// (multiplier - 1.0)` relative to a neutral layer, then clamped so no layer
+  /// ever exceeds ~30% of page height of vertical shift.
+  Widget _parallaxLayer({
+    required double multiplier,
+    required double pageHeight,
+    required Widget child,
+  }) {
+    final listenable = widget.scrollOffsetListenable;
+    if (listenable == null) {
+      return child;
+    }
+    return ValueListenableBuilder<double>(
+      valueListenable: listenable,
+      child: child,
+      builder: (context, scrollOffset, child) {
+        final localOffset = _localOffsetFor(scrollOffset);
+        // Raw shift in logical pixels. At localOffset = 1, a layer with
+        // multiplier = 1 shifts by pageHeight (one full page). With multiplier
+        // = 0.5 the layer shifts half — producing the "slower" depth look.
+        // We subtract `localOffset * pageHeight` (baseline page scroll) from
+        // each layer so the neutral 1.0 layer has zero translation. The result
+        // is a relative parallax offset vs. the base page motion.
+        final relativeShift =
+            localOffset * pageHeight * (multiplier - _kTextParallax);
+        final bounded = relativeShift.clamp(
+          -pageHeight * 0.3,
+          pageHeight * 0.3,
+        );
+        return Transform.translate(offset: Offset(0, bounded), child: child!);
+      },
+    );
+  }
+
+  Widget _buildFallbackText(PageData page) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(18, 24, 18, 112),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              Color.fromRGBO(3, 8, 16, 0.56),
+              Color.fromRGBO(2, 6, 12, 0.9),
+            ],
+            stops: [0, 0.33, 1],
+          ),
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child:
+                DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(10, 18, 28, 0.52),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: const Color.fromRGBO(255, 255, 255, 0.2),
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color.fromRGBO(0, 0, 0, 0.24),
+                            blurRadius: 18,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                        child: Text(
+                          page.textContent ?? '',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.lora(
+                            color: const Color(0xFFF8FAFC),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            height: 1.38,
+                            shadows: const [
+                              Shadow(
+                                blurRadius: 10,
+                                offset: Offset(0, 2),
+                                color: Color.fromRGBO(0, 0, 0, 0.35),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                    .animate(target: widget.isActive ? 1 : 0)
+                    .fadeIn(
+                      delay: 120.ms,
+                      duration: 340.ms,
+                      curve: Curves.easeOut,
+                    )
+                    .slideY(
+                      begin: 0.08,
+                      end: 0,
+                      delay: 120.ms,
+                      duration: 340.ms,
+                      curve: Curves.easeOutCubic,
+                    ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -245,7 +317,7 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
         widget.page.imageUrl!,
         cacheManager: ResilientCacheManager.instance,
       ),
-      fit: hasOverlay ? BoxFit.contain : .cover,
+      fit: hasOverlay ? BoxFit.contain : BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
     );
@@ -256,5 +328,80 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
     }
 
     return Hero(tag: heroTag, child: image);
+  }
+
+  // ===========================================================================
+  // Sticky cover (Feature 5)
+  //
+  // Only applies to pageIndex == 0 when the book has a cover URL. As the user
+  // drags from page 0 toward page 1, the cover image pins and fades, and the
+  // title collapses from large-centered to a compact top header.
+  // ===========================================================================
+  Widget _buildCoverPage() {
+    final listenable = widget.scrollOffsetListenable;
+    final coverUrl = widget.coverUrl ?? '';
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final coverImage = Image(
+          image: CachedNetworkImageProvider(
+            coverUrl,
+            cacheManager: ResilientCacheManager.instance,
+          ),
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        );
+        final heroTag = widget.heroTag;
+        final heroWrapped = heroTag != null
+            ? Hero(tag: heroTag, child: coverImage)
+            : coverImage;
+
+        if (listenable == null) {
+          return Stack(
+            fit: StackFit.expand,
+            children: [heroWrapped, _coverGradient()],
+          );
+        }
+
+        return ValueListenableBuilder<double>(
+          valueListenable: listenable,
+          builder: (context, scrollOffset, _) {
+            final localOffset = _localOffsetFor(scrollOffset).clamp(0.0, 1.0);
+            // Cover scales slightly and fades as user scrolls past it.
+            final scale = 1.0 - localOffset * 0.04;
+            final coverOpacity = 1.0 - localOffset * 0.35;
+
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Opacity(
+                  opacity: coverOpacity,
+                  child: Transform.scale(scale: scale, child: heroWrapped),
+                ),
+                _coverGradient(),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _coverGradient() {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.fromRGBO(0, 0, 0, 0.25),
+            Colors.transparent,
+            Color.fromRGBO(0, 0, 0, 0.55),
+          ],
+          stops: [0.0, 0.45, 1.0],
+        ),
+      ),
+    );
   }
 }
