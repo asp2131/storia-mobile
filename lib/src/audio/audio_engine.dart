@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -8,9 +10,13 @@ class AudioEngine {
 
   final AudioPlayer _narration = AudioPlayer();
   final AudioPlayer _soundscape = AudioPlayer();
+  final AudioPlayer _pronunciation = AudioPlayer();
+  final StreamController<bool> _pronunciationPlayingController =
+      StreamController<bool>.broadcast();
 
   bool _initialized = false;
   int _pageAudioRequestId = 0;
+  int _pronunciationRequestId = 0;
   String? _currentSoundscapeUrl;
 
   /// Whether the user has toggled narration on (independent of player state).
@@ -179,6 +185,79 @@ class AudioEngine {
   }
 
   // ---------------------------------------------------------------------------
+  // Pronunciation channel — independent of narration / soundscape state.
+  // ---------------------------------------------------------------------------
+
+  /// Plays the supplied URLs sequentially. Each call cancels any prior
+  /// pronunciation playback (cancel-and-replace). Returns when the sequence
+  /// finishes naturally; if a newer call supersedes this one mid-flight, the
+  /// returned future resolves early without error.
+  Future<void> playPronunciationSequence(List<String> urls) async {
+    final filtered = urls.where((u) => u.isNotEmpty).toList(growable: false);
+    if (filtered.isEmpty) {
+      return;
+    }
+
+    await ensureInitialized();
+    final requestId = ++_pronunciationRequestId;
+    await _pronunciation.stop();
+    if (requestId != _pronunciationRequestId) {
+      return;
+    }
+
+    _emitPronunciationPlaying(true);
+    try {
+      for (final url in filtered) {
+        if (requestId != _pronunciationRequestId) {
+          return;
+        }
+        await _pronunciation.setUrl(url);
+        if (requestId != _pronunciationRequestId) {
+          return;
+        }
+        await _pronunciation.seek(Duration.zero);
+        await _pronunciation.play();
+        await _waitForPronunciationSegmentToEnd(requestId);
+        if (requestId != _pronunciationRequestId) {
+          return;
+        }
+      }
+    } finally {
+      if (requestId == _pronunciationRequestId) {
+        _emitPronunciationPlaying(false);
+      }
+    }
+  }
+
+  Future<void> stopPronunciation() async {
+    _pronunciationRequestId++;
+    await _pronunciation.stop();
+    _emitPronunciationPlaying(false);
+  }
+
+  bool get isPronunciationPlaying => _pronunciation.playing;
+
+  Stream<bool> get pronunciationPlaying =>
+      _pronunciationPlayingController.stream;
+
+  Future<void> _waitForPronunciationSegmentToEnd(int requestId) async {
+    await _pronunciation.processingStateStream.firstWhere((state) {
+      if (requestId != _pronunciationRequestId) {
+        return true;
+      }
+      return state == ProcessingState.completed ||
+          state == ProcessingState.idle;
+    });
+  }
+
+  void _emitPronunciationPlaying(bool value) {
+    if (_pronunciationPlayingController.isClosed) {
+      return;
+    }
+    _pronunciationPlayingController.add(value);
+  }
+
+  // ---------------------------------------------------------------------------
   // Streams
   // ---------------------------------------------------------------------------
 
@@ -206,8 +285,10 @@ class AudioEngine {
   // ---------------------------------------------------------------------------
 
   Future<void> dispose() async {
+    await _pronunciationPlayingController.close();
     await _narration.dispose();
     await _soundscape.dispose();
+    await _pronunciation.dispose();
   }
 
   Future<void> _restartIfCompleted(AudioPlayer player) async {

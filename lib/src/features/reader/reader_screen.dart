@@ -46,6 +46,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   StreamSubscription<ReaderViewState>? _sessionSubscription;
   ReaderViewState _runtimeState = const ReaderViewState.initial();
   String? _initializedBookId;
+  String? _preloadedManifestBookId;
 
   @override
   void initState() {
@@ -169,7 +170,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           if (_initializedBookId != book.id) {
             _initializedBookId = book.id;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _session.dispatch(ReaderStart(book: book));
+              if (!mounted) {
+                return;
+              }
+              ref.read(wordTtsProvider.notifier).setBookId(book.id);
+              unawaited(_session.dispatch(ReaderStart(book: book)));
+            });
+          }
+
+          if (_preloadedManifestBookId != book.id) {
+            _preloadedManifestBookId = book.id;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) {
+                return;
+              }
+              unawaited(ref.read(bookManifestProvider(book.id).future));
             });
           }
 
@@ -355,6 +370,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           error: '$error',
           onRetry: () {
             _initializedBookId = null;
+            _preloadedManifestBookId = null;
             ref.invalidate(currentBookProvider(widget.bookId));
           },
         ),
@@ -1084,14 +1100,11 @@ class _ChromeButton extends StatelessWidget {
   final VoidCallback onTap;
   final String semanticLabel;
   final String semanticHint;
-  final Color color;
-
   const _ChromeButton({
     required this.icon,
     required this.onTap,
     required this.semanticLabel,
     required this.semanticHint,
-    this.color = Colors.white,
   });
 
   @override
@@ -1124,7 +1137,7 @@ class _ChromeButton extends StatelessWidget {
               child: SizedBox(
                 width: 48,
                 height: 48,
-                child: Icon(icon, color: color, size: 21),
+                child: Icon(icon, color: Colors.white, size: 21),
               ),
             ),
           ),

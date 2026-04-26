@@ -3,6 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/models.dart';
 
+@visibleForTesting
+bool debugUseSystemFontsForOverlay = false;
+
 Rect computeContainedImageRect({
   required Size container,
   required Size sourceImage,
@@ -109,6 +112,15 @@ TextStyle resolveFontStyle(
     (w) => w.value == weight,
     orElse: () => .w400,
   );
+
+  if (debugUseSystemFontsForOverlay) {
+    return TextStyle(
+      fontFamily: family,
+      fontSize: size,
+      color: color,
+      fontWeight: fw,
+    );
+  }
 
   switch (family) {
     case 'Lora':

@@ -1,4 +1,5 @@
 import '../../../../data/models.dart';
+import 'word_normalizer.dart';
 
 Map<String, List<int>> buildWordToIndices(PageData page) {
   final wordToIndices = <String, List<int>>{};
@@ -7,8 +8,8 @@ Map<String, List<int>> buildWordToIndices(PageData page) {
   final timestamps = page.narrationTimestamps;
   if (timestamps != null && timestamps.isNotEmpty) {
     for (final ts in timestamps) {
-      final word = _cleanWord(ts.word);
-      if (word.isNotEmpty) {
+      final word = normalizeWordToken(ts.word);
+      if (word != null && word.isNotEmpty) {
         wordToIndices.putIfAbsent(word, () => []).add(index);
         index++;
       }
@@ -22,8 +23,8 @@ Map<String, List<int>> buildWordToIndices(PageData page) {
           .split(RegExp(r'\s+'))
           .where((t) => t.trim().isNotEmpty);
       for (final token in tokens) {
-        final word = _cleanWord(token);
-        if (word.isNotEmpty) {
+        final word = normalizeWordToken(token);
+        if (word != null && word.isNotEmpty) {
           wordToIndices.putIfAbsent(word, () => []).add(index);
           index++;
         }
@@ -36,8 +37,8 @@ Map<String, List<int>> buildWordToIndices(PageData page) {
   if (text != null && text.trim().isNotEmpty) {
     final tokens = text.split(RegExp(r'\s+')).where((t) => t.trim().isNotEmpty);
     for (final token in tokens) {
-      final word = _cleanWord(token);
-      if (word.isNotEmpty) {
+      final word = normalizeWordToken(token);
+      if (word != null && word.isNotEmpty) {
         wordToIndices.putIfAbsent(word, () => []).add(index);
         index++;
       }
@@ -46,6 +47,3 @@ Map<String, List<int>> buildWordToIndices(PageData page) {
 
   return wordToIndices;
 }
-
-String _cleanWord(String word) =>
-    word.toLowerCase().replaceAll(RegExp(r'[^\w]'), '');
