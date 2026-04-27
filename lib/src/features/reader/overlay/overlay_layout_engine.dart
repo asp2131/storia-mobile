@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models.dart';
+import '../pronunciation_highlight.dart';
 import 'overlay_frame.dart';
 import 'text_overlay_utils.dart';
 
@@ -12,6 +13,8 @@ abstract interface class OverlayLayoutEngine {
     required Set<int> spokenWordIndices,
     required bool isActive,
     int? tappedWordIndex,
+    List<PronunciationHighlightPart> tappedWordHighlightParts = const [],
+    int? activeTappedWordHighlightPartIndex,
   });
 }
 
@@ -26,6 +29,8 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
     required Set<int> spokenWordIndices,
     required bool isActive,
     int? tappedWordIndex,
+    List<PronunciationHighlightPart> tappedWordHighlightParts = const [],
+    int? activeTappedWordHighlightPartIndex,
   }) {
     final elements = <OverlayElementFrame>[];
     var wordCursor = 0;
@@ -77,14 +82,22 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
         wordCursor += 1;
 
         final isTapped = globalIndex == tappedWordIndex;
+        final hasSegmentHighlight =
+            isTapped && tappedWordHighlightParts.isNotEmpty;
         final isNarrationHighlighted = globalIndex == activeWordIndex;
         final isSpoken = spokenWordIndices.contains(globalIndex);
 
         final style = isTapped
             ? baseStyle.copyWith(
-                backgroundColor: const Color.fromRGBO(139, 92, 246, 0.85),
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
+                backgroundColor: hasSegmentHighlight
+                    ? null
+                    : const Color.fromRGBO(139, 92, 246, 0.85),
+                fontWeight: hasSegmentHighlight
+                    ? baseStyle.fontWeight
+                    : FontWeight.w900,
+                color: hasSegmentHighlight
+                    ? baseStyle.color
+                    : Colors.white,
               )
             : isSpoken
             ? baseStyle.copyWith(
@@ -105,6 +118,12 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
             style: style,
             globalWordIndex: globalIndex,
             isTapped: isTapped,
+            pronunciationHighlightParts: hasSegmentHighlight
+                ? tappedWordHighlightParts
+                : const [],
+            activePronunciationHighlightPartIndex: hasSegmentHighlight
+                ? activeTappedWordHighlightPartIndex
+                : null,
           ),
         );
       }

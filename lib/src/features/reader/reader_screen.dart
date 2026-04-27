@@ -37,7 +37,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
     Duration.zero,
   );
-  double _scrollOffset = 0.0;
+  final ValueNotifier<double> _scrollOffsetNotifier = ValueNotifier(0.0);
   late final ConfettiController _confettiController;
   bool _showCelebrationGif = false;
   late GifPlayerController _gifPlayerController;
@@ -46,6 +46,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   StreamSubscription<ReaderViewState>? _sessionSubscription;
   ReaderViewState _runtimeState = const ReaderViewState.initial();
   String? _initializedBookId;
+  String? _preloadedManifestBookId;
 
   @override
   void initState() {
@@ -119,7 +120,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   void _onPageScroll() {
     final page = _pageController.page;
-    if (page != null) setState(() => _scrollOffset = page);
+    if (page != null) _scrollOffsetNotifier.value = page;
   }
 
   bool _sameWordIndices(Set<int> a, Set<int> b) {
@@ -142,6 +143,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     _sessionSubscription?.cancel();
     _showChromeNotifier.dispose();
     _narrationPositionNotifier.dispose();
+    _scrollOffsetNotifier.dispose();
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
     _confettiController.dispose();
@@ -168,7 +170,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           if (_initializedBookId != book.id) {
             _initializedBookId = book.id;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _session.dispatch(ReaderStart(book: book));
+              if (!mounted) {
+                return;
+              }
+              ref.read(wordTtsProvider.notifier).setBookId(book.id);
+              unawaited(_session.dispatch(ReaderStart(book: book)));
+            });
+          }
+
+          if (_preloadedManifestBookId != book.id) {
+            _preloadedManifestBookId = book.id;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) {
+                return;
+              }
+              unawaited(ref.read(bookManifestProvider(book.id).future));
             });
           }
 
@@ -202,54 +218,59 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     }
 
                     final page = book.pages[index];
-                    final heroTag =
-                        index == 0 && (book.coverUrl ?? '').isNotEmpty
-                        ? 'book-cover-${book.id}'
-                        : null;
 
-                    final localOffset = _scrollOffset - index;
+                    final pageRenderer = ValueListenableBuilder<Duration>(
+                      valueListenable: _narrationPositionNotifier,
+                      builder: (context, narrationPosition, _) {
+                        return PageRenderer(
+                          page: page,
+                          pageIndex: index,
+                          scrollOffsetListenable: _scrollOffsetNotifier,
+                          narrationPosition: narrationPosition,
+                          isActive: index == activeIndex,
+                          spokenWordIndices: _runtimeState.spokenWordIndices,
+                          onWordTap: (word, globalIndex) {
+                            ref
+                                .read(wordTtsProvider.notifier)
+                                .onWordTapped(word, globalIndex);
+                          },
+                          onWordLongPress: (word, globalIndex) {
+                            ref
+                                .read(wordTtsProvider.notifier)
+                                .onWordLongPressed(word, globalIndex);
+                          },
+                        );
+                      },
+                    );
 
-                    final double progress;
-                    final bool revealFromTop;
+                    return ValueListenableBuilder<double>(
+                      valueListenable: _scrollOffsetNotifier,
+                      child: pageRenderer,
+                      builder: (context, scrollOffset, child) {
+                        final localOffset = scrollOffset - index;
 
-                    if (localOffset < 0) {
-                      progress = (1.0 + localOffset).clamp(0.0, 1.0);
-                      revealFromTop = false;
-                    } else if (localOffset > 0) {
-                      progress = (1.0 - localOffset).clamp(0.0, 1.0);
-                      revealFromTop = true;
-                    } else {
-                      progress = 1.0;
-                      revealFromTop = false;
-                    }
+                        final double progress;
+                        final bool revealFromTop;
 
-                    return ClipPath(
-                      clipper: VerticalLiquidClipper(
-                        progress: progress,
-                        revealFromTop: revealFromTop,
-                      ),
-                      child: ValueListenableBuilder<Duration>(
-                        valueListenable: _narrationPositionNotifier,
-                        builder: (context, narrationPosition, _) {
-                          return PageRenderer(
-                            page: page,
-                            narrationPosition: narrationPosition,
-                            isActive: index == activeIndex,
-                            heroTag: heroTag,
-                            spokenWordIndices: _runtimeState.spokenWordIndices,
-                            onWordTap: (word, globalIndex) {
-                              ref
-                                  .read(wordTtsProvider.notifier)
-                                  .onWordTapped(word, globalIndex);
-                            },
-                            onWordLongPress: (word, globalIndex) {
-                              ref
-                                  .read(wordTtsProvider.notifier)
-                                  .onWordLongPressed(word, globalIndex);
-                            },
-                          );
-                        },
-                      ),
+                        if (localOffset < 0) {
+                          progress = (1.0 + localOffset).clamp(0.0, 1.0);
+                          revealFromTop = false;
+                        } else if (localOffset > 0) {
+                          progress = (1.0 - localOffset).clamp(0.0, 1.0);
+                          revealFromTop = true;
+                        } else {
+                          progress = 1.0;
+                          revealFromTop = false;
+                        }
+
+                        return ClipPath(
+                          clipper: VerticalLiquidClipper(
+                            progress: progress,
+                            revealFromTop: revealFromTop,
+                          ),
+                          child: child,
+                        );
+                      },
                     );
                   },
                 ),
@@ -281,8 +302,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                   }
 
                   final practiceKeepsVisible =
-                      _runtimeState.isPracticeMode ||
-                      _runtimeState.isListening;
+                      _runtimeState.isPracticeMode || _runtimeState.isListening;
 
                   return _AudioControlsPill(
                     hasNarration: hasNarration,
@@ -344,6 +364,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
           error: '$error',
           onRetry: () {
             _initializedBookId = null;
+            _preloadedManifestBookId = null;
             ref.invalidate(currentBookProvider(widget.bookId));
           },
         ),
@@ -627,7 +648,10 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     final baseTop = viewportSize.height - baseBottom - _pillSize.height;
 
     final minLeft = 8.0;
-    final maxLeft = math.max(minLeft, viewportSize.width - _pillSize.width - 8.0);
+    final maxLeft = math.max(
+      minLeft,
+      viewportSize.width - _pillSize.width - 8.0,
+    );
     final minTop = safePadding.top + 12.0;
     final maxTop = math.max(
       minTop,
@@ -867,7 +891,9 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: _isDragging ? 0.32 : 0.24),
+                  color: Colors.black.withValues(
+                    alpha: _isDragging ? 0.32 : 0.24,
+                  ),
                   blurRadius: _isDragging ? 12 : 8,
                   offset: Offset(0, _isDragging ? 4 : 2),
                 ),
@@ -884,7 +910,10 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
                     height: 12,
                     decoration: BoxDecoration(
                       color: Color.fromRGBO(
-                        235, 246, 255, _isDragging ? 0.90 : 0.75,
+                        235,
+                        246,
+                        255,
+                        _isDragging ? 0.90 : 0.75,
                       ),
                       borderRadius: BorderRadius.circular(999),
                     ),
@@ -1003,9 +1032,21 @@ class _WedgePainter extends CustomPainter {
     const sweep = 2 * math.pi / 3; // 120°
 
     final wedges = [
-      (startAngle: -math.pi / 6, color: _soundscapeColor, active: isSoundscapeActive),
-      (startAngle: math.pi / 2, color: _practiceColor, active: isPracticeActive),
-      (startAngle: 7 * math.pi / 6, color: _narrationColor, active: isNarrationActive),
+      (
+        startAngle: -math.pi / 6,
+        color: _soundscapeColor,
+        active: isSoundscapeActive,
+      ),
+      (
+        startAngle: math.pi / 2,
+        color: _practiceColor,
+        active: isPracticeActive,
+      ),
+      (
+        startAngle: 7 * math.pi / 6,
+        color: _narrationColor,
+        active: isNarrationActive,
+      ),
     ];
 
     // Draw active wedge fills.
@@ -1053,14 +1094,11 @@ class _ChromeButton extends StatelessWidget {
   final VoidCallback onTap;
   final String semanticLabel;
   final String semanticHint;
-  final Color color;
-
   const _ChromeButton({
     required this.icon,
     required this.onTap,
     required this.semanticLabel,
     required this.semanticHint,
-    this.color = Colors.white,
   });
 
   @override
@@ -1093,7 +1131,7 @@ class _ChromeButton extends StatelessWidget {
               child: SizedBox(
                 width: 48,
                 height: 48,
-                child: Icon(icon, color: color, size: 21),
+                child: Icon(icon, color: Colors.white, size: 21),
               ),
             ),
           ),

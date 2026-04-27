@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../pronunciation_highlight.dart';
+
 @immutable
 class OverlayFrame {
   const OverlayFrame({
@@ -46,6 +48,8 @@ class OverlayTokenFrame {
     required this.style,
     this.globalWordIndex,
     this.isTapped = false,
+    this.pronunciationHighlightParts = const [],
+    this.activePronunciationHighlightPartIndex,
   });
 
   final String raw;
@@ -53,6 +57,8 @@ class OverlayTokenFrame {
   final TextStyle style;
   final int? globalWordIndex;
   final bool isTapped;
+  final List<PronunciationHighlightPart> pronunciationHighlightParts;
+  final int? activePronunciationHighlightPartIndex;
 }
 
 @immutable

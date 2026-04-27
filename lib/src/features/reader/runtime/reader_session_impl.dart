@@ -35,6 +35,8 @@ class ReaderSessionImpl implements ReaderSession {
 
   final StreamController<ReaderViewState> _controller =
       StreamController<ReaderViewState>.broadcast();
+  final StreamController<int> _pageChangeController =
+      StreamController<int>.broadcast();
   ReaderViewState _state = const ReaderViewState.initial();
 
   StreamSubscription<Duration>? _narrationPositionSub;
@@ -55,6 +57,9 @@ class ReaderSessionImpl implements ReaderSession {
     yield _state;
     yield* _controller.stream;
   }
+
+  @override
+  Stream<int> get pageChanges => _pageChangeController.stream;
 
   @override
   Future<void> dispatch(ReaderIntent intent) async {
@@ -82,6 +87,15 @@ class ReaderSessionImpl implements ReaderSession {
     if (intent is ReaderSetSoundscapeVolume) {
       await _audioPort.setSoundscapeVolume(intent.volume);
       _emit(_state.copyWith(soundscapeVolume: intent.volume));
+      return;
+    }
+    if (intent is ReaderPauseListening) {
+      await _speechPort.stopListening();
+      _emit(_state.copyWith(isListening: false));
+      return;
+    }
+    if (intent is ReaderResumeListening) {
+      await _startListening();
       return;
     }
     if (intent is ReaderPracticePrimaryAction) {
@@ -130,6 +144,7 @@ class ReaderSessionImpl implements ReaderSession {
 
     final clampedIndex = pageIndex.clamp(0, book.pages.length - 1);
     final nextPage = book.pages[clampedIndex];
+    final isPageChange = clampedIndex != _state.activePageIndex;
 
     await _speechPort.stopListening();
     _clearCelebration();
@@ -141,6 +156,9 @@ class ReaderSessionImpl implements ReaderSession {
       ),
     );
     _wordToIndices = buildWordToIndices(nextPage);
+    if (isPageChange && !_pageChangeController.isClosed) {
+      _pageChangeController.add(clampedIndex);
+    }
 
     final requestId = ++_pageRequestId;
     await _audioPort.transitionToPage(nextPage);
@@ -300,5 +318,6 @@ class ReaderSessionImpl implements ReaderSession {
     await _speechPort.dispose();
     await _audioPort.dispose();
     await _controller.close();
+    await _pageChangeController.close();
   }
 }
