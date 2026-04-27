@@ -1341,5 +1341,1050 @@
       "content": "package com.storia.storia_flutter\n\nimport io.flutter.embedding.android.FlutterActivity\n\nclass MainActivity : FlutterActivity()\n"
     },
     "tool_use_id": "toolu_01Uy35GRzNK4sDjcndJ2nFGx"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Agent",
+    "tool_input": {
+      "description": "Trace data layer for highlight",
+      "prompt": "You are debugging why segmented syllable highlighting does NOT appear when the user taps a word in the reader to hear it pronounced. The implementation just landed but no per-syllable highlight shows on screen \u2014 only the whole-word purple background works (or maybe nothing).\n\nYour scope: **the DATA layer**. Trace from Supabase row \u2192 `WordPronunciation` entry \u2192 `WordTtsNotifier._buildHighlightParts` output. Find where the highlight parts list could end up empty in production despite the unit tests passing.\n\nKey files (all in /Users/akinpound/Documents/experiments/storia-mobile/):\n- `lib/src/data/pronunciation_models.dart` \u2014 `WordPronunciation.fromRow`, `PronunciationBreakdownSegment.fromJson`, `normalizePronunciationUrlPair`\n- `lib/src/data/pronunciation_repository.dart` \u2014 what columns are SELECTed from Supabase, manifest building\n- `lib/src/features/reader/runtime/services/pronunciation_playback_service.dart` \u2014 `tryPlayBreakdownFor`, `PronunciationPlaybackPlan`\n- `lib/src/features/reader/runtime/providers/word_tts_provider.dart` \u2014 `_buildHighlightParts`, `_startPronunciationHighlightTracking`. Note that `_buildHighlightParts` returns empty if `labels.isEmpty`, and the function early-returns before tracking starts.\n\nSpecifically answer:\n1. Does the Supabase query in `PronunciationRepository` actually select `breakdown_segments` and `syllables` columns? Or is it missing from the SELECT list?\n2. What is the wire format of `breakdown_segments` in the database \u2014 JSON array of objects with `chunk`/`spoken`/`startMs`/`endMs`, or legacy array of plain strings? If legacy strings only, the parser treats them as `PronunciationBreakdownSegment.fromLegacyString` which has NO timing. Does `_buildHighlightParts` still produce parts in that case (it should \u2014 using fallback timing)?\n3. Walk through `_buildHighlightParts` step by step assuming `entry.syllables == []` and `entry.breakdownSegments == []`. What does it return? What if syllables is populated but breakdownSegments is empty?\n4. In `tryPlayBreakdownFor`, is `onPlaybackReady(plan)` actually called when only `fullWord` URL exists (no breakdown)? Read `pronunciation_playback_service.dart:107-130`. Note `includesBreakdown` flag.\n5. Is there any chance `WordPronunciation.fromRow` fails silently on the new segment shape (e.g. throws and gets caught upstream)?\n\nSearch any migration scripts, edge functions, or SQL files (`supabase/`, `*.sql`) that populate the `pronunciations` table to confirm what shape `breakdown_segments` is currently stored as. Also check `.wolf/` for project memory about pronunciation data shape.\n\nReport findings as a punch list of likely failure points, ranked by probability. Reference file:line. Under 400 words.",
+      "subagent_type": "Explore"
+    },
+    "tool_use_id": "toolu_01TLhKo6Tv19zVHizkU5X6ki"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/data/pronunciation_models.dart"
+    },
+    "tool_use_id": "toolu_01SJxQTU2xs8hAjkGUuNL2uW"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/runtime/providers/word_tts_provider.dart"
+    },
+    "tool_use_id": "toolu_01ESJ6oi3JCQN1BVmuizrbbk"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -type f \\( -name \"*.sql\" -o -name \"*.ts\" \\) | head -20"
+    },
+    "tool_use_id": "toolu_014ceunXvxVsPz8ZBBaVoz43"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/runtime/services/pronunciation_playback_service.dart"
+    },
+    "tool_use_id": "toolu_01GEB6pk18hxJ9LbbzNtsy8G"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Agent",
+    "tool_input": {
+      "description": "Trace UI render path",
+      "prompt": "You are debugging why segmented syllable highlighting does NOT appear when the user taps a word in the reader to hear it pronounced. Implementation just landed (unstaged on branch `cue`) but on-device the per-syllable highlight does not show \u2014 only the whole-word purple background, or maybe nothing changes.\n\nYour scope: **the UI render path**. Trace from `WordTtsState` \u2192 `PageRenderer` \u2192 `OverlayLayoutEngine.build` \u2192 `OverlayTokenFrame.pronunciationHighlightParts` \u2192 `OverlayTextElement._buildSpans` \u2192 `_PronunciationWordText`. Find where the parts could be dropped before reaching `RichText`.\n\nKey files (all in /Users/akinpound/Documents/experiments/storia-mobile/):\n- `lib/src/features/reader/page_renderer.dart` \u2014 confirm `wordTtsState.highlightParts` flows into `_buildStandardPage`\n- `lib/src/features/reader/overlay/overlay_layout_engine.dart` \u2014 confirm parts attach only to `isTapped` token; check `hasSegmentHighlight` gate\n- `lib/src/features/reader/overlay/overlay_frame.dart` \u2014 `OverlayTokenFrame` fields\n- `lib/src/features/reader/overlay/overlay_text_element.dart` \u2014 `_PronunciationWordText`, `_buildSegmentSpans`. Note the case-insensitive substring matcher returns `null` if any part text not found in raw token, falling back to whole-word highlight.\n- Anywhere else `OverlayTextElement` is instantiated (search). Check if `parallax_text_overlay.dart` or any other reader widget renders text WITHOUT going through `OverlayLayoutEngineImpl`.\n\nSpecifically answer:\n1. Is there more than one code path that renders book-page text? E.g. `parallax_text_overlay.dart` or `text_overlay.dart` \u2014 do they also call `OverlayLayoutEngineImpl.build` with the new `tappedWordHighlightParts` arg, or do they use a separate layout path that still renders the old whole-word style? `git diff` only shows `page_renderer.dart` was modified \u2014 search for ALL call sites of `OverlayLayoutEngineImpl().build`, `OverlayLayoutEngine`, `overlay_layout_engine`, and `OverlayTextElement`.\n2. The `_PronunciationWordText` widget uses substring matching: `lowerRaw.indexOf(partText.toLowerCase(), cursor)`. If raw token has trailing punctuation (e.g. `\"Butterfly!\"`) and last syllable is `\"fly\"`, does it still match? Yes \u2014 but if a syllable contains punctuation or the word has internal apostrophes (e.g. `\"don't\"` with syllables `[\"dont\"]`) it returns null. Is this a likely cause?\n3. Does the GestureDetector in `OverlayTextElement._buildSpans` (around line 90-110) actually wrap the new `_PronunciationWordText` widget? Trace line by line.\n4. Is `debugUseSystemFontsForOverlay` or any conditional rendering bypassing `_PronunciationWordText` in release vs debug builds?\n\nUse grep liberally. Report findings as a ranked punch list of likely causes the user does not see syllable highlights. Reference file:line. Under 400 words.",
+      "subagent_type": "Explore"
+    },
+    "tool_use_id": "toolu_01F4V2dKV57ewuokqR58hgKz"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -type f \\( -name \"*.sql\" -o -name \"*migration*\" -o -name \"*supabase*\" \\) 2>/dev/null | head -30"
+    },
+    "tool_use_id": "toolu_015k27yuRP9QQVQbKyGC2oD8"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -type f -name \"*.dart\" | head -20"
+    },
+    "tool_use_id": "toolu_01QTtFP6LNUKqkfizPyWqprm"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -type d -name \".wolf\" 2>/dev/null"
+    },
+    "tool_use_id": "toolu_01W5cM1VK6QPNcSZ41D8YB3G"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la /Users/akinpound/Documents/experiments/storia-mobile/.wolf/ | head -30"
+    },
+    "tool_use_id": "toolu_01JQ59ewGJqEusZaRbHbUKvA"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"OverlayLayoutEngine\" /Users/akinpound/Documents/experiments/storia-mobile/lib --include=\"*.dart\" -l"
+    },
+    "tool_use_id": "toolu_011WNSH7mumh5sbhiPEfXNfc"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/.wolf/memory.md"
+    },
+    "tool_use_id": "toolu_0111h9HDt66rkZBSfE7LHWPy"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile/supabase -type f 2>/dev/null"
+    },
+    "tool_use_id": "toolu_01Mb8UAVM4JTBXu47AjKDXVo"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"parallax_text_overlay\\|text_overlay\\|OverlayTextElement\\|_buildSpans\" /Users/akinpound/Documents/experiments/storia-mobile/lib --include=\"*.dart\" -l"
+    },
+    "tool_use_id": "toolu_014w6QHefTiT5perfbKMFMcU"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/page_renderer.dart"
+    },
+    "tool_use_id": "toolu_01UqvfeJrti5LA7fSXXBzgsX"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -type f -path \"*test*pronunciation*\" 2>/dev/null"
+    },
+    "tool_use_id": "toolu_01G94pRAuJfM4LVtSBBKDw81"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"breakdown_segments\\|syllables\" /Users/akinpound/Documents/experiments/storia-mobile/lib --include=\"*.dart\" 2>/dev/null | head -40"
+    },
+    "tool_use_id": "toolu_01JcszxYkPSr3ysr6ateTg54"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/overlay_layout_engine.dart"
+    },
+    "tool_use_id": "toolu_016ZW4qswMWEn3kkKfda9xgF"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/test/features/reader/runtime/pronunciation_playback_service_test.dart"
+    },
+    "tool_use_id": "toolu_01P95sNBuiRoGCzrkHHLJn2F"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/test/features/reader/overlay/overlay_pronunciation_highlight_test.dart"
+    },
+    "tool_use_id": "toolu_01YAiu2aYnNn1koSmf6bFoW7"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/overlay_text_element.dart"
+    },
+    "tool_use_id": "toolu_01EpefA5AUqEjGgWUi5atQxt"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Agent",
+    "tool_input": {
+      "description": "Trace position stream wiring",
+      "prompt": "You are debugging why segmented syllable highlighting does NOT appear when the user taps a word in the reader to hear it pronounced. Implementation just landed but no per-syllable highlight shows on device.\n\nYour scope: **the audio + state-flow wiring**. Trace from `AudioEngine.pronunciationPosition` \u2192 `PronunciationPlaybackService.pronunciationPosition` \u2192 `WordTtsNotifier._startPronunciationHighlightTracking` \u2192 `WordTtsState`. Verify the stream is actually connected and emits, and verify the riverpod provider wiring uses the audioEngine-aware constructor.\n\nKey files (all in /Users/akinpound/Documents/experiments/storia-mobile/):\n- `lib/src/audio/audio_engine.dart` \u2014 confirm `pronunciationPosition` getter exists (line ~243) and that `_pronunciation.positionStream` actually emits during playback\n- `lib/src/audio/audio_providers.dart` \u2014 find the provider that constructs `PronunciationPlaybackService`. CRITICAL: which constructor does it call \u2014 the default `PronunciationPlaybackService(audioEngine:, repository:)` (which forwards `pronunciationPosition`) or `PronunciationPlaybackService.withPlaybackCallbacks` WITHOUT passing `pronunciationPosition` (which falls back to `const Stream.empty()`)?\n- `lib/src/features/reader/runtime/services/pronunciation_playback_service.dart:43-57` \u2014 verify the default constructor forwards `audioEngine.pronunciationPosition` to `withPlaybackCallbacks`. Confirm `_pronunciationPosition = pronunciationPosition ?? const Stream.empty()` default.\n- `lib/src/features/reader/runtime/providers/word_tts_provider.dart` \u2014 check `_startPronunciationHighlightTracking` and `_stopPronunciationPositionTracking`. The stream subscription is created INSIDE `onPlaybackReady` callback \u2014 confirm callback fires before `await _playPronunciationSequence(urls)` and that `_pronunciation.pronunciationPosition` is the same instance forwarded from AudioEngine.\n\nSpecifically answer:\n1. Find every place `PronunciationPlaybackService` is constructed in production code (NOT tests). Confirm the audioEngine-bound constructor is used. If `withPlaybackCallbacks` is used directly without `pronunciationPosition:`, the stream is `const Stream.empty()` and highlights NEVER advance.\n2. Is `just_audio`'s `positionStream` actually broadcast? If not, multiple listeners might silently fail. Check the package behavior \u2014 single-subscription streams throw on second listen.\n3. Does `_startPronunciationHighlightTracking` ever get called? Confirm the `onPlaybackReady` callback in `tryPlayBreakdownFor` fires synchronously BEFORE the audio actually starts playing (yes per service code, but verify).\n4. If `entry.fullWord` exists but `entry.breakdown` is null, `includesBreakdown` is false. The notifier early-returns and sets `tappedWordIndex` only \u2014 no parts. Is this likely the production case (i.e. data has full-word audio but no breakdown audio)?\n\nReport findings as a ranked punch list. Reference file:line. Under 400 words.",
+      "subagent_type": "Explore"
+    },
+    "tool_use_id": "toolu_01CJxDa2EksxHrDDC59TTBkW"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"class PronunciationHighlightPart\" /Users/akinpound/Documents/experiments/storia-mobile --include=\"*.dart\" -A 10"
+    },
+    "tool_use_id": "toolu_01V5Q46h417vEk2cxf7Bs6JG"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/audio/audio_engine.dart",
+      "limit": 300
+    },
+    "tool_use_id": "toolu_018gMMLhRwS9cocVS7JA3Avt"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/audio/audio_providers.dart"
+    },
+    "tool_use_id": "toolu_01WFyBGvqn7i2zG3c215pzeE"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"fromRow\\|breakdown_segments\" /Users/akinpound/Documents/experiments/storia-mobile/test --include=\"*.dart\" -B 2 -A 2 | head -60"
+    },
+    "tool_use_id": "toolu_01T4RQVgotiv7G5dy5E8CPpg"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/runtime/services/pronunciation_playback_service.dart",
+      "limit": 150
+    },
+    "tool_use_id": "toolu_016LcbU2yknamxvWMpXp9LGk"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/overlay_text_layer.dart"
+    },
+    "tool_use_id": "toolu_011LdooKpjwybGPDjWtruKoV"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"PronunciationPlaybackService(\" /Users/akinpound/Documents/experiments/storia-mobile/lib --include=\"*.dart\" | grep -v test | grep -v \"PronunciationPlaybackService()\""
+    },
+    "tool_use_id": "toolu_01QGHyxto71bFMcwMU6sFCbj"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git log --oneline -20 --all -- lib/src/data/pronunciation*.dart"
+    },
+    "tool_use_id": "toolu_01Wjij1uXhDZ8W8wqk4Hs4s1"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/overlay_frame.dart"
+    },
+    "tool_use_id": "toolu_01E4XfhrEMpsJuiyr37W7adf"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/runtime/providers/word_tts_provider.dart"
+    },
+    "tool_use_id": "toolu_01CfsBmLB4PuHYGbABMBu91h"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -n \"withPlaybackCallbacks\\|PronunciationPlaybackService\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/runtime/providers/word_tts_provider.dart"
+    },
+    "tool_use_id": "toolu_01CjWgnje3mWSLdd1uYrMADT"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"wordTtsProvider\\|WordTtsState\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader --include=\"*.dart\" -l"
+    },
+    "tool_use_id": "toolu_01RrWxLpEwwsMv9wY63Lrw8N"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/runtime/providers/word_tts_provider.dart"
+    },
+    "tool_use_id": "toolu_01ACHgecEQc18o6oiqBiQW8B"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -r \"positionStream\\|broadcast\\|Stream<Duration>\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src --include=\"*.dart\" | head -20"
+    },
+    "tool_use_id": "toolu_01MpyFYsYsZoVMiNLCSioryz"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/data/pronunciation_models.dart",
+      "limit": 100
+    },
+    "tool_use_id": "toolu_019uFbLUj47WiHkezwn6fQ56"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/data/pronunciation_models.dart",
+      "offset": 95,
+      "limit": 100
+    },
+    "tool_use_id": "toolu_012aMu59y5YzP7AiZNAvoKt4"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -A 20 \"class WordPronunciation\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src/data/pronunciation_models.dart | head -30"
+    },
+    "tool_use_id": "toolu_01LBYK7Ufi2ny9Sz2M9c2835"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -name \"*.dart\" -type f ! -path \"*/test/*\" -exec grep -l \"PronunciationPlaybackService\" {} \\;"
+    },
+    "tool_use_id": "toolu_01G6Pvkva3hjq8YEcPUPWVyV"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -n \"onWordTap\\|_PronunciationWordText\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/overlay_text_element.dart"
+    },
+    "tool_use_id": "toolu_01M6PH6Qw7WbpFpwXyikAjQt"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -rn \"debugUseSystemFontsForOverlay\\|kDebugMode\\|debugMode\\|isRelease\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay --include=\"*.dart\""
+    },
+    "tool_use_id": "toolu_01TGtVeeC8MyiSKEqx4xDaEG"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/text_overlay_utils.dart",
+      "offset": 1,
+      "limit": 130
+    },
+    "tool_use_id": "toolu_01GTsUeihhgTv9hpp25ph3Cm"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile -name \"pronunciation_highlight.dart\" -type f"
+    },
+    "tool_use_id": "toolu_01GqkqJ2wbfUzxXfJ434XRoc"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/pronunciation_highlight.dart"
+    },
+    "tool_use_id": "toolu_01XWYxKZesGsExg7GwoqtcLk"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git diff --name-only"
+    },
+    "tool_use_id": "toolu_014vtXQHYkt4pS1MZHotG99v"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git diff lib/src/features/reader/overlay/overlay_text_element.dart | head -150"
+    },
+    "tool_use_id": "toolu_013rpMKZdYeysEmg3wSmU77P"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "sed -n '75,110p' /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/overlay_text_element.dart"
+    },
+    "tool_use_id": "toolu_01KQZFC5vpbAms8C5pz4xBxo"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "sed -n '80,125p' /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/overlay_layout_engine.dart"
+    },
+    "tool_use_id": "toolu_01SGmKPnwPzGjtxnmWdaCKfW"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -A 5 \"tappedWordHighlightParts:\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/page_renderer.dart"
+    },
+    "tool_use_id": "toolu_017F3PPaWJTEaaf1xDTX7szQ"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "sed -n '137,152p' /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/overlay/overlay_text_element.dart"
+    },
+    "tool_use_id": "toolu_014ykrYBBAkwHGtgQMqLhhDD"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -B 5 -A 5 \"OverlayTextLayer(\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/page_renderer.dart"
+    },
+    "tool_use_id": "toolu_01MdqqKsMiDiMHxQSQvAU9Us"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git log --oneline -20 -- lib/src/data/pronunciation*.dart 2>/dev/null"
+    },
+    "tool_use_id": "toolu_01NnFfujXbdpvxoVUfGJ1xSR"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -n \"onPlaybackReady\" /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/runtime/providers/word_tts_provider.dart"
+    },
+    "tool_use_id": "toolu_013vMhtCjQ3gf2Z3jGhM96PN"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "grep -A 2 \"just_audio\" /Users/akinpound/Documents/experiments/storia-mobile/pubspec.yaml"
+    },
+    "tool_use_id": "toolu_0199RPMKDkMhytixjVkPtdL3"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/.wolf/anatomy.md",
+      "limit": 200
+    },
+    "tool_use_id": "toolu_01KhmJ7PRz5deyr1eCUsn6YZ"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find /Users/akinpound/Documents/experiments/storia-mobile/test -name \"*pronunciation*test*\" -exec grep -l \"breakdown_segments\\|syllables\" {} \\;"
+    },
+    "tool_use_id": "toolu_01EDdrEkB2ufFaYCP5YGqJBq"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/reader/runtime/providers/word_tts_provider.dart",
+      "offset": 280,
+      "limit": 95
+    },
+    "tool_use_id": "toolu_01B1vAPoTxqvEZTeuQwvG1vW"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git log --all --oneline -20 && echo \"---\" && git log --all --author=\"codex\" --oneline 2>/dev/null | head -10",
+      "description": "Check git log"
+    },
+    "tool_use_id": "toolu_014psMKMiBLKiVftPMpEzcXE"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "ToolSearch",
+    "tool_input": {
+      "query": "select:TaskCreate,TaskUpdate,TaskList",
+      "max_results": 5
+    },
+    "tool_use_id": "toolu_01MW6PGzQ98Bi9uUwWG8HWXW"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Wrap pronunciationPosition as broadcast stream",
+      "description": "SEV-1: AudioEngine.pronunciationPosition returns single-subscription just_audio stream. Wrap with .asBroadcastStream() so multiple listeners can attach. Cache once.",
+      "activeForm": "Fixing broadcast stream"
+    },
+    "tool_use_id": "toolu_01RBb3gVNThYizwGsbkmvQDJ"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Decouple highlight from includesBreakdown gate",
+      "description": "SEV-1: word_tts_provider.dart:284 bails if !plan.includesBreakdown. Should gate on parts.isEmpty so syllable highlight runs against full-word clip too.",
+      "activeForm": "Fixing includesBreakdown gate"
+    },
+    "tool_use_id": "toolu_01Qmm8eWAmQoCgofNBrfD31Z"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Add diagnostic logging for highlight pipeline",
+      "description": "SEV-1: No production telemetry on syllable highlight path. Add debugPrint at _startPronunciationHighlightTracking entry (segments/syllables/parts count) and at position listener (pos/active index).",
+      "activeForm": "Adding diagnostic logs"
+    },
+    "tool_use_id": "toolu_01AeWgcPH4VEG12sEz1Laobu"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Harden substring matcher in _PronunciationWordText",
+      "description": "SEV-2: overlay_text_element.dart:165 fails on apostrophes/diacritics/smart-quotes. Normalize both sides (fold apostrophes, strip diacritics) before indexOf.",
+      "activeForm": "Hardening substring matcher"
+    },
+    "tool_use_id": "toolu_01Qrxo6MQ1a17b3793vdPQeW"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Audit overlay render call sites",
+      "description": "SEV-2: Verify OverlayLayoutEngineImpl.build is the only path rendering tappable book text. Grep for OverlayLayoutEngine and OverlayTextElement; confirm all sites pass tappedWordHighlightParts.",
+      "activeForm": "Auditing render sites"
+    },
+    "tool_use_id": "toolu_01Xdh1cvKgg36XkTYVynNDYp"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskCreate",
+    "tool_input": {
+      "subject": "Write integration smoke test for highlight pipeline",
+      "description": "Boot WordTtsNotifier + PronunciationPlaybackService + a real or near-real AudioEngine fake against a real-shape manifest fixture (ideally derived from production schema). Assert state transitions: tap \u2192 parts populated \u2192 activeIndex advances on position events \u2192 cleared on completion.",
+      "activeForm": "Writing integration smoke test"
+    },
+    "tool_use_id": "toolu_01FU2Dq4wGBxh212iFpd5qzP"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "1",
+      "status": "in_progress",
+      "owner": "builder"
+    },
+    "tool_use_id": "toolu_01MDG6R3Xj8P6yAtx4Wmc9vR"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "2",
+      "status": "in_progress",
+      "owner": "builder"
+    },
+    "tool_use_id": "toolu_01FtGypdGjVNJokwhCgAfoDQ"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "3",
+      "status": "in_progress",
+      "owner": "builder"
+    },
+    "tool_use_id": "toolu_012bFHk4oMLXiNaVQi9TYfo2"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "4",
+      "status": "in_progress",
+      "owner": "builder"
+    },
+    "tool_use_id": "toolu_01PGr1m8LFHq36KyDVMWQHHB"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "5",
+      "status": "in_progress",
+      "owner": "builder"
+    },
+    "tool_use_id": "toolu_016ktMexhb5R8xy1BD1N9k2f"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TaskUpdate",
+    "tool_input": {
+      "taskId": "6",
+      "status": "in_progress",
+      "owner": "test-writer"
+    },
+    "tool_use_id": "toolu_01KXAn9GC6t4ey1Xkp5vNxuU"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Agent",
+    "tool_input": {
+      "description": "Fix four SEV bugs + audit",
+      "prompt": "You are fixing pronunciation syllable highlighting in /Users/akinpound/Documents/experiments/storia-mobile/. The feature was just implemented (unstaged on branch `cue`) but does NOT show on device. A code review traced four root causes. Fix all four, plus complete a render-path audit. **Write code, don't research.**\n\n## Working tree (already modified, don't revert)\n- `lib/src/audio/audio_engine.dart`\n- `lib/src/data/pronunciation_models.dart`\n- `lib/src/features/reader/overlay/overlay_frame.dart`\n- `lib/src/features/reader/overlay/overlay_layout_engine.dart`\n- `lib/src/features/reader/overlay/overlay_text_element.dart`\n- `lib/src/features/reader/page_renderer.dart`\n- `lib/src/features/reader/runtime/providers/word_tts_provider.dart`\n- `lib/src/features/reader/runtime/services/pronunciation_playback_service.dart`\n- `lib/src/features/reader/pronunciation_highlight.dart` (new)\n- existing tests under `test/features/reader/...`\n\n## Fix #1 \u2014 SEV-1: pronunciationPosition single-subscription stream\n\n**File**: `lib/src/audio/audio_engine.dart` (~line 243).\n\nCurrently:\n```dart\nStream<Duration> get pronunciationPosition => _pronunciation.positionStream;\n```\n\n`_pronunciation` is a `just_audio` `AudioPlayer`. Its `positionStream` is a single-subscription stream. Multiple listeners throw `Bad state: Stream has already been listened to`. Wrap with broadcast and cache once on the field \u2014 do NOT recompute per call (would create a new broadcast adapter each time).\n\nReplace with a `late final` broadcast stream:\n```dart\nlate final Stream<Duration> pronunciationPosition =\n    _pronunciation.positionStream.asBroadcastStream();\n```\n\nIf the surrounding class layout makes `late final` awkward, use a private `_pronunciationPositionBroadcast` field initialized in the constructor or first access. Keep the API getter shape the same.\n\n## Fix #2 \u2014 SEV-1: Decouple syllable highlight from includesBreakdown\n\n**File**: `lib/src/features/reader/runtime/providers/word_tts_provider.dart`, `_startPronunciationHighlightTracking` (~line 280).\n\nCurrently:\n```dart\nif (!plan.includesBreakdown) {\n  state = WordTtsState(tappedWordIndex: globalIndex);\n  return;\n}\n\nfinal parts = _buildHighlightParts(plan);\nif (parts.isEmpty) {\n  state = WordTtsState(tappedWordIndex: globalIndex);\n  return;\n}\n```\n\nThe first guard is wrong. Highlight is visual \u2014 even when only a full-word audio clip plays, if the entry has `syllables` or `breakdownSegments`, we should still render the syllable highlight (advancing against whatever clip is playing).\n\n**Remove the `!plan.includesBreakdown` early-return**. Always call `_buildHighlightParts(plan)`. Keep the `parts.isEmpty` guard.\n\n## Fix #3 \u2014 SEV-1: Diagnostic logging on highlight pipeline\n\n**File**: `lib/src/features/reader/runtime/providers/word_tts_provider.dart`.\n\nAdd `debugPrint` calls (import `package:flutter/foundation.dart` if not already imported) at these spots:\n\n1. At the very top of `_startPronunciationHighlightTracking`, before any guards:\n```dart\ndebugPrint(\n  '[Highlight] start global=$globalIndex includesBreakdown=${plan.includesBreakdown} '\n  'syllables=${plan.entry.syllables.length} segments=${plan.entry.breakdownSegments.length}',\n);\n```\n\n2. Right after `final parts = _buildHighlightParts(plan);`:\n```dart\ndebugPrint('[Highlight] built parts=${parts.length} labels=${parts.map((p) => p.text).toList()}');\n```\n\n3. Inside the position-stream listener, only when active index changes (use a local `previousIndex` or compare against current state before update):\n```dart\ndebugPrint('[Highlight] pos=${positionMs}ms active=$activeIndex parts=${state.highlightParts.length}');\n```\n(Log on every emission is fine if cheap; prefer logging on change.)\n\n4. In `_PronunciationWordText._buildSegmentSpans` (`overlay_text_element.dart`), when the substring matcher returns null (fallback path), add:\n```dart\ndebugPrint('[Highlight] span fallback raw=\"$raw\" parts=${parts.map((p) => p.text).toList()}');\n```\n\nKeep all logs prefixed `[Highlight]` for grep-ability.\n\n## Fix #4 \u2014 SEV-2: Harden substring matcher\n\n**File**: `lib/src/features/reader/overlay/overlay_text_element.dart`, `_PronunciationWordText._buildSegmentSpans` (~line 153).\n\nThe matcher uses `lowerRaw.indexOf(partText.toLowerCase(), cursor)`. It fails on:\n- apostrophes (straight `'` vs curly `\u2019`)\n- diacritics (`na\u00efve` vs `naive`)\n- non-letter characters in either side\n\nAdd a normalization helper that:\n- Lowercases.\n- Replaces `\u2019` `\u2018` `\u02bc` with `'` (and optionally strips `'` entirely from the comparison).\n- Strips combining diacritical marks (use a small char-by-char fold for ASCII letters with diacritics \u2014 pragmatic table is fine; full Unicode normalization is overkill).\n- Does NOT alter the raw string used for `substring` slicing \u2014 only the comparison string.\n\nStrategy: build two parallel strings:\n- `comparable` = normalized version of raw, same length as raw (1:1 char map; replace combining diacritics with their base, replace smart quotes with straight, etc.).\n- Match `partText` (also normalized through the same fold) against `comparable` using `indexOf`.\n- Slice raw using the resulting offsets, since lengths line up.\n\nIf a 1:1 fold is hard for a given char, fall back to whole-word and `debugPrint` (see Fix #3 #4).\n\nKeep the function shape the same: returns `List<InlineSpan>?` where null means \"fall back to whole-word\".\n\n## Fix #5 \u2014 SEV-2: Render-path audit\n\nSearch the codebase for ALL widgets that render tappable book text:\n- `grep -rn \"OverlayLayoutEngine\\|OverlayTextElement\\|OverlayLayoutEngineImpl\" lib/`\n- Inspect any reader page widget that bypasses the standard renderer (e.g. parallax, vertical, liquid-swipe variants).\n\nFor every render path that surfaces tap-to-pronounce, confirm `tappedWordHighlightParts` and `activeTappedWordHighlightPartIndex` are forwarded from `wordTtsProvider`. If a path exists that does NOT forward them, add the wiring (mirror `page_renderer.dart`'s `_buildStandardPage`).\n\nReport findings even if no extra paths exist. If you DO modify another file, mention it in the summary.\n\n## Constraints\n\n- Don't break existing tests. `test/features/reader/runtime/word_tts_provider_test.dart` and `test/features/reader/overlay/overlay_pronunciation_highlight_test.dart` must still pass after your fixes. Run `flutter test test/features/reader/runtime/word_tts_provider_test.dart test/features/reader/overlay/overlay_pronunciation_highlight_test.dart test/features/reader/runtime/pronunciation_playback_service_test.dart` and report results.\n- Do NOT remove the `_PronunciationWordText` fallback path \u2014 it should still kick in when normalization can't reconcile.\n- Do NOT add new public API surface beyond what's needed.\n- Don't run any git commands (no commits).\n\n## Report format\n\nEnd with a short report:\n- Files modified.\n- Test results.\n- Findings from the render-path audit (Fix #5).\n- Any remaining concerns or things you couldn't address.",
+      "subagent_type": "builder"
+    },
+    "tool_use_id": "toolu_0119HEheCyLMeaXSDYu83xXE"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Agent",
+    "tool_input": {
+      "description": "Write integration smoke test",
+      "prompt": "You are writing ONE integration smoke test for the pronunciation syllable highlight pipeline in /Users/akinpound/Documents/experiments/storia-mobile/. The feature is unstaged on branch `cue`. The pre-existing unit tests are \"unit-test theater\" \u2014 they construct synthetic data shapes the code happens to handle. We need a test that exercises the FULL pipeline against a realistic manifest entry.\n\n## Goal\n\nBoot the real `WordTtsNotifier` + real `PronunciationPlaybackService` (default constructor that takes `AudioEngine`-style position stream). Inject:\n- A `PronunciationRepository` fake that returns a `BookPronunciationManifest` derived from realistic production-shape data (NOT a hand-crafted minimal fixture \u2014 see fixture rules below).\n- A pronunciation playback callback that synthesizes `Duration` events through a `StreamController.broadcast()` exposed via the service constructor's `pronunciationPosition` parameter.\n\nAssert end-to-end:\n1. Tap dispatch (`onWordTapped`) populates `state.highlightParts` with the right syllable labels.\n2. Position events advance `state.activeHighlightPartIndex` from 0 \u2192 last index.\n3. Position reset (simulating breakdown\u2192full-word clip transition) clears `highlightParts` AND nulls `activeHighlightPartIndex`.\n4. Playback completion clears `tappedWordIndex` to null.\n\n## Fixture rules \u2014 READ THIS\n\nThe existing tests use synthetic JSON. Replace with one of these realistic strategies \u2014 pick whichever is feasible:\n\n**Option A (preferred)**: Look at `lib/src/data/pronunciation_repository.dart` and locate the SQL/REST query used. Build a fixture by feeding `WordPronunciation.fromRow` a Map that mirrors the actual Supabase row shape \u2014 INCLUDING:\n- Realistic Supabase storage URLs like `https://<project>.supabase.co/storage/v1/object/public/storia/books/<bookId>/pronunciations/breakdown/word_<word>.mp3` and the matching `/pronunciations/full-word/...`\n- `breakdown_segments` as a JSON array of objects: `[{\"index\":0,\"chunk\":\"but\",\"spoken\":\"but\",\"startMs\":0,\"endMs\":240}, ...]`\n- A row where `full_word_url` and `breakdown_url` are SWAPPED (storage path roles inverted) \u2014 to verify `normalizePronunciationUrlPair` un-swaps correctly.\n- A row where the `syllables` array length differs from `breakdown_segments` length, to exercise label-selection fallback.\n\nSearch `supabase/` and any migration/seed files (`*.sql`, `*.json` fixture) for examples of real production rows. Use those values where possible.\n\n**Option B**: If a test fixture file already exists for pronunciations (look in `test/fixtures/` or `assets/`), import it.\n\n**Option C**: If neither is available, write a clearly labeled `// Realistic shape mirroring production Supabase row` comment and use storage URL patterns that match what `inferPronunciationAudioRole` looks for. Don't fake away the path structure.\n\n## Where the test goes\n\n`test/features/reader/runtime/pronunciation_highlight_smoke_test.dart` (new file).\n\nUse `flutter_test` + `riverpod`. The existing pattern in `test/features/reader/runtime/word_tts_provider_test.dart` is a good base \u2014 you can follow its `_FakePronunciationRepository`, `_FakeReaderSession`, `_FakeWordTtsService` shapes. **But** swap the synthetic `WordPronunciation` for one constructed via `WordPronunciation.fromRow(realisticRowMap)` so the parsing path is exercised.\n\n## Constraints\n\n- Test must FAIL today against the unstaged code IF possible (post-fix it'll pass). At minimum, it must pass after the SEV fixes land:\n  - SEV-1 #1: `pronunciationPosition` wrapped as broadcast (you don't need to test broadcast directly \u2014 just listen once via the service)\n  - SEV-1 #2: Highlight builds even when `includesBreakdown=false`. Cover this case explicitly: include a sub-test where the manifest entry has `fullWord` only, no `breakdown` \u2014 assert `highlightParts` STILL populates.\n- Do not import anything beyond standard test deps + the production code.\n- Do not modify production code. Do not modify other tests.\n- Run `flutter test test/features/reader/runtime/pronunciation_highlight_smoke_test.dart` after writing. Some sub-tests may legitimately fail today \u2014 note which and why. Do not delete failing assertions to make it green.\n- Don't run any git commands.\n\n## Report format\n\nEnd with a short report:\n- Path of the new test file.\n- Sub-test names you wrote.\n- Which sub-tests pass today vs fail today.\n- For each failing sub-test, which SEV fix unblocks it.\n- Any test infrastructure issues you hit.",
+      "subagent_type": "test-writer",
+      "run_in_background": true
+    },
+    "tool_use_id": "toolu_01NdaGjareYEvkYZvGc8iMLj"
   }
 ]

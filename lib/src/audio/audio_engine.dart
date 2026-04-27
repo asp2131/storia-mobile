@@ -240,6 +240,8 @@ class AudioEngine {
   Stream<bool> get pronunciationPlaying =>
       _pronunciationPlayingController.stream;
 
+  Stream<Duration> get pronunciationPosition => _pronunciation.positionStream;
+
   Future<void> _waitForPronunciationSegmentToEnd(int requestId) async {
     await _pronunciation.processingStateStream.firstWhere((state) {
       if (requestId != _pronunciationRequestId) {

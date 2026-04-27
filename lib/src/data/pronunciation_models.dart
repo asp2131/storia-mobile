@@ -1,3 +1,48 @@
+enum PronunciationAudioRole { fullWord, breakdown, unknown }
+
+PronunciationAudioRole inferPronunciationAudioRole(String? url) {
+  if (url == null || url.isEmpty) {
+    return PronunciationAudioRole.unknown;
+  }
+
+  var value = url.toLowerCase();
+  try {
+    value = Uri.decodeComponent(value);
+  } catch (_) {
+    // Keep the original lowercase value if URL decoding fails.
+  }
+  if (value.contains('/pronunciations/full-word/')) {
+    return PronunciationAudioRole.fullWord;
+  }
+  if (value.contains('/pronunciations/breakdown/')) {
+    return PronunciationAudioRole.breakdown;
+  }
+  return PronunciationAudioRole.unknown;
+}
+
+({String? fullWord, String? breakdown}) normalizePronunciationUrlPair({
+  String? fullWord,
+  String? breakdown,
+}) {
+  final full = (fullWord ?? '').trim().isEmpty ? null : fullWord!.trim();
+  final br = (breakdown ?? '').trim().isEmpty ? null : breakdown!.trim();
+  final fullRole = inferPronunciationAudioRole(full);
+  final breakRole = inferPronunciationAudioRole(br);
+
+  if (fullRole == PronunciationAudioRole.breakdown &&
+      breakRole == PronunciationAudioRole.fullWord) {
+    return (fullWord: br, breakdown: full);
+  }
+  if (fullRole == PronunciationAudioRole.breakdown && br == null) {
+    return (fullWord: null, breakdown: full);
+  }
+  if (breakRole == PronunciationAudioRole.fullWord && full == null) {
+    return (fullWord: br, breakdown: null);
+  }
+
+  return (fullWord: full, breakdown: br);
+}
+
 class PronunciationAudioAsset {
   final String url;
   final int? durationMs;
@@ -5,12 +50,54 @@ class PronunciationAudioAsset {
   const PronunciationAudioAsset({required this.url, this.durationMs});
 }
 
+class PronunciationBreakdownSegment {
+  final int index;
+  final String chunk;
+  final String spoken;
+  final int? startMs;
+  final int? endMs;
+
+  const PronunciationBreakdownSegment({
+    required this.index,
+    required this.chunk,
+    required this.spoken,
+    this.startMs,
+    this.endMs,
+  });
+
+  factory PronunciationBreakdownSegment.fromJson(
+    Map<String, dynamic> json,
+    int fallbackIndex,
+  ) {
+    int? parseMs(dynamic value) => value is num ? value.round() : null;
+
+    return PronunciationBreakdownSegment(
+      index: (json['index'] as num?)?.toInt() ?? fallbackIndex,
+      chunk: json['chunk']?.toString() ?? '',
+      spoken: json['spoken']?.toString() ?? json['chunk']?.toString() ?? '',
+      startMs: parseMs(json['startMs'] ?? json['start_ms']),
+      endMs: parseMs(json['endMs'] ?? json['end_ms']),
+    );
+  }
+
+  factory PronunciationBreakdownSegment.fromLegacyString(
+    String value,
+    int index,
+  ) {
+    return PronunciationBreakdownSegment(
+      index: index,
+      chunk: value,
+      spoken: value,
+    );
+  }
+}
+
 class WordPronunciation {
   final String normalizedWord;
   final String? displayWord;
   final String? phoneticDisplay;
   final List<String> syllables;
-  final List<String>? breakdownSegments;
+  final List<PronunciationBreakdownSegment> breakdownSegments;
   final String source;
   final double? confidence;
   final bool humanReviewed;
@@ -22,7 +109,7 @@ class WordPronunciation {
     this.displayWord,
     this.phoneticDisplay,
     this.syllables = const [],
-    this.breakdownSegments,
+    this.breakdownSegments = const [],
     required this.source,
     this.confidence,
     this.humanReviewed = false,
@@ -40,12 +127,30 @@ class WordPronunciation {
         : const <String>[];
 
     final breakdownSegmentsRaw = row['breakdown_segments'];
-    final breakdownSegments = breakdownSegmentsRaw is List
-        ? breakdownSegmentsRaw
-              .map((e) => e?.toString() ?? '')
-              .where((s) => s.isNotEmpty)
-              .toList(growable: false)
-        : null;
+    final breakdownSegments = <PronunciationBreakdownSegment>[];
+    if (breakdownSegmentsRaw is List) {
+      for (var i = 0; i < breakdownSegmentsRaw.length; i++) {
+        final raw = breakdownSegmentsRaw[i];
+        final segment = switch (raw) {
+          final Map<String, dynamic> json =>
+            PronunciationBreakdownSegment.fromJson(json, i),
+          final Map<dynamic, dynamic> json =>
+            PronunciationBreakdownSegment.fromJson(
+              json.map((key, value) => MapEntry(key.toString(), value)),
+              i,
+            ),
+          final String value => PronunciationBreakdownSegment.fromLegacyString(
+            value,
+            i,
+          ),
+          _ => null,
+        };
+        if (segment != null &&
+            (segment.chunk.isNotEmpty || segment.spoken.isNotEmpty)) {
+          breakdownSegments.add(segment);
+        }
+      }
+    }
 
     PronunciationAudioAsset? assetFromUrl(dynamic url, dynamic durationMs) {
       if (url is! String || url.isEmpty) {
@@ -54,6 +159,11 @@ class WordPronunciation {
       final ms = durationMs is num ? durationMs.toInt() : null;
       return PronunciationAudioAsset(url: url, durationMs: ms);
     }
+
+    final normalizedUrls = normalizePronunciationUrlPair(
+      fullWord: row['full_word_url'] as String?,
+      breakdown: row['breakdown_url'] as String?,
+    );
 
     return WordPronunciation(
       normalizedWord: (row['normalized_word'] as String?) ?? '',
@@ -65,11 +175,11 @@ class WordPronunciation {
       confidence: (row['confidence'] as num?)?.toDouble(),
       humanReviewed: row['human_reviewed'] == true,
       breakdown: assetFromUrl(
-        row['breakdown_url'],
+        normalizedUrls.breakdown,
         row['breakdown_duration_ms'],
       ),
       fullWord: assetFromUrl(
-        row['full_word_url'],
+        normalizedUrls.fullWord,
         row['full_word_duration_ms'],
       ),
     );

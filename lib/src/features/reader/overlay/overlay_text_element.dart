@@ -83,7 +83,9 @@ class OverlayTextElement extends StatelessWidget {
 
       final index = token.globalWordIndex;
       if (onWordTap != null && index != null) {
-        Widget wordWidget = Text(token.raw, style: token.style);
+        Widget wordWidget = token.pronunciationHighlightParts.isNotEmpty
+            ? _PronunciationWordText(token: token)
+            : Text(token.raw, style: token.style);
         if (token.isTapped) {
           wordWidget = AnimatedScale(
             scale: 1.15,
@@ -110,5 +112,93 @@ class OverlayTextElement extends StatelessWidget {
     }
 
     return spans;
+  }
+}
+
+class _PronunciationWordText extends StatelessWidget {
+  const _PronunciationWordText({required this.token});
+
+  final OverlayTokenFrame token;
+
+  static const Color _activePartBackground = Color.fromRGBO(139, 92, 246, 0.9);
+  static const Color _fallbackWordBackground = Color.fromRGBO(
+    139,
+    92,
+    246,
+    0.85,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final spans = _buildSegmentSpans();
+    if (spans == null) {
+      return _fallbackText(token.raw);
+    }
+
+    // If parts exist but no active index (e.g. past grace period),
+    // show the whole word as "completed".
+    if (token.activePronunciationHighlightPartIndex == null) {
+      return _fallbackText(token.raw);
+    }
+
+    return RichText(
+      text: TextSpan(style: token.style, children: spans),
+      textScaler: MediaQuery.textScalerOf(context),
+    );
+  }
+
+  Widget _fallbackText(String text) {
+    return Text(
+      text,
+      style: token.style.copyWith(
+        backgroundColor: _fallbackWordBackground,
+        color: Colors.white,
+        fontWeight: FontWeight.w900,
+      ),
+    );
+  }
+
+  List<InlineSpan>? _buildSegmentSpans() {
+    final raw = token.raw;
+    final lowerRaw = raw.toLowerCase();
+    final parts = token.pronunciationHighlightParts;
+    var cursor = 0;
+    final spans = <InlineSpan>[];
+
+    for (var i = 0; i < parts.length; i++) {
+      final partText = parts[i].text.trim();
+      if (partText.isEmpty) {
+        continue;
+      }
+      final matchIndex = lowerRaw.indexOf(partText.toLowerCase(), cursor);
+      if (matchIndex < 0) {
+        return null;
+      }
+      if (matchIndex > cursor) {
+        // Unmatched prefix text — no background.
+        spans.add(TextSpan(text: raw.substring(cursor, matchIndex)));
+      }
+      final end = matchIndex + partText.length;
+      final isActive = i == token.activePronunciationHighlightPartIndex;
+      spans.add(
+        TextSpan(
+          text: raw.substring(matchIndex, end),
+          style: isActive
+              ? token.style.copyWith(
+                  backgroundColor: _activePartBackground,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                )
+              : token.style, // No modifications for inactive syllables.
+        ),
+      );
+      cursor = end;
+    }
+
+    if (cursor < raw.length) {
+      // Unmatched suffix text — no background.
+      spans.add(TextSpan(text: raw.substring(cursor)));
+    }
+    return spans.isEmpty ? null : spans;
   }
 }

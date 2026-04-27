@@ -127,7 +127,8 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
   }
 
   Widget _buildStandardPage() {
-    final tappedWordIndex = ref.watch(wordTtsProvider).tappedWordIndex;
+    final wordTtsState = ref.watch(wordTtsProvider);
+    final tappedWordIndex = wordTtsState.tappedWordIndex;
     final page = widget.page;
     final hasOverlay =
         page.overlay != null && page.overlay!.elements.isNotEmpty;
@@ -171,6 +172,9 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
                     spokenWordIndices: widget.spokenWordIndices,
                     isActive: widget.isActive,
                     tappedWordIndex: tappedWordIndex,
+                    tappedWordHighlightParts: wordTtsState.highlightParts,
+                    activeTappedWordHighlightPartIndex:
+                        wordTtsState.activeHighlightPartIndex,
                   ),
                   onWordTap: widget.onWordTap,
                   onWordLongPress: widget.onWordLongPress,

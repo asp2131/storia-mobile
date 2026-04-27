@@ -89,6 +89,15 @@ class ReaderSessionImpl implements ReaderSession {
       _emit(_state.copyWith(soundscapeVolume: intent.volume));
       return;
     }
+    if (intent is ReaderPauseListening) {
+      await _speechPort.stopListening();
+      _emit(_state.copyWith(isListening: false));
+      return;
+    }
+    if (intent is ReaderResumeListening) {
+      await _startListening();
+      return;
+    }
     if (intent is ReaderPracticePrimaryAction) {
       await _handlePracticePrimaryAction();
       return;

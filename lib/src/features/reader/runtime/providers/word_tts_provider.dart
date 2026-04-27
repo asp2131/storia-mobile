@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../audio/audio_providers.dart';
+import '../../../../data/pronunciation_models.dart';
 import '../../../../data/providers.dart';
+import '../../pronunciation_highlight.dart';
 import '../reader_session.dart';
 import '../reader_intent.dart';
 import '../reader_view_state.dart';
@@ -11,9 +13,32 @@ import '../services/word_tts_service.dart';
 import 'reader_session_provider.dart';
 
 class WordTtsState {
-  const WordTtsState({this.tappedWordIndex});
+  const WordTtsState({
+    this.tappedWordIndex,
+    this.highlightParts = const [],
+    this.activeHighlightPartIndex,
+  });
+
   final int? tappedWordIndex;
+  final List<PronunciationHighlightPart> highlightParts;
+  final int? activeHighlightPartIndex;
+
+  WordTtsState copyWith({
+    int? tappedWordIndex,
+    List<PronunciationHighlightPart>? highlightParts,
+    Object? activeHighlightPartIndex = _sentinel,
+  }) {
+    return WordTtsState(
+      tappedWordIndex: tappedWordIndex ?? this.tappedWordIndex,
+      highlightParts: highlightParts ?? this.highlightParts,
+      activeHighlightPartIndex: activeHighlightPartIndex == _sentinel
+          ? this.activeHighlightPartIndex
+          : activeHighlightPartIndex as int?,
+    );
+  }
 }
+
+const Object _sentinel = Object();
 
 final wordTtsServiceProvider = Provider<WordTtsService>((ref) {
   final service = WordTtsService();
@@ -45,6 +70,10 @@ final wordTtsProvider = StateNotifierProvider<WordTtsNotifier, WordTtsState>((
 });
 
 class WordTtsNotifier extends StateNotifier<WordTtsState> {
+  static const int _fallbackPartDurationMs = 650;
+  static const int _timedHighlightGraceMs = 350;
+  static const int _minPartDurationMs = 100;
+
   WordTtsNotifier({
     required WordTtsService service,
     required PronunciationPlaybackService pronunciation,
@@ -66,6 +95,7 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
   bool _wasListening = false;
   StreamSubscription<ReaderViewState>? _stateSubscription;
   StreamSubscription<int>? _pageChangeSubscription;
+  StreamSubscription<Duration>? _pronunciationPositionSubscription;
   ReaderViewState _lastState = const ReaderViewState.initial();
 
   /// Monotonically increasing identifier for the in-flight long-press flow.
@@ -84,6 +114,9 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
 
   /// `true` between `capturing` and `restoring` phases of an active long-press.
   bool _flowActive = false;
+
+  int _lastPronunciationPositionMs = 0;
+  bool _pronunciationBreakdownFinished = false;
 
   String _bookId = '';
 
@@ -130,16 +163,18 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
     }
   }
 
-  void _onPageChanged() {
+  Future<void> _onPageChanged() async {
     if (!_flowActive) {
       return;
     }
+    await _restoreCapturedAudio();
     _flowId++;
     _flowActive = false;
     _userOverride = true;
     _clearExpectedTransitions();
-    _pronunciation.stop();
-    _service.stop();
+    _stopPronunciationPositionTracking();
+    await _pronunciation.stop();
+    await _service.stop();
     if (state.tappedWordIndex != null) {
       state = const WordTtsState();
     }
@@ -156,35 +191,52 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
 
     await _service.stop();
     await _pronunciation.stop();
+    _stopPronunciationPositionTracking();
     state = WordTtsState(tappedWordIndex: globalIndex);
 
-    await _captureAndPause();
-    if (flowId != _flowId) {
-      return;
-    }
+    try {
+      await _captureAndPause();
+      if (flowId != _flowId) {
+        return;
+      }
 
-    final outcome = await _pronunciation.tryPlayBreakdownFor(
-      rawWord: word,
-      bookId: _bookId,
-    );
-    if (flowId != _flowId) {
-      return;
-    }
+      final outcome = await _pronunciation.tryPlayBreakdownFor(
+        rawWord: word,
+        bookId: _bookId,
+        onPlaybackReady: (plan) {
+          if (flowId == _flowId) {
+            _startPronunciationHighlightTracking(globalIndex, plan);
+          }
+        },
+      );
+      if (flowId != _flowId) {
+        return;
+      }
 
-    if (outcome == PronunciationOutcome.fallback ||
-        outcome == PronunciationOutcome.error) {
-      await _service.speak(word);
-    }
+      if (outcome == PronunciationOutcome.fallback ||
+          outcome == PronunciationOutcome.error) {
+        await _service.speak(word);
+      }
 
-    if (flowId == _flowId && state.tappedWordIndex == globalIndex) {
-      state = const WordTtsState();
-    }
+      _stopPronunciationPositionTracking();
+      if (flowId == _flowId && state.tappedWordIndex == globalIndex) {
+        state = const WordTtsState();
+      }
 
-    if (flowId == _flowId) {
-      await _restoreIfNeeded();
-    }
-    if (flowId == _flowId) {
-      _flowActive = false;
+      if (flowId == _flowId) {
+        await _restoreIfNeeded();
+      }
+    } finally {
+      if (flowId == _flowId) {
+        _stopPronunciationPositionTracking();
+        await _pronunciation.stop();
+        await _service.stop();
+        if (state.tappedWordIndex == globalIndex) {
+          state = const WordTtsState();
+        }
+        await _restoreIfNeeded();
+        _flowActive = false;
+      }
     }
   }
 
@@ -198,36 +250,359 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
 
     await _service.stop();
     await _pronunciation.stop();
+    _stopPronunciationPositionTracking();
     state = WordTtsState(tappedWordIndex: globalIndex);
 
-    await _captureAndPause();
-    if (flowId != _flowId) {
+    try {
+      await _captureAndPause();
+      if (flowId != _flowId) {
+        return;
+      }
+
+      final outcome = await _pronunciation.tryPlayBreakdownFor(
+        rawWord: word,
+        bookId: _bookId,
+        onPlaybackReady: (plan) {
+          if (flowId == _flowId) {
+            _startPronunciationHighlightTracking(globalIndex, plan);
+          }
+        },
+      );
+      if (flowId != _flowId) {
+        return;
+      }
+
+      if (outcome == PronunciationOutcome.fallback ||
+          outcome == PronunciationOutcome.error) {
+        await _service.soundOut(word);
+      }
+
+      _stopPronunciationPositionTracking();
+      if (flowId == _flowId && state.tappedWordIndex == globalIndex) {
+        state = const WordTtsState();
+      }
+
+      if (flowId == _flowId) {
+        await _restoreIfNeeded();
+      }
+    } finally {
+      if (flowId == _flowId) {
+        _stopPronunciationPositionTracking();
+        await _pronunciation.stop();
+        await _service.stop();
+        if (state.tappedWordIndex == globalIndex) {
+          state = const WordTtsState();
+        }
+        await _restoreIfNeeded();
+        _flowActive = false;
+      }
+    }
+  }
+
+  void _startPronunciationHighlightTracking(
+    int globalIndex,
+    PronunciationPlaybackPlan plan,
+  ) {
+    if (!plan.includesBreakdown) {
+      state = WordTtsState(tappedWordIndex: globalIndex);
       return;
     }
 
-    final outcome = await _pronunciation.tryPlayBreakdownFor(
-      rawWord: word,
-      bookId: _bookId,
+    final parts = _buildHighlightParts(plan);
+    if (parts.isEmpty) {
+      state = WordTtsState(tappedWordIndex: globalIndex);
+      return;
+    }
+
+    _lastPronunciationPositionMs = 0;
+    _pronunciationBreakdownFinished = false;
+    state = WordTtsState(
+      tappedWordIndex: globalIndex,
+      highlightParts: parts,
+      activeHighlightPartIndex: 0,
     );
-    if (flowId != _flowId) {
+
+    _pronunciationPositionSubscription?.cancel();
+    _pronunciationPositionSubscription = _pronunciation.pronunciationPosition
+        .listen((position) {
+          if (state.tappedWordIndex != globalIndex ||
+              state.highlightParts.isEmpty ||
+              _pronunciationBreakdownFinished) {
+            return;
+          }
+          final positionMs = position.inMilliseconds;
+          final resetToNextClip =
+              positionMs + 100 < _lastPronunciationPositionMs;
+          _lastPronunciationPositionMs = positionMs;
+
+          if (resetToNextClip) {
+            _pronunciationBreakdownFinished = true;
+            state = WordTtsState(tappedWordIndex: globalIndex);
+            return;
+          }
+
+          final activeIndex = _activeHighlightPartIndexFor(
+            positionMs,
+            state.highlightParts,
+          );
+          _setActiveHighlightPart(activeIndex);
+        });
+  }
+
+  List<PronunciationHighlightPart> _buildHighlightParts(
+    PronunciationPlaybackPlan plan,
+  ) {
+    final entry = plan.entry;
+    final rawSegments = entry.breakdownSegments;
+    final syllables = entry.syllables
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList(growable: false);
+
+    final segmentChunks = rawSegments
+        .map(
+          (s) => s.chunk.trim().isNotEmpty ? s.chunk.trim() : s.spoken.trim(),
+        )
+        .where((s) => s.isNotEmpty)
+        .toList(growable: false);
+
+    // Visual highlighting is syllable-first. The rich metadata spec stores
+    // orthographic syllables separately from spoken breakdown chunks, and they
+    // do not always have a 1:1 count (e.g. "inside" may have syllables
+    // ["in", "side"] even if the breakdown timing arrives as one segment).
+    final labels = syllables.isNotEmpty ? syllables : segmentChunks;
+
+    if (labels.isEmpty) {
+      return const [];
+    }
+
+    // Normalize segments so missing startMs is inferred from previous endMs.
+    final timedSegments = _normalizeSegments(rawSegments);
+
+    // Prefer the actual audio duration over a hardcoded heuristic.
+    final totalDurationMs = entry.breakdown?.durationMs ??
+        _inferTotalDurationFromSegments(timedSegments) ??
+        labels.length * _fallbackPartDurationMs;
+
+    return [
+      for (var i = 0; i < labels.length; i++)
+        PronunciationHighlightPart(
+          text: labels[i],
+          startMs: _startMsForPart(
+            index: i,
+            partCount: labels.length,
+            timedSegments: timedSegments,
+            totalDurationMs: totalDurationMs,
+          ),
+          endMs: _endMsForPart(
+            index: i,
+            partCount: labels.length,
+            timedSegments: timedSegments,
+            totalDurationMs: totalDurationMs,
+          ),
+        ),
+    ];
+  }
+
+  /// Fills in missing startMs values by chaining from the previous segment's
+  /// endMs (or 0 for the first segment). This handles the common case where
+  /// the database stores only endMs boundaries.
+  List<PronunciationBreakdownSegment> _normalizeSegments(
+    List<PronunciationBreakdownSegment> segments,
+  ) {
+    if (segments.isEmpty) return segments;
+
+    final normalized = <PronunciationBreakdownSegment>[];
+    for (var i = 0; i < segments.length; i++) {
+      final seg = segments[i];
+      var start = seg.startMs;
+      var end = seg.endMs;
+
+      // Infer startMs from previous segment's endMs or 0.
+      if (start == null && end != null) {
+        start = i > 0 && normalized[i - 1].endMs != null
+            ? normalized[i - 1].endMs
+            : 0;
+      }
+
+      // Infer endMs from next segment's startMs when available.
+      if (end == null && start != null) {
+        end = i + 1 < segments.length && segments[i + 1].startMs != null
+            ? segments[i + 1].startMs
+            : start + _fallbackPartDurationMs;
+      }
+
+      normalized.add(
+        PronunciationBreakdownSegment(
+          index: seg.index,
+          chunk: seg.chunk,
+          spoken: seg.spoken,
+          startMs: start,
+          endMs: end,
+        ),
+      );
+    }
+    return normalized;
+  }
+
+  int? _inferTotalDurationFromSegments(
+    List<PronunciationBreakdownSegment> segments,
+  ) {
+    final ends = segments
+        .map((s) => s.endMs)
+        .whereType<int>()
+        .toList(growable: false);
+    if (ends.isEmpty) return null;
+    return ends.reduce((a, b) => a > b ? a : b);
+  }
+
+  int _startMsForPart({
+    required int index,
+    required int partCount,
+    required List<PronunciationBreakdownSegment> timedSegments,
+    required int totalDurationMs,
+  }) {
+    if (timedSegments.length == partCount &&
+        timedSegments[index].startMs != null) {
+      return timedSegments[index].startMs!;
+    }
+
+    final distributed = _distributedMsForPart(
+      index: index,
+      partCount: partCount,
+      timedSegments: timedSegments,
+      totalDurationMs: totalDurationMs,
+      isEnd: false,
+    );
+    return distributed ?? index * (totalDurationMs ~/ partCount);
+  }
+
+  int _endMsForPart({
+    required int index,
+    required int partCount,
+    required List<PronunciationBreakdownSegment> timedSegments,
+    required int totalDurationMs,
+  }) {
+    if (timedSegments.length == partCount &&
+        timedSegments[index].endMs != null) {
+      final end = timedSegments[index].endMs!;
+      final start = _startMsForPart(
+        index: index,
+        partCount: partCount,
+        timedSegments: timedSegments,
+        totalDurationMs: totalDurationMs,
+      );
+      // Enforce a minimum duration so zero-length segments don't flash.
+      return end > start ? end : start + _minPartDurationMs;
+    }
+
+    final distributed = _distributedMsForPart(
+      index: index,
+      partCount: partCount,
+      timedSegments: timedSegments,
+      totalDurationMs: totalDurationMs,
+      isEnd: true,
+    );
+    return distributed ?? (index + 1) * (totalDurationMs ~/ partCount);
+  }
+
+  int? _distributedMsForPart({
+    required int index,
+    required int partCount,
+    required List<PronunciationBreakdownSegment> timedSegments,
+    required int totalDurationMs,
+    required bool isEnd,
+  }) {
+    if (partCount <= 0 || timedSegments.isEmpty) {
+      return null;
+    }
+
+    // Collect segments that have at least one timing anchor.
+    final anchored = timedSegments
+        .where((s) => s.startMs != null || s.endMs != null)
+        .toList(growable: false);
+    if (anchored.isEmpty) {
+      return null;
+    }
+
+    final starts = anchored
+        .map((segment) => segment.startMs)
+        .whereType<int>()
+        .toList(growable: false);
+    final ends = anchored
+        .map((segment) => segment.endMs)
+        .whereType<int>()
+        .toList(growable: false);
+
+    // Use the actual span of timed data, or fall back to the audio duration.
+    final start = starts.isNotEmpty
+        ? starts.reduce((a, b) => a < b ? a : b)
+        : 0;
+    final end = ends.isNotEmpty
+        ? ends.reduce((a, b) => a > b ? a : b)
+        : totalDurationMs;
+
+    if (end <= start) {
+      return null;
+    }
+
+    final ratioIndex = isEnd ? index + 1 : index;
+    return start + (((end - start) * ratioIndex) / partCount).round();
+  }
+
+  int? _lastTimedEndMs(List<PronunciationHighlightPart> parts) {
+    final timedEnds = parts
+        .where((part) => part.hasTiming)
+        .map((part) => part.endMs!)
+        .toList(growable: false);
+    if (timedEnds.isEmpty) {
+      return null;
+    }
+    return timedEnds.reduce((a, b) => a > b ? a : b);
+  }
+
+  int? _activeHighlightPartIndexFor(
+    int positionMs,
+    List<PronunciationHighlightPart> parts,
+  ) {
+    final lastEnd = _lastTimedEndMs(parts);
+    if (lastEnd != null && positionMs > lastEnd + _timedHighlightGraceMs) {
+      return null;
+    }
+
+    var latestStarted = 0;
+    for (var i = 0; i < parts.length; i++) {
+      final part = parts[i];
+      final start = part.startMs;
+      final end = part.endMs;
+      if (start == null || end == null) {
+        continue;
+      }
+      if (positionMs >= start && positionMs <= end) {
+        return i;
+      }
+      if (positionMs >= start) {
+        latestStarted = i;
+      }
+      if (positionMs < start) {
+        return latestStarted;
+      }
+    }
+    return latestStarted;
+  }
+
+  void _setActiveHighlightPart(int? activeIndex) {
+    if (state.activeHighlightPartIndex == activeIndex) {
       return;
     }
+    state = state.copyWith(activeHighlightPartIndex: activeIndex);
+  }
 
-    if (outcome == PronunciationOutcome.fallback ||
-        outcome == PronunciationOutcome.error) {
-      await _service.soundOut(word);
-    }
-
-    if (flowId == _flowId && state.tappedWordIndex == globalIndex) {
-      state = const WordTtsState();
-    }
-
-    if (flowId == _flowId) {
-      await _restoreIfNeeded();
-    }
-    if (flowId == _flowId) {
-      _flowActive = false;
-    }
+  void _stopPronunciationPositionTracking() {
+    _pronunciationPositionSubscription?.cancel();
+    _pronunciationPositionSubscription = null;
+    _lastPronunciationPositionMs = 0;
+    _pronunciationBreakdownFinished = false;
   }
 
   Future<void> _captureAndPause() async {
@@ -242,19 +617,13 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
     _wasListening = _lastState.isListening;
     if (_wasListening) {
       await _dispatchExpecting(
-        const ReaderPracticePrimaryAction(),
+        const ReaderPauseListening(),
         listeningTransition: true,
       );
     }
   }
 
-  Future<void> _restoreIfNeeded() async {
-    if (_userOverride) {
-      _wasNarrationPlaying = false;
-      _wasListening = false;
-      return;
-    }
-
+  Future<void> _restoreCapturedAudio() async {
     if (_wasNarrationPlaying && !_lastState.isNarrationPlaying) {
       await _dispatchExpecting(
         const ReaderToggleNarration(),
@@ -265,11 +634,21 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
 
     if (_wasListening && !_lastState.isListening) {
       await _dispatchExpecting(
-        const ReaderPracticePrimaryAction(),
+        const ReaderResumeListening(),
         listeningTransition: true,
       );
       _wasListening = false;
     }
+  }
+
+  Future<void> _restoreIfNeeded() async {
+    if (_userOverride) {
+      _wasNarrationPlaying = false;
+      _wasListening = false;
+      return;
+    }
+
+    await _restoreCapturedAudio();
   }
 
   Future<void> _dispatchExpecting(
@@ -295,6 +674,7 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
   void dispose() {
     _stateSubscription?.cancel();
     _pageChangeSubscription?.cancel();
+    _pronunciationPositionSubscription?.cancel();
     super.dispose();
   }
 }

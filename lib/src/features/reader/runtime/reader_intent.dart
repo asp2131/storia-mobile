@@ -45,6 +45,14 @@ final class ReaderPracticePrimaryAction extends ReaderIntent {
   const ReaderPracticePrimaryAction();
 }
 
+final class ReaderPauseListening extends ReaderIntent {
+  const ReaderPauseListening();
+}
+
+final class ReaderResumeListening extends ReaderIntent {
+  const ReaderResumeListening();
+}
+
 final class ReaderAckCelebration extends ReaderIntent {
   const ReaderAckCelebration();
 }

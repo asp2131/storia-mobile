@@ -34,5 +34,50 @@
     "agent_id": "ac395c1e1f627e5dd",
     "agent_type": "Explore",
     "logged_at": "2026-02-24T21:40:36.317898"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "agent_id": "ac350c3ffa4a9f251",
+    "agent_type": "Explore",
+    "hook_event_name": "SubagentStart",
+    "logged_at": "2026-04-27T13:14:17.703294"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "agent_id": "a2c1359999c606f87",
+    "agent_type": "Explore",
+    "hook_event_name": "SubagentStart",
+    "logged_at": "2026-04-27T13:14:32.436917"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "agent_id": "afd1a72326e0dce4e",
+    "agent_type": "Explore",
+    "hook_event_name": "SubagentStart",
+    "logged_at": "2026-04-27T13:14:47.089317"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "agent_id": "a412f9e59d0324540",
+    "agent_type": "builder",
+    "hook_event_name": "SubagentStart",
+    "logged_at": "2026-04-27T13:19:50.001682"
+  },
+  {
+    "session_id": "f2c84715-a2c8-41ee-a8f2-654b89152b25",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/f2c84715-a2c8-41ee-a8f2-654b89152b25.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "agent_id": "a70c4f47850d73e99",
+    "agent_type": "test-writer",
+    "hook_event_name": "SubagentStart",
+    "logged_at": "2026-04-27T13:20:16.539310"
   }
 ]

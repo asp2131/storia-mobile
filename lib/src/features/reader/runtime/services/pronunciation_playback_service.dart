@@ -21,6 +21,18 @@ enum PronunciationOutcome {
   error,
 }
 
+class PronunciationPlaybackPlan {
+  const PronunciationPlaybackPlan({
+    required this.entry,
+    required this.urls,
+    required this.includesBreakdown,
+  });
+
+  final WordPronunciation entry;
+  final List<String> urls;
+  final bool includesBreakdown;
+}
+
 /// Owns the manifest-first long-press playback path. Has no UI state of its
 /// own — orchestration of highlight + narration capture/restore lives in
 /// `WordTtsNotifier`.
@@ -31,6 +43,7 @@ class PronunciationPlaybackService {
   }) : this.withPlaybackCallbacks(
          playPronunciationSequence: audioEngine.playPronunciationSequence,
          stopPronunciation: audioEngine.stopPronunciation,
+         pronunciationPosition: audioEngine.pronunciationPosition,
          repository: repository,
        );
 
@@ -38,19 +51,25 @@ class PronunciationPlaybackService {
     required Future<void> Function(List<String> urls) playPronunciationSequence,
     required Future<void> Function() stopPronunciation,
     required PronunciationRepository repository,
+    Stream<Duration>? pronunciationPosition,
   }) : _playPronunciationSequence = playPronunciationSequence,
        _stopPronunciation = stopPronunciation,
-       _repository = repository;
+       _repository = repository,
+       _pronunciationPosition = pronunciationPosition ?? const Stream.empty();
 
   final Future<void> Function(List<String> urls) _playPronunciationSequence;
   final Future<void> Function() _stopPronunciation;
   final PronunciationRepository _repository;
+  final Stream<Duration> _pronunciationPosition;
+
+  Stream<Duration> get pronunciationPosition => _pronunciationPosition;
 
   /// Resolves `rawWord` against the manifest for `bookId` and plays the
   /// breakdown → fullWord sequence on the dedicated pronunciation channel.
   Future<PronunciationOutcome> tryPlayBreakdownFor({
     required String rawWord,
     required String bookId,
+    void Function(PronunciationPlaybackPlan plan)? onPlaybackReady,
   }) async {
     final normalized = normalizeWordToken(rawWord);
     if (normalized == null) {
@@ -58,7 +77,9 @@ class PronunciationPlaybackService {
       return PronunciationOutcome.fallback;
     }
     if (bookId.isEmpty) {
-      debugPrint('[Pronunciation] bookId empty for word=$normalized → fallback');
+      debugPrint(
+        '[Pronunciation] bookId empty for word=$normalized → fallback',
+      );
       return PronunciationOutcome.fallback;
     }
 
@@ -86,10 +107,12 @@ class PronunciationPlaybackService {
     }
 
     final urls = <String>[];
+    var includesBreakdown = false;
     final breakdownUrl = entry.breakdown?.url;
     final fullWordUrl = entry.fullWord?.url;
     if (breakdownUrl != null && breakdownUrl.isNotEmpty) {
       urls.add(breakdownUrl);
+      includesBreakdown = true;
     }
     if (fullWordUrl != null && fullWordUrl.isNotEmpty) {
       urls.add(fullWordUrl);
@@ -101,10 +124,15 @@ class PronunciationPlaybackService {
       return PronunciationOutcome.fallback;
     }
 
+    final plan = PronunciationPlaybackPlan(
+      entry: entry,
+      urls: List.unmodifiable(urls),
+      includesBreakdown: includesBreakdown,
+    );
+    onPlaybackReady?.call(plan);
+
     try {
-      debugPrint(
-        '[Pronunciation] playing "$normalized" urls=${urls.length}',
-      );
+      debugPrint('[Pronunciation] playing "$normalized" urls=${urls.length}');
       await _playPronunciationSequence(urls);
       return PronunciationOutcome.played;
     } catch (e) {
