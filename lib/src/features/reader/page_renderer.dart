@@ -25,7 +25,6 @@ const double _kTextParallax = 1.0;
 class PageRenderer extends ConsumerStatefulWidget {
   final PageData page;
   final int pageIndex;
-  final String? coverUrl;
   final ValueListenable<double>? scrollOffsetListenable;
   final Duration narrationPosition;
   final bool isActive;
@@ -38,7 +37,6 @@ class PageRenderer extends ConsumerStatefulWidget {
     super.key,
     required this.page,
     this.pageIndex = 0,
-    this.coverUrl,
     this.scrollOffsetListenable,
     required this.narrationPosition,
     required this.isActive,
@@ -115,16 +113,7 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
       scrollOffset - widget.pageIndex;
 
   @override
-  Widget build(BuildContext context) {
-    final isCoverPage =
-        widget.pageIndex == 0 && (widget.coverUrl ?? '').isNotEmpty;
-
-    if (isCoverPage) {
-      return _buildCoverPage();
-    }
-
-    return _buildStandardPage();
-  }
+  Widget build(BuildContext context) => _buildStandardPage();
 
   Widget _buildStandardPage() {
     final wordTtsState = ref.watch(wordTtsProvider);
@@ -334,78 +323,4 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
     return Hero(tag: heroTag, child: image);
   }
 
-  // ===========================================================================
-  // Sticky cover (Feature 5)
-  //
-  // Only applies to pageIndex == 0 when the book has a cover URL. As the user
-  // drags from page 0 toward page 1, the cover image pins and fades, and the
-  // title collapses from large-centered to a compact top header.
-  // ===========================================================================
-  Widget _buildCoverPage() {
-    final listenable = widget.scrollOffsetListenable;
-    final coverUrl = widget.coverUrl ?? '';
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final coverImage = Image(
-          image: CachedNetworkImageProvider(
-            coverUrl,
-            cacheManager: ResilientCacheManager.instance,
-          ),
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        );
-        final heroTag = widget.heroTag;
-        final heroWrapped = heroTag != null
-            ? Hero(tag: heroTag, child: coverImage)
-            : coverImage;
-
-        if (listenable == null) {
-          return Stack(
-            fit: StackFit.expand,
-            children: [heroWrapped, _coverGradient()],
-          );
-        }
-
-        return ValueListenableBuilder<double>(
-          valueListenable: listenable,
-          builder: (context, scrollOffset, _) {
-            final localOffset = _localOffsetFor(scrollOffset).clamp(0.0, 1.0);
-            // Cover scales slightly and fades as user scrolls past it.
-            final scale = 1.0 - localOffset * 0.04;
-            final coverOpacity = 1.0 - localOffset * 0.35;
-
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                Opacity(
-                  opacity: coverOpacity,
-                  child: Transform.scale(scale: scale, child: heroWrapped),
-                ),
-                _coverGradient(),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _coverGradient() {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color.fromRGBO(0, 0, 0, 0.25),
-            Colors.transparent,
-            Color.fromRGBO(0, 0, 0, 0.55),
-          ],
-          stops: [0.0, 0.45, 1.0],
-        ),
-      ),
-    );
-  }
 }

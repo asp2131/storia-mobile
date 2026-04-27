@@ -218,10 +218,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     }
 
                     final page = book.pages[index];
-                    final heroTag =
-                        index == 0 && (book.coverUrl ?? '').isNotEmpty
-                        ? 'book-cover-${book.id}'
-                        : null;
 
                     final pageRenderer = ValueListenableBuilder<Duration>(
                       valueListenable: _narrationPositionNotifier,
@@ -229,11 +225,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         return PageRenderer(
                           page: page,
                           pageIndex: index,
-                          coverUrl: book.coverUrl,
                           scrollOffsetListenable: _scrollOffsetNotifier,
                           narrationPosition: narrationPosition,
                           isActive: index == activeIndex,
-                          heroTag: heroTag,
                           spokenWordIndices: _runtimeState.spokenWordIndices,
                           onWordTap: (word, globalIndex) {
                             ref
