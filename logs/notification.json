@@ -54,5 +54,21 @@
     "hook_event_name": "Notification",
     "message": "Claude needs your permission to use Bash",
     "notification_type": "permission_prompt"
+  },
+  {
+    "session_id": "279d5369-3288-449f-a4f1-11363ae8a6d9",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/279d5369-3288-449f-a4f1-11363ae8a6d9.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "Notification",
+    "message": "Claude Code login successful",
+    "notification_type": "auth_success"
+  },
+  {
+    "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input",
+    "notification_type": "idle_prompt"
   }
 ]

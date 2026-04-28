@@ -6,5 +6,29 @@
     "hook_event_name": "SessionStart",
     "source": "startup",
     "model": "claude-sonnet-4-6"
+  },
+  {
+    "session_id": "640c3cb1-59cd-4652-9256-a8eca60b731f",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/640c3cb1-59cd-4652-9256-a8eca60b731f.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionStart",
+    "source": "startup",
+    "model": "claude-opus-4-7"
+  },
+  {
+    "session_id": "279d5369-3288-449f-a4f1-11363ae8a6d9",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/279d5369-3288-449f-a4f1-11363ae8a6d9.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionStart",
+    "source": "startup",
+    "model": "claude-opus-4-7"
+  },
+  {
+    "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "hook_event_name": "SessionStart",
+    "source": "startup",
+    "model": "claude-opus-4-7"
   }
 ]

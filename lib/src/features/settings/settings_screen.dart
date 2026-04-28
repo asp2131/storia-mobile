@@ -7,6 +7,7 @@ import '../../core/widgets/parental_gate.dart';
 import '../auth/data/auth_providers.dart';
 import '../auth/data/auth_repository.dart';
 import '../auth/domain/auth_state.dart';
+import '../child/data/child_profile_providers.dart';
 import '../onboarding/data/app_review_flow_providers.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -25,10 +26,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final activeProfile = ref.watch(activeChildProfileProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
+          const ListTile(
+            title: Text('Reader'),
+            subtitle: Text('Child profile used for progress and analytics'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.child_care_rounded),
+            title: const Text('Active Reader'),
+            subtitle: Text(
+              activeProfile.when(
+                data: (profile) => profile?.displayName ?? 'Choose a reader',
+                loading: () => 'Loading reader…',
+                error: (_, _) => 'Could not load reader',
+              ),
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => context.push('/profiles/select'),
+          ),
+          const Divider(height: 32),
           const ListTile(
             title: Text('Legal'),
             subtitle: Text('Privacy and terms'),
@@ -100,6 +121,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     try {
       if (authState.isAuthenticated) {
+        await ref
+            .read(activeChildProfileIdStateProvider.notifier)
+            .setActiveChildProfileId(null);
         await repository.signOut();
       }
       await reviewFlowNotifier.clearReviewFlow();

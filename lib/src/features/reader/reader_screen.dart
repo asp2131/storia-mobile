@@ -31,7 +31,8 @@ class ReaderScreen extends ConsumerStatefulWidget {
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
 }
 
-class _ReaderScreenState extends ConsumerState<ReaderScreen> {
+class _ReaderScreenState extends ConsumerState<ReaderScreen>
+    with WidgetsBindingObserver {
   final PageController _pageController = PageController();
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
   final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
@@ -47,10 +48,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   ReaderViewState _runtimeState = const ReaderViewState.initial();
   String? _initializedBookId;
   String? _preloadedManifestBookId;
+  bool _endedForLifecycle = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _session = ref.read(readerSessionProvider);
     _sessionSubscription = _session.states.listen(_onRuntimeStateChanged);
 
@@ -139,7 +142,24 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _endedForLifecycle = true;
+      unawaited(_session.dispatch(ReaderEnd(reason: 'app_${state.name}')));
+    } else if (state == AppLifecycleState.resumed && _endedForLifecycle) {
+      _endedForLifecycle = false;
+      _initializedBookId = null;
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_session.dispatch(const ReaderEnd(reason: 'screen_dispose')));
     _sessionSubscription?.cancel();
     _showChromeNotifier.dispose();
     _narrationPositionNotifier.dispose();
@@ -174,7 +194,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 return;
               }
               ref.read(wordTtsProvider.notifier).setBookId(book.id);
-              unawaited(_session.dispatch(ReaderStart(book: book)));
+              unawaited(
+                _session.dispatch(
+                  ReaderStart(
+                    book: book,
+                    initialPageIndex: _runtimeState.activePageIndex,
+                  ),
+                ),
+              );
             });
           }
 

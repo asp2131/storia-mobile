@@ -110,5 +110,53 @@
     "permission_mode": "default",
     "hook_event_name": "UserPromptSubmit",
     "prompt": "use an agent team to  fix the four SEV-1/2 above and add one      \n  integration smoke test that hit a real manifest entry."
+  },
+  {
+    "session_id": "279d5369-3288-449f-a4f1-11363ae8a6d9",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/279d5369-3288-449f-a4f1-11363ae8a6d9.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "we already have a table to save analytics. my business partner reallys wants anayalitcs on which books are being rrad tbr most and which sound features/along with which pages our users interact with the most. what are two other datapoints are important to capture to literacry/speech development metrics"
+  },
+  {
+    "session_id": "279d5369-3288-449f-a4f1-11363ae8a6d9",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/279d5369-3288-449f-a4f1-11363ae8a6d9.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "we already have a table to save analytics. my business partner reallys wants anayalitcs on which books are being rrad tbr most and which sound features/along with which pages our users interact with the most. what are two other datapoints are important to capture to literacry/speech development metrics"
+  },
+  {
+    "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "audit codex's work on adding analytics that can be saved to our supabase db. schema is here @../storia/prisma/schema.prisma"
+  },
+  {
+    "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "launch an agent teams on:\n\n  1. Fix auth strategy (Supabase vs Better Auth) \u2014 block merge.\n  2. Wire child-profile resolver before shipping \u2014 block functional value.\n  3. Confirm backend /api/analytics/events exists and matches payload.\n  4. Add batching/retry \u2014 fast-follow."
+  },
+  {
+    "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "#4"
+  },
+  {
+    "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "just do it yourself"
   }
 ]

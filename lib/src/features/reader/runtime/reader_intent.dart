@@ -17,12 +17,18 @@ final class ReaderGoToPage extends ReaderIntent {
   final int pageIndex;
 }
 
+enum ReaderIntentSource { user, runtime }
+
 final class ReaderToggleNarration extends ReaderIntent {
-  const ReaderToggleNarration();
+  const ReaderToggleNarration({this.source = ReaderIntentSource.user});
+
+  final ReaderIntentSource source;
 }
 
 final class ReaderToggleSoundscape extends ReaderIntent {
-  const ReaderToggleSoundscape();
+  const ReaderToggleSoundscape({this.source = ReaderIntentSource.user});
+
+  final ReaderIntentSource source;
 }
 
 final class ReaderSetNarrationVolume extends ReaderIntent {
@@ -55,4 +61,10 @@ final class ReaderResumeListening extends ReaderIntent {
 
 final class ReaderAckCelebration extends ReaderIntent {
   const ReaderAckCelebration();
+}
+
+final class ReaderEnd extends ReaderIntent {
+  const ReaderEnd({this.reason = 'dispose'});
+
+  final String reason;
 }

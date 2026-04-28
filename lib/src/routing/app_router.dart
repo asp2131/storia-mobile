@@ -7,6 +7,9 @@ import '../features/auth/presentation/auth_gate.dart';
 import '../features/auth/presentation/intro_screen.dart';
 import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/sign_up_screen.dart';
+import '../features/child/data/child_profile_providers.dart';
+import '../features/child/presentation/add_child_screen.dart';
+import '../features/child/presentation/profile_picker_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/onboarding/data/app_review_flow_providers.dart';
 import '../features/onboarding/presentation/parent_birth_year_screen.dart';
@@ -19,10 +22,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authViewStateProvider);
   final appReviewNotifier = ref.watch(appReviewFlowNotifierProvider);
   final appReviewState = ref.watch(appReviewFlowProvider);
+  final childProfileNotifier = ref.watch(childProfileRouterRefreshProvider);
+  final activeChildProfileState = ref.watch(activeChildProfileIdStateProvider);
 
   return GoRouter(
     initialLocation: '/',
-    refreshListenable: Listenable.merge([authNotifier, appReviewNotifier]),
+    refreshListenable: Listenable.merge([
+      authNotifier,
+      appReviewNotifier,
+      childProfileNotifier,
+    ]),
     redirect: (context, state) {
       final isAuthenticated =
           authState.isAuthenticated || appReviewState.hasReviewBypass;
@@ -34,6 +43,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           !appReviewState.hasCompletedOnboarding;
       final location = state.matchedLocation;
       const publicLocations = {'/', '/intro', '/sign-in', '/sign-up'};
+      const profilePickerLocation = '/profiles/select';
+      const addProfileLocation = '/profiles/new';
+      final isProfilePicker = location == profilePickerLocation;
+      final isAddProfile = location == addProfileLocation;
+      final requiresBackendProfile = authState.isAuthenticated;
+      final hasLoadedProfileSelection = activeChildProfileState.hasValue;
+      final hasActiveChildProfile =
+          activeChildProfileState.valueOrNull?.trim().isNotEmpty ?? false;
 
       if (!appReviewState.isReady) {
         return null;
@@ -45,6 +62,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         }
         if (needsParentBirthYear) {
           return '/parent-birth-year';
+        }
+        if (requiresBackendProfile && !hasLoadedProfileSelection) {
+          return null;
+        }
+        if (requiresBackendProfile && !hasActiveChildProfile) {
+          return profilePickerLocation;
         }
         return needsReviewOnboarding ? '/onboarding' : '/library';
       }
@@ -61,6 +84,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/onboarding';
       }
 
+      if (requiresBackendProfile &&
+          !needsParentBirthYear &&
+          !needsReviewOnboarding &&
+          hasLoadedProfileSelection &&
+          !hasActiveChildProfile &&
+          !isProfilePicker &&
+          !isAddProfile) {
+        return profilePickerLocation;
+      }
+
       if (isAuthenticated &&
           !needsParentBirthYear &&
           !needsReviewOnboarding &&
@@ -69,6 +102,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               location == '/sign-up' ||
               location == '/parent-birth-year' ||
               location == '/onboarding')) {
+        if (requiresBackendProfile && !hasLoadedProfileSelection) {
+          return null;
+        }
+        if (requiresBackendProfile && !hasActiveChildProfile) {
+          return profilePickerLocation;
+        }
         return '/library';
       }
 
@@ -92,6 +131,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const ReviewOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/profiles/select',
+        builder: (context, state) => const ProfilePickerScreen(),
+      ),
+      GoRoute(
+        path: '/profiles/new',
+        builder: (context, state) => const AddChildScreen(),
       ),
       GoRoute(
         path: '/library',

@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/app.dart';
 import 'src/core/resilient_cache_manager.dart';
+import 'src/data/providers.dart';
+import 'src/features/child/data/child_profile_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,5 +22,14 @@ Future<void> main() async {
   // are cleaned up before any widget tries to load a cached image.
   await ResilientCacheManager.getInstance();
 
-  runApp(const ProviderScope(child: StoriaApp()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        currentChildProfileIdProvider.overrideWith(
+          (ref) => ref.watch(activeChildProfileIdProvider),
+        ),
+      ],
+      child: const StoriaApp(),
+    ),
+  );
 }

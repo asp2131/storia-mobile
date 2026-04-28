@@ -6,6 +6,7 @@ import 'internal/word_matcher.dart';
 import 'ports/audio_port.dart';
 import 'ports/scheduler_port.dart';
 import 'ports/speech_practice_port.dart';
+import 'reader_analytics_tracker.dart';
 import 'reader_intent.dart';
 import 'reader_session.dart';
 import 'reader_view_state.dart';
@@ -15,9 +16,11 @@ class ReaderSessionImpl implements ReaderSession {
     required AudioPort audioPort,
     required SpeechPracticePort speechPort,
     required SchedulerPort scheduler,
+    ReaderAnalyticsTracker? analyticsTracker,
   }) : _audioPort = audioPort,
        _speechPort = speechPort,
-       _scheduler = scheduler {
+       _scheduler = scheduler,
+       _analyticsTracker = analyticsTracker {
     _narrationPositionSub = _audioPort.narrationPosition.listen((position) {
       _emit(_state.copyWith(narrationPosition: position));
     });
@@ -32,6 +35,7 @@ class ReaderSessionImpl implements ReaderSession {
   final AudioPort _audioPort;
   final SpeechPracticePort _speechPort;
   final SchedulerPort _scheduler;
+  final ReaderAnalyticsTracker? _analyticsTracker;
 
   final StreamController<ReaderViewState> _controller =
       StreamController<ReaderViewState>.broadcast();
@@ -51,6 +55,8 @@ class ReaderSessionImpl implements ReaderSession {
   CancelableTask? _celebrationTask;
   bool _wasNarrationPlayingBeforePractice = false;
   double _soundscapeVolumeBeforePractice = 0.6;
+  String? _activeSpeechAttemptId;
+  bool _activeSpeechAttemptHadSpeech = false;
 
   @override
   Stream<ReaderViewState> get states async* {
@@ -72,11 +78,33 @@ class ReaderSessionImpl implements ReaderSession {
       return;
     }
     if (intent is ReaderToggleNarration) {
+      final willPlay = !_state.isNarrationPlaying;
+      final shouldTrackPlay =
+          intent.source == ReaderIntentSource.user && willPlay;
       await _audioPort.toggleNarration();
+      // Optimistically mirror the requested state so rapid sequential toggles
+      // do not classify a stop as another play while the audio stream catches up.
+      _emit(_state.copyWith(isNarrationPlaying: willPlay));
+      if (shouldTrackPlay) {
+        _analyticsTracker?.recordNarrationPlayed(
+          pageIndex: _state.activePageIndex,
+        );
+      }
       return;
     }
     if (intent is ReaderToggleSoundscape) {
+      final willPlay = !_state.isSoundscapePlaying;
+      final shouldTrackPlay =
+          intent.source == ReaderIntentSource.user && willPlay;
       await _audioPort.toggleSoundscape();
+      // Optimistically mirror the requested state so rapid sequential toggles
+      // do not classify a stop as another play while the audio stream catches up.
+      _emit(_state.copyWith(isSoundscapePlaying: willPlay));
+      if (shouldTrackPlay) {
+        _analyticsTracker?.recordSoundscapePlayed(
+          pageIndex: _state.activePageIndex,
+        );
+      }
       return;
     }
     if (intent is ReaderSetNarrationVolume) {
@@ -91,6 +119,7 @@ class ReaderSessionImpl implements ReaderSession {
     }
     if (intent is ReaderPauseListening) {
       await _speechPort.stopListening();
+      _completeSpeechAttempt(reason: 'paused');
       _emit(_state.copyWith(isListening: false));
       return;
     }
@@ -104,11 +133,20 @@ class ReaderSessionImpl implements ReaderSession {
     }
     if (intent is ReaderAckCelebration) {
       _clearCelebration();
+      return;
+    }
+    if (intent is ReaderEnd) {
+      _completeSpeechAttempt(reason: intent.reason);
+      _analyticsTracker?.endSession(reason: intent.reason);
     }
   }
 
   Future<void> _handleStart(ReaderStart intent) async {
     _book = intent.book;
+    _analyticsTracker?.startBook(
+      intent.book,
+      initialPageIndex: intent.initialPageIndex,
+    );
     final pages = intent.book.pages;
     if (pages.isEmpty) {
       _emit(_state.copyWith(isReady: true, activePageIndex: 0));
@@ -143,10 +181,12 @@ class ReaderSessionImpl implements ReaderSession {
     }
 
     final clampedIndex = pageIndex.clamp(0, book.pages.length - 1);
+    final previousPageIndex = _state.activePageIndex;
     final nextPage = book.pages[clampedIndex];
-    final isPageChange = clampedIndex != _state.activePageIndex;
+    final isPageChange = clampedIndex != previousPageIndex;
 
     await _speechPort.stopListening();
+    _completeSpeechAttempt(reason: 'page_changed');
     _clearCelebration();
     _emit(
       _state.copyWith(
@@ -156,8 +196,12 @@ class ReaderSessionImpl implements ReaderSession {
       ),
     );
     _wordToIndices = buildWordToIndices(nextPage);
-    if (isPageChange && !_pageChangeController.isClosed) {
-      _pageChangeController.add(clampedIndex);
+    if (isPageChange) {
+      _analyticsTracker?.recordPageNavigation(previousPageIndex, clampedIndex);
+      _analyticsTracker?.recordPageViewed(clampedIndex);
+      if (!_pageChangeController.isClosed) {
+        _pageChangeController.add(clampedIndex);
+      }
     }
 
     final requestId = ++_pageRequestId;
@@ -244,6 +288,12 @@ class ReaderSessionImpl implements ReaderSession {
 
         if (isFinal) {
           final hasAnyWord = recognizedWords.trim().isNotEmpty;
+          _activeSpeechAttemptHadSpeech =
+              _activeSpeechAttemptHadSpeech || hasAnyWord;
+          _completeSpeechAttempt(
+            reason: 'final_result',
+            matchedWordCount: updated.length,
+          );
           _emit(
             _state.copyWith(
               spokenWordIndices: updated,
@@ -255,15 +305,23 @@ class ReaderSessionImpl implements ReaderSession {
             _scheduleCelebrationClear();
           }
         } else {
+          if (recognizedWords.trim().isNotEmpty) {
+            _activeSpeechAttemptHadSpeech = true;
+          }
           _emit(_state.copyWith(spokenWordIndices: updated));
         }
       },
       onDone: _onListeningDone,
       onError: (_) {
+        _completeSpeechAttempt(reason: 'error');
         _emit(_state.copyWith(isListening: false));
       },
     );
 
+    _activeSpeechAttemptId = _analyticsTracker?.recordSpeechAttemptStarted(
+      pageIndex: _state.activePageIndex,
+    );
+    _activeSpeechAttemptHadSpeech = false;
     _emit(_state.copyWith(isListening: true, showCelebration: false));
   }
 
@@ -273,6 +331,10 @@ class ReaderSessionImpl implements ReaderSession {
     }
 
     final shouldCelebrate = _state.spokenWordIndices.isNotEmpty;
+    _completeSpeechAttempt(
+      reason: 'done',
+      matchedWordCount: _state.spokenWordIndices.length,
+    );
     _emit(
       _state.copyWith(isListening: false, showCelebration: shouldCelebrate),
     );
@@ -285,6 +347,23 @@ class ReaderSessionImpl implements ReaderSession {
     if (_state.isPracticeMode) {
       await _restorePracticeAudioState();
     }
+  }
+
+  void _completeSpeechAttempt({required String reason, int? matchedWordCount}) {
+    final attemptId = _activeSpeechAttemptId;
+    if (attemptId == null) {
+      return;
+    }
+
+    _analyticsTracker?.recordSpeechAttemptCompleted(
+      attemptId: attemptId,
+      reason: reason,
+      matchedWordCount: matchedWordCount ?? _state.spokenWordIndices.length,
+      hadSpeech: _activeSpeechAttemptHadSpeech,
+      pageIndex: _state.activePageIndex,
+    );
+    _activeSpeechAttemptId = null;
+    _activeSpeechAttemptHadSpeech = false;
   }
 
   void _scheduleCelebrationClear() {
@@ -311,6 +390,8 @@ class ReaderSessionImpl implements ReaderSession {
 
   @override
   Future<void> dispose() async {
+    _completeSpeechAttempt(reason: 'dispose');
+    _analyticsTracker?.endSession(reason: 'provider_dispose');
     _celebrationTask?.cancel();
     await _narrationPositionSub?.cancel();
     await _narrationPlayingSub?.cancel();

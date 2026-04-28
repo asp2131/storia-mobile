@@ -5,6 +5,7 @@ import '../../../../audio/audio_providers.dart';
 import '../../../../data/pronunciation_models.dart';
 import '../../../../data/providers.dart';
 import '../../pronunciation_highlight.dart';
+import '../reader_analytics_tracker.dart';
 import '../reader_session.dart';
 import '../reader_intent.dart';
 import '../reader_view_state.dart';
@@ -62,10 +63,12 @@ final wordTtsProvider = StateNotifierProvider<WordTtsNotifier, WordTtsState>((
   final service = ref.watch(wordTtsServiceProvider);
   final pronunciation = ref.watch(pronunciationPlaybackServiceProvider);
   final session = ref.watch(readerSessionProvider);
+  final analyticsTracker = ref.watch(readerAnalyticsTrackerProvider);
   return WordTtsNotifier(
     service: service,
     pronunciation: pronunciation,
     session: session,
+    analyticsTracker: analyticsTracker,
   );
 });
 
@@ -78,9 +81,11 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
     required WordTtsService service,
     required PronunciationPlaybackService pronunciation,
     required ReaderSession session,
+    ReaderAnalyticsTracker? analyticsTracker,
   }) : _service = service,
        _pronunciation = pronunciation,
        _session = session,
+       _analyticsTracker = analyticsTracker,
        super(const WordTtsState()) {
     _pageChangeSubscription = session.pageChanges.listen((_) {
       _onPageChanged();
@@ -90,6 +95,7 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
   final WordTtsService _service;
   final PronunciationPlaybackService _pronunciation;
   final ReaderSession _session;
+  final ReaderAnalyticsTracker? _analyticsTracker;
 
   bool _wasNarrationPlaying = false;
   bool _wasListening = false;
@@ -217,6 +223,10 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
           outcome == PronunciationOutcome.error) {
         await _service.speak(word);
       }
+      _analyticsTracker?.recordWordAudioPlayed(
+        wordIndex: globalIndex,
+        outcome: outcome.name,
+      );
 
       _stopPronunciationPositionTracking();
       if (flowId == _flowId && state.tappedWordIndex == globalIndex) {
@@ -276,6 +286,10 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
           outcome == PronunciationOutcome.error) {
         await _service.soundOut(word);
       }
+      _analyticsTracker?.recordPhonemeAudioPlayed(
+        wordIndex: globalIndex,
+        outcome: outcome.name,
+      );
 
       _stopPronunciationPositionTracking();
       if (flowId == _flowId && state.tappedWordIndex == globalIndex) {
@@ -380,7 +394,8 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
     final timedSegments = _normalizeSegments(rawSegments);
 
     // Prefer the actual audio duration over a hardcoded heuristic.
-    final totalDurationMs = entry.breakdown?.durationMs ??
+    final totalDurationMs =
+        entry.breakdown?.durationMs ??
         _inferTotalDurationFromSegments(timedSegments) ??
         labels.length * _fallbackPartDurationMs;
 
@@ -609,7 +624,7 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
     _wasNarrationPlaying = _lastState.isNarrationPlaying;
     if (_wasNarrationPlaying) {
       await _dispatchExpecting(
-        const ReaderToggleNarration(),
+        const ReaderToggleNarration(source: ReaderIntentSource.runtime),
         narrationTransition: true,
       );
     }
@@ -626,7 +641,7 @@ class WordTtsNotifier extends StateNotifier<WordTtsState> {
   Future<void> _restoreCapturedAudio() async {
     if (_wasNarrationPlaying && !_lastState.isNarrationPlaying) {
       await _dispatchExpecting(
-        const ReaderToggleNarration(),
+        const ReaderToggleNarration(source: ReaderIntentSource.runtime),
         narrationTransition: true,
       );
       _wasNarrationPlaying = false;

@@ -56,5 +56,71 @@
       "is_interrupt": false,
       "logged_at": "2026-02-24T20:43:18.562144"
     }
+  },
+  {
+    "timestamp": "2026-04-27T22:40:21.007015",
+    "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+    "hook_event_name": "PostToolUseFailure",
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01STduHKo1Qq7ts3rMyDeDvo",
+    "tool_input": {
+      "command": "git diff lib/src/data/providers.dart lib/src/features/reader/runtime/reader_session_provider.dart lib/src/features/reader/runtime/word_tts_provider.dart lib/src/features/reader/runtime/reader_intent.dart lib/src/features/reader/runtime/reader_session_impl.dart lib/src/features/reader/reader_screen.dart",
+      "description": "Diff modified files"
+    },
+    "error": "Exit code 128\nfatal: lib/src/features/reader/runtime/reader_session_provider.dart: no such path in the working tree.\nUse 'git <command> -- <path>...' to specify paths that do not exist locally.",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+    "raw_input": {
+      "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "permission_mode": "default",
+      "hook_event_name": "PostToolUseFailure",
+      "tool_name": "Bash",
+      "tool_input": {
+        "command": "git diff lib/src/data/providers.dart lib/src/features/reader/runtime/reader_session_provider.dart lib/src/features/reader/runtime/word_tts_provider.dart lib/src/features/reader/runtime/reader_intent.dart lib/src/features/reader/runtime/reader_session_impl.dart lib/src/features/reader/reader_screen.dart",
+        "description": "Diff modified files"
+      },
+      "tool_use_id": "toolu_01STduHKo1Qq7ts3rMyDeDvo",
+      "error": "Exit code 128\nfatal: lib/src/features/reader/runtime/reader_session_provider.dart: no such path in the working tree.\nUse 'git <command> -- <path>...' to specify paths that do not exist locally.",
+      "is_interrupt": false,
+      "duration_ms": 27,
+      "logged_at": "2026-04-27T22:40:21.007015"
+    }
+  },
+  {
+    "timestamp": "2026-04-27T22:43:35.574095",
+    "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+    "hook_event_name": "PostToolUseFailure",
+    "tool_name": "Bash",
+    "tool_use_id": "toolu_01NhwQJ5RTb9Lp29xEGdoxnq",
+    "tool_input": {
+      "command": "ls /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/data /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/domain /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/presentation",
+      "description": "List profile subdirs"
+    },
+    "error": "Exit code 1\nls: /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/data: No such file or directory\nls: /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/domain: No such file or directory\nls: /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/presentation: No such file or directory",
+    "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+    "permission_mode": "default",
+    "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+    "raw_input": {
+      "session_id": "b5f72bb6-6f0a-4bb1-b936-5a704d08566f",
+      "transcript_path": "/Users/akinpound/.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/b5f72bb6-6f0a-4bb1-b936-5a704d08566f.jsonl",
+      "cwd": "/Users/akinpound/Documents/experiments/storia-mobile",
+      "permission_mode": "default",
+      "agent_id": "afc9f94488850f593",
+      "agent_type": "general-purpose",
+      "hook_event_name": "PostToolUseFailure",
+      "tool_name": "Bash",
+      "tool_input": {
+        "command": "ls /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/data /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/domain /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/presentation",
+        "description": "List profile subdirs"
+      },
+      "tool_use_id": "toolu_01NhwQJ5RTb9Lp29xEGdoxnq",
+      "error": "Exit code 1\nls: /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/data: No such file or directory\nls: /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/domain: No such file or directory\nls: /Users/akinpound/Documents/experiments/storia-mobile/lib/src/features/profile/presentation: No such file or directory",
+      "is_interrupt": false,
+      "duration_ms": 11,
+      "logged_at": "2026-04-27T22:43:35.574095"
+    }
   }
 ]
