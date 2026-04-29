@@ -321,15 +321,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   );
                 },
               ),
-              ValueListenableBuilder<bool>(
-                valueListenable: _showChromeNotifier,
-                builder: (context, showChrome, _) {
+              Builder(
+                builder: (context) {
                   if (!hasNarration && !hasSoundscape) {
                     return const SizedBox.shrink();
                   }
-
-                  final practiceKeepsVisible =
-                      _runtimeState.isPracticeMode || _runtimeState.isListening;
 
                   return _AudioControlsPill(
                     hasNarration: hasNarration,
@@ -338,8 +334,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
                     isPracticeActive: _runtimeState.isPracticeMode,
                     isListening: _runtimeState.isListening,
-                    isVisible: showChrome || practiceKeepsVisible,
-                    showGrip: showChrome,
+                    isVisible: true,
+                    showGrip: true,
                     onToggleNarration: () =>
                         _session.dispatch(const ReaderToggleNarration()),
                     onToggleSoundscape: () =>
@@ -407,49 +403,56 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 46,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD7D7D2),
-                    borderRadius: BorderRadius.circular(999),
+        return StreamBuilder<ReaderViewState>(
+          stream: _session.states,
+          initialData: _runtimeState,
+          builder: (context, snapshot) {
+            final state = snapshot.data ?? _runtimeState;
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 46,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD7D7D2),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Audio Mix',
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+                  const SizedBox(height: 18),
+                  _VolumeRow(
+                    icon: Icons.record_voice_over_rounded,
+                    label: 'Narration',
+                    semanticsLabel: 'Narration volume',
+                    value: state.narrationVolume,
+                    onChanged: (value) {
+                      _session.dispatch(ReaderSetNarrationVolume(value));
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  _VolumeRow(
+                    icon: Icons.surround_sound_rounded,
+                    label: 'Ambience',
+                    semanticsLabel: 'Ambience volume',
+                    value: state.soundscapeVolume,
+                    onChanged: (value) {
+                      _session.dispatch(ReaderSetSoundscapeVolume(value));
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Audio Mix',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              const SizedBox(height: 18),
-              _VolumeRow(
-                icon: Icons.record_voice_over_rounded,
-                label: 'Narration',
-                semanticsLabel: 'Narration volume',
-                value: _runtimeState.narrationVolume,
-                onChanged: (value) {
-                  _session.dispatch(ReaderSetNarrationVolume(value));
-                },
-              ),
-              const SizedBox(height: 14),
-              _VolumeRow(
-                icon: Icons.surround_sound_rounded,
-                label: 'Ambience',
-                semanticsLabel: 'Ambience volume',
-                value: _runtimeState.soundscapeVolume,
-                onChanged: (value) {
-                  _session.dispatch(ReaderSetSoundscapeVolume(value));
-                },
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
