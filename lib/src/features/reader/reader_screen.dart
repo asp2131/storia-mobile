@@ -321,29 +321,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   );
                 },
               ),
-              Builder(
-                builder: (context) {
-                  if (!hasNarration && !hasSoundscape) {
-                    return const SizedBox.shrink();
-                  }
-
-                  return _AudioControlsPill(
-                    hasNarration: hasNarration,
-                    hasSoundscape: hasSoundscape,
-                    isNarrationPlaying: _runtimeState.isNarrationPlaying,
-                    isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
-                    isPracticeActive: _runtimeState.isPracticeMode,
-                    isListening: _runtimeState.isListening,
-                    isVisible: true,
-                    showGrip: true,
-                    onToggleNarration: () =>
-                        _session.dispatch(const ReaderToggleNarration()),
-                    onToggleSoundscape: () =>
-                        _session.dispatch(const ReaderToggleSoundscape()),
-                    onTogglePractice: () =>
-                        _session.dispatch(const ReaderPracticePrimaryAction()),
-                  );
-                },
+              _AudioControlsPill(
+                hasNarration: hasNarration,
+                hasSoundscape: hasSoundscape,
+                isNarrationPlaying: _runtimeState.isNarrationPlaying,
+                isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
+                isPracticeActive: _runtimeState.isPracticeMode,
+                isListening: _runtimeState.isListening,
+                isVisible: true,
+                showGrip: true,
+                onToggleNarration: () =>
+                    _session.dispatch(const ReaderToggleNarration()),
+                onToggleSoundscape: () =>
+                    _session.dispatch(const ReaderToggleSoundscape()),
+                onTogglePractice: () =>
+                    _session.dispatch(const ReaderPracticePrimaryAction()),
               ),
               Align(
                 alignment: Alignment.topCenter,
@@ -403,56 +395,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (context) {
-        return StreamBuilder<ReaderViewState>(
-          stream: _session.states,
-          initialData: _runtimeState,
-          builder: (context, snapshot) {
-            final state = snapshot.data ?? _runtimeState;
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 46,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD7D7D2),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Audio Mix',
-                    style: Theme.of(context).textTheme.headlineLarge,
-                  ),
-                  const SizedBox(height: 18),
-                  _VolumeRow(
-                    icon: Icons.record_voice_over_rounded,
-                    label: 'Narration',
-                    semanticsLabel: 'Narration volume',
-                    value: state.narrationVolume,
-                    onChanged: (value) {
-                      _session.dispatch(ReaderSetNarrationVolume(value));
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  _VolumeRow(
-                    icon: Icons.surround_sound_rounded,
-                    label: 'Ambience',
-                    semanticsLabel: 'Ambience volume',
-                    value: state.soundscapeVolume,
-                    onChanged: (value) {
-                      _session.dispatch(ReaderSetSoundscapeVolume(value));
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
+        return _AudioSettingsSheet(
+          session: _session,
+          initialState: _runtimeState,
         );
       },
     );
@@ -989,42 +934,45 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
             curve: Curves.easeOut,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: Transform.translate(
-                offset: clampedOffset,
-                child: AnimatedScale(
-                  scale: _isDragging ? 1.035 : 1.0,
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
-                  child: SizedBox(
-                    key: _pillKey,
-                    width: _circleSize,
-                    height: _circleSize,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      alignment: Alignment.center,
-                      children: [
-                        if (_isDragging)
-                          IgnorePointer(
-                            child: Transform.translate(
-                              offset: const Offset(0, 10),
-                              child: Opacity(
-                                opacity: 0.18,
-                                child: _buildCircleBody(
-                                  viewportSize: viewportSize,
-                                  safePadding: safePadding,
-                                  baseBottom: baseBottom,
+              child: Padding(
+                padding: EdgeInsets.only(bottom: baseBottom),
+                child: Transform.translate(
+                  offset: clampedOffset,
+                  child: AnimatedScale(
+                    scale: _isDragging ? 1.035 : 1.0,
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    child: SizedBox(
+                      key: _pillKey,
+                      width: _circleSize,
+                      height: _circleSize,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          if (_isDragging)
+                            IgnorePointer(
+                              child: Transform.translate(
+                                offset: const Offset(0, 10),
+                                child: Opacity(
+                                  opacity: 0.18,
+                                  child: _buildCircleBody(
+                                    viewportSize: viewportSize,
+                                    safePadding: safePadding,
+                                    baseBottom: baseBottom,
+                                  ),
                                 ),
                               ),
                             ),
+                          _buildCircleBody(
+                            viewportSize: viewportSize,
+                            safePadding: safePadding,
+                            baseBottom: baseBottom,
                           ),
-                        _buildCircleBody(
-                          viewportSize: viewportSize,
-                          safePadding: safePadding,
-                          baseBottom: baseBottom,
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn(duration: StoriaMotion.medium),
+                        ],
+                      ),
+                    ).animate().fadeIn(duration: StoriaMotion.medium),
+                  ),
                 ),
               ),
             ),
@@ -1175,6 +1123,82 @@ class _ChromeButton extends StatelessWidget {
 // Volume settings sheet
 // =============================================================================
 
+class _AudioSettingsSheet extends StatefulWidget {
+  final ReaderSession session;
+  final ReaderViewState initialState;
+
+  const _AudioSettingsSheet({
+    required this.session,
+    required this.initialState,
+  });
+
+  @override
+  State<_AudioSettingsSheet> createState() => _AudioSettingsSheetState();
+}
+
+class _AudioSettingsSheetState extends State<_AudioSettingsSheet> {
+  late double _narrationVolume;
+  late double _soundscapeVolume;
+
+  @override
+  void initState() {
+    super.initState();
+    _narrationVolume = widget.initialState.narrationVolume;
+    _soundscapeVolume = widget.initialState.soundscapeVolume;
+  }
+
+  void _setNarrationVolume(double value) {
+    setState(() => _narrationVolume = value);
+    unawaited(widget.session.dispatch(ReaderSetNarrationVolume(value)));
+  }
+
+  void _setSoundscapeVolume(double value) {
+    setState(() => _soundscapeVolume = value);
+    unawaited(widget.session.dispatch(ReaderSetSoundscapeVolume(value)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 46,
+              height: 5,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD7D7D2),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text('Audio Mix', style: Theme.of(context).textTheme.headlineLarge),
+          const SizedBox(height: 18),
+          _VolumeRow(
+            icon: Icons.record_voice_over_rounded,
+            label: 'Narration',
+            semanticsLabel: 'Narration volume',
+            value: _narrationVolume,
+            onChanged: _setNarrationVolume,
+          ),
+          const SizedBox(height: 14),
+          _VolumeRow(
+            icon: Icons.surround_sound_rounded,
+            label: 'Ambience',
+            semanticsLabel: 'Ambience volume',
+            value: _soundscapeVolume,
+            onChanged: _setSoundscapeVolume,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _VolumeRow extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -1225,7 +1249,7 @@ class _VolumeRow extends StatelessWidget {
                 value: '${(value * 100).round()} percent',
                 hint: 'Adjust $label volume',
                 child: Slider(
-                  value: value,
+                  value: value.clamp(0.0, 1.0),
                   min: 0,
                   max: 1,
                   activeColor: StoriaColors.dustyPinkStrong,
