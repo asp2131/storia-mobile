@@ -17,8 +17,9 @@ import '../../data/providers.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
 import 'runtime/providers/reader_session_provider.dart';
-import 'runtime/providers/word_tts_provider.dart';
+import 'runtime/providers/reader_word_help_provider.dart';
 import 'runtime/reader_intent.dart';
+import 'runtime/word_help/reader_word_help.dart';
 import 'runtime/reader_session.dart';
 import 'runtime/reader_view_state.dart';
 
@@ -56,11 +57,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     WidgetsBinding.instance.addObserver(this);
     _session = ref.read(readerSessionProvider);
     _sessionSubscription = _session.states.listen(_onRuntimeStateChanged);
-
-    // Attach state stream to word TTS notifier for narration/mic coordination
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(wordTtsProvider.notifier).attachStateStream(_session.states);
-    });
 
     _pageController.addListener(_onPageScroll);
     _confettiController = ConfettiController(
@@ -193,7 +189,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               if (!mounted) {
                 return;
               }
-              ref.read(wordTtsProvider.notifier).setBookId(book.id);
               unawaited(
                 _session.dispatch(
                   ReaderStart(
@@ -220,6 +215,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             book.pages.length - 1,
           );
           final activePage = book.pages[activeIndex];
+          final wordHelpState = ref.watch(readerWordHelpProvider(book.id));
+          final wordHelp = ref.read(readerWordHelpProvider(book.id).notifier);
           final hasNarration = (activePage.narrationUrl ?? '').isNotEmpty;
           final hasSoundscape = (activePage.soundscapeUrl ?? '').isNotEmpty;
 
@@ -256,15 +253,36 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                           narrationPosition: narrationPosition,
                           isActive: index == activeIndex,
                           spokenWordIndices: _runtimeState.spokenWordIndices,
+                          tappedWordIndex: wordHelpState.activeWordIndex,
+                          tappedWordHighlightParts:
+                              wordHelpState.highlightParts,
+                          activeTappedWordHighlightPartIndex:
+                              wordHelpState.activeHighlightPartIndex,
                           onWordTap: (word, globalIndex) {
-                            ref
-                                .read(wordTtsProvider.notifier)
-                                .onWordTapped(word, globalIndex);
+                            unawaited(
+                              wordHelp.play(
+                                WordHelpRequest(
+                                  bookId: book.id,
+                                  pageIndex: index,
+                                  wordIndex: globalIndex,
+                                  rawWord: word,
+                                  mode: WordHelpMode.word,
+                                ),
+                              ),
+                            );
                           },
                           onWordLongPress: (word, globalIndex) {
-                            ref
-                                .read(wordTtsProvider.notifier)
-                                .onWordLongPressed(word, globalIndex);
+                            unawaited(
+                              wordHelp.play(
+                                WordHelpRequest(
+                                  bookId: book.id,
+                                  pageIndex: index,
+                                  wordIndex: globalIndex,
+                                  rawWord: word,
+                                  mode: WordHelpMode.breakdown,
+                                ),
+                              ),
+                            );
                           },
                         );
                       },

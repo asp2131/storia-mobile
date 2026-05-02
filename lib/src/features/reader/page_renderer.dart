@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/resilient_cache_manager.dart';
@@ -12,7 +11,7 @@ import '../../data/models.dart';
 import 'overlay/overlay_layout_engine.dart';
 import 'overlay/overlay_text_layer.dart';
 import 'overlay/text_overlay_utils.dart';
-import 'runtime/providers/word_tts_provider.dart';
+import 'pronunciation_highlight.dart';
 
 // Parallax multipliers for depth-layer illusion (Feature 1).
 // The active page is at localOffset 0. As user scrolls, localOffset goes from
@@ -22,7 +21,7 @@ import 'runtime/providers/word_tts_provider.dart';
 const double _kBackgroundParallax = 0.5;
 const double _kTextParallax = 1.0;
 
-class PageRenderer extends ConsumerStatefulWidget {
+class PageRenderer extends StatefulWidget {
   final PageData page;
   final int pageIndex;
   final ValueListenable<double>? scrollOffsetListenable;
@@ -32,6 +31,9 @@ class PageRenderer extends ConsumerStatefulWidget {
   final void Function(String word, int globalIndex)? onWordTap;
   final void Function(String word, int globalIndex)? onWordLongPress;
   final Set<int> spokenWordIndices;
+  final int? tappedWordIndex;
+  final List<PronunciationHighlightPart> tappedWordHighlightParts;
+  final int? activeTappedWordHighlightPartIndex;
 
   const PageRenderer({
     super.key,
@@ -44,13 +46,16 @@ class PageRenderer extends ConsumerStatefulWidget {
     this.onWordTap,
     this.onWordLongPress,
     this.spokenWordIndices = const {},
+    this.tappedWordIndex,
+    this.tappedWordHighlightParts = const [],
+    this.activeTappedWordHighlightPartIndex,
   });
 
   @override
-  ConsumerState<PageRenderer> createState() => _PageRendererState();
+  State<PageRenderer> createState() => _PageRendererState();
 }
 
-class _PageRendererState extends ConsumerState<PageRenderer> {
+class _PageRendererState extends State<PageRenderer> {
   static const OverlayLayoutEngine _overlayEngine = OverlayLayoutEngineImpl();
 
   Size? _sourceImageSize;
@@ -116,8 +121,6 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
   Widget build(BuildContext context) => _buildStandardPage();
 
   Widget _buildStandardPage() {
-    final wordTtsState = ref.watch(wordTtsProvider);
-    final tappedWordIndex = wordTtsState.tappedWordIndex;
     final page = widget.page;
     final hasOverlay =
         page.overlay != null && page.overlay!.elements.isNotEmpty;
@@ -160,10 +163,10 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
                     activeWordIndex: activeWordIndex,
                     spokenWordIndices: widget.spokenWordIndices,
                     isActive: widget.isActive,
-                    tappedWordIndex: tappedWordIndex,
-                    tappedWordHighlightParts: wordTtsState.highlightParts,
+                    tappedWordIndex: widget.tappedWordIndex,
+                    tappedWordHighlightParts: widget.tappedWordHighlightParts,
                     activeTappedWordHighlightPartIndex:
-                        wordTtsState.activeHighlightPartIndex,
+                        widget.activeTappedWordHighlightPartIndex,
                   ),
                   onWordTap: widget.onWordTap,
                   onWordLongPress: widget.onWordLongPress,
@@ -322,5 +325,4 @@ class _PageRendererState extends ConsumerState<PageRenderer> {
 
     return Hero(tag: heroTag, child: image);
   }
-
 }
