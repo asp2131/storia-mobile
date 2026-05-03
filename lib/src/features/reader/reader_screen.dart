@@ -18,10 +18,8 @@ import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
 import 'runtime/providers/reader_session_provider.dart';
 import 'runtime/providers/reader_word_help_provider.dart';
-import 'runtime/reader_intent.dart';
-import 'runtime/word_help/reader_word_help.dart';
 import 'runtime/reader_session.dart';
-import 'runtime/reader_view_state.dart';
+import 'runtime/word_help/reader_word_help.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
   final String bookId;

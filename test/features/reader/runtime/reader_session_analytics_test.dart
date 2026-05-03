@@ -8,7 +8,7 @@ import 'package:storia_kids/src/features/reader/runtime/ports/audio_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/ports/scheduler_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/ports/speech_practice_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/reader_analytics_tracker.dart';
-import 'package:storia_kids/src/features/reader/runtime/reader_intent.dart';
+import 'package:storia_kids/src/features/reader/runtime/reader_session.dart';
 import 'package:storia_kids/src/features/reader/runtime/reader_session_impl.dart';
 
 void main() {
