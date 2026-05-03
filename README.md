@@ -17,6 +17,14 @@ flutter pub get
 flutter run
 ```
 
+## Repository Scripts
+
+The `bin/` directory contains helper scripts used by both humans and Symphony agents:
+
+- `bin/bootstrap.sh` sets up a fresh checkout by running `flutter pub get`, creating `.env` from `.env.example` when needed, and running `pod install` on macOS when iOS pods are available.
+- `bin/verify.sh` is the pre-handoff validation gate; it runs `flutter analyze` and `flutter test`.
+- `bin/pi-symphony.sh` polls Linear and dispatches Pi/Symphony workspaces for automated ticket processing.
+
 ## iOS Sign In with Apple
 
 The iPhone flow uses native Apple Sign In with Supabase as the backend session issuer.
