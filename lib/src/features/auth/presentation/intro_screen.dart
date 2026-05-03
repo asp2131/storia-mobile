@@ -27,13 +27,16 @@ class _IntroScreenState extends State<IntroScreen>
 
   late final rive.FileLoader _landingRiveLoader = rive.FileLoader.fromAsset(
     'assets/gifs/landing_anim.riv',
-    riveFactory: rive.Factory.flutter,
+    riveFactory: rive.Factory.rive,
   );
 
   @override
   void dispose() {
     _controller.dispose();
-    _landingRiveLoader.dispose();
+    // Do not dispose _landingRiveLoader here: on web, rive's FileLoader can
+    // complete asynchronously after this screen is redirected away. Disposing
+    // while that load is still in flight clears its completer and throws
+    // "Unexpected null value" from package:rive/src/file_loader.dart.
     super.dispose();
   }
 
