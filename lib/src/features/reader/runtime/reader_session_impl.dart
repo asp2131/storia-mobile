@@ -7,9 +7,7 @@ import 'ports/audio_port.dart';
 import 'ports/scheduler_port.dart';
 import 'ports/speech_practice_port.dart';
 import 'reader_analytics_tracker.dart';
-import 'reader_intent.dart';
 import 'reader_session.dart';
-import 'reader_view_state.dart';
 
 class ReaderSessionImpl implements ReaderSession {
   ReaderSessionImpl({
