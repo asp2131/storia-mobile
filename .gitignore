@@ -53,7 +53,10 @@ android/key.properties
 *.jks
 *.keystore
 
-.pi/skills/
+.pi/skills/*
+!.pi/skills/storia-linear-tickets/
+!.pi/skills/storia-linear-tickets/SKILL.md
+!.pi/skills/storia-linear-tickets/linear_ticket.py
 
 .wolf
 .superdesign
