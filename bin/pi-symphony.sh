@@ -27,6 +27,10 @@
 #   PI_CHAIN               default: storia-build-feature
 #   GIT_REMOTE             default: origin
 #   GIT_BASE               default: main
+#   STATE_TODO             default: Todo
+#   STATE_IN_PROGRESS      default: In Progress
+#   STATE_REVIEW           default: In Review        (where tickets go after agent finishes)
+#   STATE_REWORK           default: ""               (empty = disabled; set if your Linear has a Rework state)
 
 set -euo pipefail
 
@@ -39,6 +43,10 @@ MAX_PARALLEL="${MAX_PARALLEL:-2}"
 PI_CHAIN="${PI_CHAIN:-storia-build-feature}"
 GIT_REMOTE="${GIT_REMOTE:-origin}"
 GIT_BASE="${GIT_BASE:-main}"
+STATE_TODO="${STATE_TODO:-Todo}"
+STATE_IN_PROGRESS="${STATE_IN_PROGRESS:-In Progress}"
+STATE_REVIEW="${STATE_REVIEW:-In Review}"
+STATE_REWORK="${STATE_REWORK:-}"
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 locks_dir="$WORKSPACES/.locks"
@@ -69,12 +77,17 @@ log() { printf '[%s] [pi-symphony] %s\n' "$(date +%H:%M:%S)" "$*"; }
 linear_gql() {
   # $1 = query, $2 = variables JSON
   local query="$1" vars="${2:-{\}}"
-  local body
+  local body resp
   body=$(jq -nc --arg q "$query" --argjson v "$vars" '{query:$q, variables:$v}')
-  curl -fsS https://api.linear.app/graphql \
+  resp=$(curl -fsS https://api.linear.app/graphql \
     -H "Authorization: $LINEAR_API_KEY" \
     -H "Content-Type: application/json" \
-    -d "$body"
+    -d "$body")
+  if echo "$resp" | jq -e 'has("errors") or has("error")' >/dev/null 2>&1; then
+    log "Linear GQL error: $(echo "$resp" | jq -c '.errors // .error // .')" >&2
+    log "  request: $(echo "$body" | jq -c '.variables')" >&2
+  fi
+  echo "$resp"
 }
 
 # Resolve project ID + workflow state IDs once per run.
@@ -117,16 +130,24 @@ project_id() {
 # In Progress = resume an interrupted run).
 fetch_active_issues() {
   local pid; pid="$(project_id)"
-  local q='query($pid: ID!) {
+  local states_json
+  states_json="$(jq -nc \
+    --arg t "$STATE_TODO" \
+    --arg ip "$STATE_IN_PROGRESS" \
+    --arg rw "$STATE_REWORK" \
+    '[$t, $ip] + (if ($rw // "") == "" then [] else [$rw] end)')"
+  local q='query($pid: ID!, $states: [String!]!) {
     issues(
-      filter: { project: { id: { eq: $pid } }, state: { name: { in: ["Todo", "Rework", "In Progress"] } } },
+      filter: { project: { id: { eq: $pid } }, state: { name: { in: $states } } },
       first: 50
     ) {
       nodes { id identifier title description url state { name } }
     }
   }'
-  linear_gql "$q" "$(jq -nc --arg p "$pid" '{pid:$p}')" \
-    | jq -c '.data.issues.nodes[]?'
+  local resp
+  resp="$(linear_gql "$q" "$(jq -nc --arg p "$pid" --argjson s "$states_json" '{pid:$p, states:$s}')")"
+  log "fetch_active_issues raw response: $resp" >&2
+  echo "$resp" | jq -c '.data.issues.nodes[]?'
 }
 
 move_state() {
@@ -165,18 +186,20 @@ process_ticket() {
     return 0
   fi
 
-  local branch="symphony/${ident,,}"
+  local branch
+  branch="symphony/$(printf '%s' "$ident" | tr '[:upper:]' '[:lower:]')"
   local wt="$WORKSPACES/$ident"
 
   # Resume policy: only pick up "In Progress" tickets if we already have a worktree
   # for them (i.e. we started this run and were interrupted). Don't grab tickets a
   # human is actively driving.
-  if [ "$state" = "In Progress" ] && [ ! -d "$wt" ]; then
+  if [ "$state" = "$STATE_IN_PROGRESS" ] && [ ! -d "$wt" ]; then
     return 0
   fi
 
   echo $$ > "$lock"
-  trap 'rm -f "$lock"' EXIT
+  ticket_lock="$lock"
+  trap 'rm -f -- "$ticket_lock"' EXIT
 
   local logf="$log_dir/$ident.log"
   exec >>"$logf" 2>&1
@@ -187,11 +210,11 @@ process_ticket() {
     return 0
   fi
 
-  if [ "$state" = "Todo" ] || [ "$state" = "Rework" ]; then
-    log "→ Linear: $ident → In Progress"
-    move_state "$id" "In Progress" || { log "failed state move; aborting"; return 1; }
+  if [ "$state" = "$STATE_TODO" ] || [ "$state" = "$STATE_REWORK" ]; then
+    log "→ Linear: $ident → $STATE_IN_PROGRESS"
+    move_state "$id" "$STATE_IN_PROGRESS" || { log "failed state move; aborting"; return 1; }
   else
-    log "resuming In Progress ticket $ident with existing worktree"
+    log "resuming $STATE_IN_PROGRESS ticket $ident with existing worktree"
   fi
 
   log "→ git worktree $wt off $GIT_REMOTE/$GIT_BASE"
@@ -207,7 +230,7 @@ process_ticket() {
 
   # On Rework, fetch existing PR feedback so pi can address it.
   local feedback_block=""
-  if [ "$state" = "Rework" ]; then
+  if [ -n "$STATE_REWORK" ] && [ "$state" = "$STATE_REWORK" ]; then
     log "→ fetching PR feedback for Rework"
     local pr_json
     pr_json=$(cd "$wt" && gh pr view "$branch" --json comments,reviews,reviewThreads 2>/dev/null || echo "{}")
@@ -271,7 +294,7 @@ $desc$feedback_block"
   if [ -z "$(cd "$wt" && git status --porcelain)" ] && [ "$(cd "$wt" && git rev-list --count "$GIT_REMOTE/$GIT_BASE..HEAD")" = "0" ]; then
     log "no changes produced; closing as no-op"
     post_comment "$id" "pi-symphony: agent produced no changes. Closing without PR."
-    move_state "$id" "Human Review" || true
+    move_state "$id" "$STATE_REVIEW" || true
     return 0
   fi
 
@@ -301,22 +324,29 @@ $(./bin/verify.sh 2>&1 | tail -20)
   post_comment "$id" "pi-symphony: PR opened — $pr_url
 
 verify.sh ✓ analyze + tests passed."
-  move_state "$id" "Human Review" || true
+  move_state "$id" "$STATE_REVIEW" || true
   log "=== $ident → Human Review ==="
 }
 
 finalize_blocker() {
   local id="$1" ident="$2" msg="$3"
   post_comment "$id" "**[BLOCKED]** $msg" || true
-  move_state "$id" "Human Review" || true
+  move_state "$id" "$STATE_REVIEW" || true
 }
 
 # ---------- loop ----------
 running_count() {
-  ls "$locks_dir"/*.lock 2>/dev/null | while read -r f; do
-    pid="$(cat "$f" 2>/dev/null)"
-    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then echo "$f"; else rm -f "$f"; fi
-  done | wc -l | tr -d ' '
+  local f pid count=0
+  for f in "$locks_dir"/*.lock; do
+    [ -e "$f" ] || continue
+    pid="$(cat "$f" 2>/dev/null || true)"
+    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+      count=$((count + 1))
+    else
+      rm -f "$f"
+    fi
+  done
+  echo "$count"
 }
 
 cleanup_stale_locks() {
@@ -348,7 +378,7 @@ tick() {
 
 trap 'log "shutting down"; wait; exit 0' INT TERM
 
-if [ "$ONCE" = "1" ]; then
+if [ "$ONCE" = "1" ] || [ "$DRY_RUN" = "1" ]; then
   tick
   wait
   exit 0

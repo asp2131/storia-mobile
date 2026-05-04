@@ -11,14 +11,12 @@ tracker:
   active_states:
     - Todo
     - In Progress
-    - Merging
-    - Rework
+  review_state: In Review
   terminal_states:
-    - Closed
-    - Cancelled
+    - Done
     - Canceled
     - Duplicate
-    - Done
+    - Backlog
 polling:
   interval_s: 15
 workspace:
@@ -104,15 +102,15 @@ playwright-cli tracing-stop
 
 Prefer Flutter unit/widget/integration tests for Dart, widget, and mobile-device behavior. When Playwright is used, record the screenshot/video/trace artifact path in the workpad and PR.
 
-## Status map
+## Status map (matches the live Linear workflow on this project)
 
 - `Backlog` -> out of scope for this workflow; do not modify.
-- `Todo` -> move to `In Progress`, create/update the workpad, then begin execution.
-- `In Progress` -> continue implementation from the current workspace and workpad.
-- `Human Review` -> wait for human approval or review feedback; do not code.
-- `Merging` -> merge/land according to the repo's available land/PR workflow, then move to `Done` only after merge succeeds.
-- `Rework` -> review feedback requires changes; reset approach, update the workpad, implement, validate, and return to `Human Review`.
-- `Done`, `Closed`, `Cancelled`, `Canceled`, `Duplicate` -> terminal; do nothing.
+- `Todo` -> runner moves to `In Progress` and dispatches pi.
+- `In Progress` -> pi is working in the worktree. Resume only if a local worktree exists.
+- `In Review` -> agent finished (with PR opened) or is blocked. Humans drive merge/feedback from here.
+- `Done`, `Canceled`, `Duplicate` -> terminal; do nothing.
+
+> Note: this Linear setup has no `Rework`, `Merging`, or `Human Review` states. PR review feedback should be addressed by re-opening or commenting on the existing PR; if you need a Rework flow, add the state in Linear and set `STATE_REWORK=Rework` in the runner env.
 
 ## Step 0: Route by ticket state
 
