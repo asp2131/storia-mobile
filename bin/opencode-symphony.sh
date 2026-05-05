@@ -76,7 +76,7 @@ log() { printf '[%s] [opencode-symphony] %s\n' "$(date +%H:%M:%S)" "$*"; }
 # ---------- linear ----------
 linear_gql() {
   # $1 = query, $2 = variables JSON
-  local query="$1" vars="${2:-{}}"
+  local query="$1" vars="${2:-{\}}"
   local body resp
   body=$(jq -nc --arg q "$query" --argjson v "$vars" '{query:$q, variables:$v}')
   resp=$(curl -fsS https://api.linear.app/graphql \
