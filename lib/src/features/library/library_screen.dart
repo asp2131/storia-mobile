@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cue/cue.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -218,15 +219,27 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             valueListenable: _game!.cameraXNotifier,
             builder: (context, _, __) {
               final previewBook = _previewBook!;
-              return BookPreviewOverlay(
-                book: previewBook,
-                position: _overlayPosition(previewBook),
-                onRead: () {
-                  final bookId = previewBook.id;
-                  _dismissPreview();
-                  context.push('/reader/$bookId');
-                },
-                onDismiss: _dismissPreview,
+              return Cue.onToggle(
+                toggled: _previewBook != null,
+                motion: .smooth(),
+                reverseMotion: .snappy(),
+                child: Actor(
+                  acts: const [
+                    ScaleAct(from: 0.9),
+                    OpacityAct.fadeIn(),
+                    SlideAct.y(from: 0.05),
+                  ],
+                  child: BookPreviewOverlay(
+                    book: previewBook,
+                    position: _overlayPosition(previewBook),
+                    onRead: () {
+                      final bookId = previewBook.id;
+                      _dismissPreview();
+                      context.push('/reader/$bookId');
+                    },
+                    onDismiss: _dismissPreview,
+                  ),
+                ),
               );
             },
           ),
@@ -529,30 +542,76 @@ class _ShelfFilters extends StatelessWidget {
   final _ShelfFilter activeFilter;
   final ValueChanged<_ShelfFilter> onSelected;
 
+  Alignment _pillAlignment(_ShelfFilter filter) {
+    return switch (filter) {
+      _ShelfFilter.all => Alignment.centerLeft,
+      _ShelfFilter.quick => Alignment.center,
+      _ShelfFilter.longer => Alignment.centerRight,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 38,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+      child: Stack(
         children: [
-          _FilterChip(
-            label: 'All Tales',
-            isActive: activeFilter == _ShelfFilter.all,
-            onTap: () => onSelected(_ShelfFilter.all),
+          // Track background.
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: StoriaColors.line, width: 1.1),
+            ),
           ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Quick Reads',
-            isActive: activeFilter == _ShelfFilter.quick,
-            onTap: () => onSelected(_ShelfFilter.quick),
+          // Sliding dark pill with cue pop.
+          Cue.onChange(
+            value: activeFilter,
+            motion: .spatial(),
+            child: Actor(
+              acts: const [ScaleAct(from: 0.92)],
+              child: AnimatedAlign(
+                alignment: _pillAlignment(activeFilter),
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutBack,
+                child: FractionallySizedBox(
+                  widthFactor: 1 / 3,
+                  child: Container(
+                    margin: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: StoriaColors.ink,
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Longer Reads',
-            isActive: activeFilter == _ShelfFilter.longer,
-            onTap: () => onSelected(_ShelfFilter.longer),
+          // Chip labels (tappable, transparent background).
+          Row(
+            children: [
+              Expanded(
+                child: _FilterChip(
+                  label: 'All Tales',
+                  isActive: activeFilter == _ShelfFilter.all,
+                  onTap: () => onSelected(_ShelfFilter.all),
+                ),
+              ),
+              Expanded(
+                child: _FilterChip(
+                  label: 'Quick Reads',
+                  isActive: activeFilter == _ShelfFilter.quick,
+                  onTap: () => onSelected(_ShelfFilter.quick),
+                ),
+              ),
+              Expanded(
+                child: _FilterChip(
+                  label: 'Longer Reads',
+                  isActive: activeFilter == _ShelfFilter.longer,
+                  onTap: () => onSelected(_ShelfFilter.longer),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -578,24 +637,15 @@ class _FilterChip extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(
-            color: isActive
-                ? StoriaColors.ink
-                : Colors.white.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isActive ? StoriaColors.ink : StoriaColors.line,
-              width: 1.1,
-            ),
-          ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: isActive ? StoriaColors.paper : StoriaColors.ink,
-              fontWeight: FontWeight.w700,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: isActive ? StoriaColors.paper : StoriaColors.ink,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),

@@ -86,14 +86,14 @@ class OverlayTextElement extends StatelessWidget {
         Widget wordWidget = token.pronunciationHighlightParts.isNotEmpty
             ? _PronunciationWordText(token: token)
             : Text(token.raw, style: token.style);
-        if (token.isTapped) {
-          wordWidget = AnimatedScale(
-            scale: 1.15,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutBack,
+        wordWidget = Cue.onToggle(
+          toggled: token.isTapped,
+          motion: .bouncy(),
+          child: Actor(
+            acts: const [ScaleAct(to: 1.15)],
             child: wordWidget,
-          );
-        }
+          ),
+        );
         spans.add(
           WidgetSpan(
             alignment: PlaceholderAlignment.baseline,
