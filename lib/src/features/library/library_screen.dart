@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/resilient_cache_manager.dart';
@@ -166,6 +168,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           cameraNotifier: _game!.cameraXNotifier,
         ),
 
+        // Layer 1.5: Sun + drifting clouds in dead sky space.
+        const Positioned.fill(child: _SkyDecorations()),
+
         // Layer 2: Flame game (transparent, character + book tap targets).
         Positioned.fill(child: GameWidget(game: _game!)),
 
@@ -318,32 +323,6 @@ class _SkyHillsPainter extends CustomPainter {
         colors: [_skyTop, _skyHorizon],
       ).createShader(Rect.fromLTWH(0, 0, size.width, horizonY));
     canvas.drawRect(skyRect, skyPaint);
-
-    final cloudPaint = Paint()..color = const Color(0x33FFFFFF);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.25, size.height * 0.15),
-        width: 180,
-        height: 50,
-      ),
-      cloudPaint,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.65, size.height * 0.10),
-        width: 220,
-        height: 55,
-      ),
-      cloudPaint,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.85, size.height * 0.22),
-        width: 140,
-        height: 40,
-      ),
-      cloudPaint,
-    );
 
     canvas.restore();
   }
@@ -894,6 +873,131 @@ class _BrowseCoverPlaceholder extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Sky decorations: sun + drifting clouds ──────────────────────────────
+
+class _SkyDecorations extends StatefulWidget {
+  const _SkyDecorations();
+
+  @override
+  State<_SkyDecorations> createState() => _SkyDecorationsState();
+}
+
+class _SkyDecorationsState extends State<_SkyDecorations>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _t;
+
+  static const _clouds = <_CloudSpec>[
+    _CloudSpec(top: 200, scale: 0.9, phase: 0.00, opacity: 0.85),
+    _CloudSpec(top: 280, scale: 1.3, phase: 0.30, opacity: 0.80),
+    _CloudSpec(top: 240, scale: 0.7, phase: 0.55, opacity: 0.75, flip: true),
+    _CloudSpec(top: 340, scale: 1.0, phase: 0.80, opacity: 0.80),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _t = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 120),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _t.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _t,
+        builder: (context, _) {
+          final t = _t.value;
+          return Stack(
+            children: [
+              _sun(t),
+              for (final spec in _clouds) _cloud(spec, t),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _cloud(_CloudSpec spec, double t) {
+    final screenW = MediaQuery.sizeOf(context).width;
+    const baseW = 140.0;
+    final w = baseW * spec.scale;
+    final loop = screenW + w + 80;
+    final progress = (t + spec.phase) % 1;
+    final left = screenW + 40 - progress * loop;
+    final dy = math.sin((t + spec.phase) * math.pi * 2) * 4;
+
+    Widget cloud = SvgPicture.asset('assets/svgs/cloud.svg', width: w);
+    if (spec.flip) {
+      cloud = Transform.flip(flipX: true, child: cloud);
+    }
+
+    return Positioned(
+      top: spec.top + dy,
+      left: left,
+      child: Opacity(opacity: spec.opacity, child: cloud),
+    );
+  }
+
+  Widget _sun(double t) {
+    final glowOpacity = 0.18 + 0.10 * math.sin(t * math.pi * 2);
+    const sunSize = 64.0;
+    const boxSize = sunSize + 32;
+    return Positioned(
+      top: 170,
+      right: 28,
+      width: boxSize,
+      height: boxSize,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFFFD644).withValues(alpha: glowOpacity),
+                  const Color(0xFFFFD644).withValues(alpha: 0),
+                ],
+                stops: const [0.2, 1.0],
+              ),
+            ),
+          ),
+          SvgPicture.asset(
+            'assets/svgs/sun.svg',
+            width: sunSize,
+            height: sunSize,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CloudSpec {
+  const _CloudSpec({
+    required this.top,
+    required this.scale,
+    required this.phase,
+    required this.opacity,
+    this.flip = false,
+  });
+
+  final double top;
+  final double scale;
+  final double phase;
+  final double opacity;
+  final bool flip;
 }
 
 List<Book> _filterBooks(
