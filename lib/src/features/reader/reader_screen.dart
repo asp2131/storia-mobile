@@ -382,6 +382,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     ),
                     child: GifPlayer(
                       controller: _gifPlayerController,
+                      isAutoDisposeController: false,
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -654,6 +655,33 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     return Offset(left - baseLeft, top - baseTop);
   }
 
+  void _startDrag() {
+    if (!_isDragging) {
+      setState(() => _isDragging = true);
+    }
+  }
+
+  void _updateDrag({
+    required DragUpdateDetails details,
+    required Size viewportSize,
+    required EdgeInsets safePadding,
+    required double baseBottom,
+  }) {
+    final next = _clampOffset(
+      candidate: _dragOffset + details.delta,
+      viewportSize: viewportSize,
+      safePadding: safePadding,
+      baseBottom: baseBottom,
+    );
+    setState(() => _dragOffset = next);
+  }
+
+  void _endDrag() {
+    if (_isDragging) {
+      setState(() => _isDragging = false);
+    }
+  }
+
   /// Determine which wedge was tapped based on angle from center.
   _WedgeZone? _hitTestWedge(Offset localPosition) {
     final center = Offset(_circleSize / 2, _circleSize / 2);
@@ -737,10 +765,20 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     final practiceIconPos = _wedgeIconOffset(150); // bottom
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTapUp: (details) {
         final zone = _hitTestWedge(details.localPosition);
         if (zone != null) _onWedgeTap(zone);
       },
+      onPanStart: (_) => _startDrag(),
+      onPanUpdate: (details) => _updateDrag(
+        details: details,
+        viewportSize: viewportSize,
+        safePadding: safePadding,
+        baseBottom: baseBottom,
+      ),
+      onPanEnd: (_) => _endDrag(),
+      onPanCancel: _endDrag,
       child: Container(
         width: _circleSize,
         height: _circleSize,
@@ -847,18 +885,15 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
       hint: 'Drag to reposition the audio controls',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onPanStart: (_) => setState(() => _isDragging = true),
-        onPanUpdate: (details) {
-          final next = _clampOffset(
-            candidate: _dragOffset + details.delta,
-            viewportSize: viewportSize,
-            safePadding: safePadding,
-            baseBottom: baseBottom,
-          );
-          setState(() => _dragOffset = next);
-        },
-        onPanEnd: (_) => setState(() => _isDragging = false),
-        onPanCancel: () => setState(() => _isDragging = false),
+        onPanStart: (_) => _startDrag(),
+        onPanUpdate: (details) => _updateDrag(
+          details: details,
+          viewportSize: viewportSize,
+          safePadding: safePadding,
+          baseBottom: baseBottom,
+        ),
+        onPanEnd: (_) => _endDrag(),
+        onPanCancel: _endDrag,
         child: AnimatedScale(
           scale: _isDragging ? 1.06 : 1.0,
           duration: const Duration(milliseconds: 160),
