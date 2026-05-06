@@ -267,7 +267,9 @@ ${hostname_short}:${wt}@${short_sha}
 - $(date -Iseconds) opencode-symphony picked up ticket"
 
   local task_text
-  task_text="$title
+  task_text="SYMPHONY MODE: non-interactive headless run. No user is available to answer questions or approve plans. Skip the brainstorming skill and any design-approval gates — they do not apply here. Plan briefly (<=1 sentence), then implement directly, run verify, and stop. Do NOT ask clarifying questions or wait for confirmation; make reasonable decisions and proceed.
+
+$title
 
 Linear ticket: $ident
 URL: $url

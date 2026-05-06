@@ -10,7 +10,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/storia_colors.dart';
-import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
@@ -337,7 +336,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   );
                 },
               ),
-              _AudioControlsPill(
+              AudioControlsPill(
                 hasNarration: hasNarration,
                 hasSoundscape: hasSoundscape,
                 isNarrationPlaying: _runtimeState.isNarrationPlaying,
@@ -564,7 +563,7 @@ const _gripSize = 36.0;
 /// Which pie wedge was tapped.
 enum _WedgeZone { left, right, bottom }
 
-class _AudioControlsPill extends StatefulWidget {
+class AudioControlsPill extends StatefulWidget {
   final bool hasNarration;
   final bool hasSoundscape;
   final bool isNarrationPlaying;
@@ -577,7 +576,8 @@ class _AudioControlsPill extends StatefulWidget {
   final Future<void> Function() onToggleSoundscape;
   final Future<void> Function() onTogglePractice;
 
-  const _AudioControlsPill({
+  const AudioControlsPill({
+    super.key,
     required this.hasNarration,
     required this.hasSoundscape,
     required this.isNarrationPlaying,
@@ -592,39 +592,21 @@ class _AudioControlsPill extends StatefulWidget {
   });
 
   @override
-  State<_AudioControlsPill> createState() => _AudioControlsPillState();
+  State<AudioControlsPill> createState() => AudioControlsPillState();
 }
 
-class _AudioControlsPillState extends State<_AudioControlsPill> {
-  final GlobalKey _pillKey = GlobalKey();
-  Offset _dragOffset = Offset.zero;
-  Size _pillSize = Size.zero;
+class AudioControlsPillState extends State<AudioControlsPill> {
+  final ValueNotifier<Offset> _dragOffsetNotifier = ValueNotifier(Offset.zero);
   bool _isDragging = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _scheduleMeasure();
-  }
+  static const Size _pillSize = Size(_circleSize, _circleSize);
+
+  Offset get _dragOffset => _dragOffsetNotifier.value;
 
   @override
-  void didUpdateWidget(covariant _AudioControlsPill oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.hasNarration != widget.hasNarration ||
-        oldWidget.hasSoundscape != widget.hasSoundscape ||
-        oldWidget.showGrip != widget.showGrip) {
-      _scheduleMeasure();
-    }
-  }
-
-  void _scheduleMeasure() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final ro = _pillKey.currentContext?.findRenderObject();
-      if (ro is! RenderBox || !ro.hasSize) return;
-      final next = ro.size;
-      if (next != _pillSize) setState(() => _pillSize = next);
-    });
+  void dispose() {
+    _dragOffsetNotifier.dispose();
+    super.dispose();
   }
 
   Offset _clampOffset({
@@ -707,6 +689,29 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     }
   }
 
+  void _handlePanStart() {
+    setState(() => _isDragging = true);
+  }
+
+  void _handlePanEnd() {
+    setState(() => _isDragging = false);
+  }
+
+  void _handlePanUpdate(
+    DragUpdateDetails details, {
+    required Size viewportSize,
+    required EdgeInsets safePadding,
+    required double baseBottom,
+  }) {
+    final next = _clampOffset(
+      candidate: _dragOffset + details.delta,
+      viewportSize: viewportSize,
+      safePadding: safePadding,
+      baseBottom: baseBottom,
+    );
+    _dragOffsetNotifier.value = next;
+  }
+
   /// Icon position: center of a wedge at a given angle and radial distance.
   Offset _wedgeIconOffset(double angleDeg) {
     final angleRad = angleDeg * math.pi / 180;
@@ -737,10 +742,20 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     final practiceIconPos = _wedgeIconOffset(150); // bottom
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTapUp: (details) {
         final zone = _hitTestWedge(details.localPosition);
         if (zone != null) _onWedgeTap(zone);
       },
+      onPanStart: (_) => _handlePanStart(),
+      onPanUpdate: (details) => _handlePanUpdate(
+        details,
+        viewportSize: viewportSize,
+        safePadding: safePadding,
+        baseBottom: baseBottom,
+      ),
+      onPanEnd: (_) => _handlePanEnd(),
+      onPanCancel: _handlePanEnd,
       child: Container(
         width: _circleSize,
         height: _circleSize,
@@ -855,7 +870,7 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
             safePadding: safePadding,
             baseBottom: baseBottom,
           );
-          setState(() => _dragOffset = next);
+          _dragOffsetNotifier.value = next;
         },
         onPanEnd: (_) => setState(() => _isDragging = false),
         onPanCancel: () => setState(() => _isDragging = false),
@@ -923,77 +938,64 @@ class _AudioControlsPillState extends State<_AudioControlsPill> {
     final safePadding = MediaQuery.paddingOf(context);
     final viewportSize = MediaQuery.sizeOf(context);
     final baseBottom = math.max(28.0, safePadding.bottom + 12.0);
-    final clampedOffset = _clampOffset(
-      candidate: _dragOffset,
-      viewportSize: viewportSize,
-      safePadding: safePadding,
-      baseBottom: baseBottom,
-    );
+    final baseLeft = (viewportSize.width - _circleSize) / 2;
+    final baseTop = viewportSize.height - baseBottom - _circleSize;
 
-    if (clampedOffset != _dragOffset) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        setState(() => _dragOffset = clampedOffset);
-      });
-    }
-
-    return Positioned.fill(
-      child: IgnorePointer(
-        ignoring: !widget.isVisible,
-        child: AnimatedOpacity(
-          opacity: widget.isVisible ? 1 : 0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-          child: AnimatedSlide(
-            offset: widget.isVisible ? Offset.zero : const Offset(0, 0.3),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.only(bottom: baseBottom),
-                child: Transform.translate(
-                  offset: clampedOffset,
-                  child: AnimatedScale(
-                    scale: _isDragging ? 1.035 : 1.0,
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeOutCubic,
-                    child: SizedBox(
-                      key: _pillKey,
-                      width: _circleSize,
-                      height: _circleSize,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          if (_isDragging)
-                            IgnorePointer(
-                              child: Transform.translate(
-                                offset: const Offset(0, 10),
-                                child: Opacity(
-                                  opacity: 0.18,
-                                  child: _buildCircleBody(
-                                    viewportSize: viewportSize,
-                                    safePadding: safePadding,
-                                    baseBottom: baseBottom,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          _buildCircleBody(
-                            viewportSize: viewportSize,
-                            safePadding: safePadding,
-                            baseBottom: baseBottom,
-                          ),
-                        ],
-                      ),
-                    ).animate().fadeIn(duration: StoriaMotion.medium),
-                  ),
-                ),
-              ),
+    // Pie subtree built ONCE per parent rebuild (not per drag tick) — pan
+    // updates flow through the notifier and rebuild only the outer Positioned.
+    final pillSubtree = IgnorePointer(
+      ignoring: !widget.isVisible,
+      child: AnimatedOpacity(
+        opacity: widget.isVisible ? 1 : 0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        child: AnimatedScale(
+          scale: _isDragging ? 1.035 : 1.0,
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          child: SizedBox(
+            width: _circleSize,
+            height: _circleSize,
+            child: _buildCircleBody(
+              viewportSize: viewportSize,
+              safePadding: safePadding,
+              baseBottom: baseBottom,
             ),
           ),
         ),
+      ),
+    );
+
+    return Positioned.fill(
+      child: ValueListenableBuilder<Offset>(
+        valueListenable: _dragOffsetNotifier,
+        builder: (context, dragOffset, child) {
+          final clamped = _clampOffset(
+            candidate: dragOffset,
+            viewportSize: viewportSize,
+            safePadding: safePadding,
+            baseBottom: baseBottom,
+          );
+          if (clamped != dragOffset) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              _dragOffsetNotifier.value = clamped;
+            });
+          }
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: baseLeft + clamped.dx,
+                top: baseTop + clamped.dy,
+                width: _circleSize,
+                height: _circleSize,
+                child: child!,
+              ),
+            ],
+          );
+        },
+        child: pillSubtree,
       ),
     );
   }
