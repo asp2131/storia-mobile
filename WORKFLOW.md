@@ -2,7 +2,9 @@
 # Configuration consumed by ./bin/pi-symphony.sh — a Pi-native Linear orchestrator
 # inspired by OpenAI Symphony but using Pi (`pi chain ...`) instead of Codex.
 # These keys are documentation; the script reads env vars (LINEAR_API_KEY,
-# PROJECT_SLUG, WORKSPACES, POLL_S, MAX_PARALLEL, PI_CHAIN). Override at launch:
+# PROJECT_SLUG, WORKSPACES, POLL_S, MAX_PARALLEL, PI_CHAIN,
+# PLAYWRIGHT_PROOF_MODE, PLAYWRIGHT_PROOF_UPLOAD_CMD,
+# PLAYWRIGHT_PROOF_REQUIRE_UPLOAD). Override at launch:
 #   PROJECT_SLUG=... POLL_S=15 MAX_PARALLEL=2 ./bin/pi-symphony.sh
 runner: pi-symphony
 tracker:
@@ -89,18 +91,38 @@ The runner has already invoked `pi chain storia-build-feature` to start this ses
 
 `playwright-cli` is available globally for browser-verifiable flows, screenshots, traces, and WebM video proof.
 
-Use it when the change has a browser/web-verifiable surface or when visual proof is valuable:
+Playwright **video proof is mandatory** for any ticket with UI/browser-verifiable acceptance criteria (screens, navigation, copy, visual state, auth/onboarding, or layout). It is optional only for purely non-UI changes.
 
-```bash
-playwright-cli open
-playwright-cli tracing-start
-playwright-cli video-start
-# perform browser actions
-playwright-cli video-stop --filename=recordings/<flow>.webm
-playwright-cli tracing-stop
+For auth/onboarding UI proof, use the canonical App Review bypass path:
+
+```text
+Start your journey -> app-review@storia.kids -> parent birth year -> onboarding -> library
 ```
 
-Prefer Flutter unit/widget/integration tests for Dart, widget, and mobile-device behavior. When Playwright is used, record the screenshot/video/trace artifact path in the workpad and PR.
+Use a valid adult birth year such as `1980`, complete onboarding selections, and end the recording on the library screen.
+
+Artifact expectations:
+
+- Save WebM recordings under `recordings/<ticket-id>-proof.webm` or `recordings/<ticket-id>-<flow>.webm` when multiple recordings are needed.
+- Record the exact artifact path in the Linear workpad `Validation` section and in the PR body/comment.
+- Required proof must be uploaded/linked by the runner before PR handoff. Configure `PLAYWRIGHT_PROOF_UPLOAD_CMD` to a command that receives `PLAYWRIGHT_PROOF_FILE` and `PLAYWRIGHT_PROOF_TICKET` env vars and prints a shareable URL.
+- Local-only paths are accepted only for explicit dry runs with `PLAYWRIGHT_PROOF_REQUIRE_UPLOAD=0`.
+- If Playwright or proof upload cannot run, document the blocker in the workpad before handoff.
+
+Example:
+
+```bash
+mkdir -p recordings
+playwright-cli open <chrome-app-url>
+playwright-cli tracing-start
+playwright-cli video-start
+# perform the required browser flow
+playwright-cli video-stop --filename=recordings/<ticket-id>-proof.webm
+playwright-cli tracing-stop
+playwright-cli close
+```
+
+Prefer Flutter unit/widget/integration tests for Dart, widget, and mobile-device behavior; Playwright proof complements those tests for human-reviewable UI evidence.
 
 ## Status map (matches the live Linear workflow on this project)
 
@@ -186,7 +208,7 @@ flutter build apk --debug
 flutter build ipa --export-method app-store    # see README.md for the manual xcodebuild export path
 ```
 
-For browser-verifiable UI proof, run the web target then capture with Playwright CLI:
+For UI/browser-verifiable tickets, run the web target and capture mandatory Playwright video proof:
 
 ```bash
 flutter run -d chrome &      # leave running on its default port
@@ -194,13 +216,22 @@ mkdir -p recordings
 playwright-cli open <chrome-app-url>
 playwright-cli tracing-start
 playwright-cli video-start
-# perform flow
-playwright-cli video-stop --filename=recordings/<ticket>-proof.webm
+# perform the ticket-specific UI flow; for auth/onboarding use:
+# Start your journey -> app-review@storia.kids -> parent birth year -> onboarding -> library
+playwright-cli video-stop --filename=recordings/<ticket-id>-proof.webm
 playwright-cli tracing-stop
 playwright-cli close
 ```
 
-Record exact commands and outcomes in the workpad. If validation fails, fix or document a true blocker before handoff.
+Record exact commands, outcomes, and the WebM artifact path/link in the workpad. If validation fails, fix or document a true blocker before handoff.
+
+Runner enforcement:
+
+- `PLAYWRIGHT_PROOF_MODE=auto` (default) requires proof when changed paths look UI/browser-verifiable.
+- `PLAYWRIGHT_PROOF_MODE=always` requires proof for every ticket.
+- `PLAYWRIGHT_PROOF_MODE=off` disables the runner gate; use only for true non-visual work or emergencies and document why.
+- Required proof must create at least one non-empty `recordings/*.webm` file.
+- By default, required proof must be uploaded/linked through `PLAYWRIGHT_PROOF_UPLOAD_CMD`; set `PLAYWRIGHT_PROOF_REQUIRE_UPLOAD=0` only for local dry runs.
 
 ## PR and review flow
 
@@ -211,6 +242,7 @@ Record exact commands and outcomes in the workpad. If validation fails, fix or d
 5. Before moving to `Human Review`:
    - all acceptance criteria are checked,
    - required validation is checked with command evidence,
+   - UI/browser-verifiable tickets include a Playwright WebM path and artifact link when published,
    - PR checks are green or blocker is documented,
    - PR comments/reviews have no outstanding actionable feedback,
    - the workpad reflects the latest plan, validation, and handoff notes.
@@ -265,6 +297,7 @@ Use this exact structure and update it in place:
 ### Validation
 
 - [ ] `<command>` — expected proof
+- [ ] `playwright-cli video-stop --filename=recordings/<ticket-id>-proof.webm` — required for UI/browser-verifiable tickets; include uploaded artifact link (or local path only when `PLAYWRIGHT_PROOF_REQUIRE_UPLOAD=0`)
 
 ### Notes
 

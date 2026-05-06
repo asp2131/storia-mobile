@@ -26,7 +26,7 @@ flutter test test/features/<feature>/         # one feature
 flutter test test/features/reader/runtime/    # one subsystem
 ```
 
-UI/web proof when relevant — see Playwright section below.
+UI/web proof is mandatory for UI/browser-verifiable tickets — see Playwright section below.
 
 ## Repo layout
 
@@ -76,20 +76,29 @@ UI/web proof when relevant — see Playwright section below.
 | Theme token change | `lib/src/core/theme/storia_*.dart` — never inline values |
 | New asset | drop in `assets/<kind>/` AND add the dir to `pubspec.yaml` flutter.assets if it's a new kind |
 
-## Playwright CLI (visual proof in Linear tickets)
+## Playwright CLI (required UI proof in Linear tickets)
 
-`playwright-cli` is on PATH globally. Use it when a ticket has a browser/web-verifiable surface or when video/screenshot proof helps a human reviewer.
+`playwright-cli` is on PATH globally. Playwright WebM proof is mandatory when a ticket has UI/browser-verifiable acceptance criteria (screens, navigation, copy, visual state, auth/onboarding, or layout). Pure Dart/data-only changes can skip Playwright if the workpad says why.
+
+Canonical App Review auth bypass flow for UI proof:
+
+```text
+Start your journey -> app-review@storia.kids -> parent birth year -> onboarding -> library
+```
+
+Use a valid adult parent birth year such as `1980`, complete onboarding selections, and end on the library screen.
 
 ```bash
+flutter run -d chrome &      # leave running on its default port
 mkdir -p recordings
-playwright-cli open
+playwright-cli open <chrome-app-url>
 playwright-cli video-start
-# perform flow
-playwright-cli video-stop --filename=recordings/<ticket>-proof.webm
+# perform the ticket-specific UI flow
+playwright-cli video-stop --filename=recordings/<ticket-id>-proof.webm
 playwright-cli close
 ```
 
-Record the artifact path in the Linear workpad and PR. Prefer Flutter widget/integration tests for Dart-side behavior; reach for Playwright when the proof is visual or web.
+Record `recordings/<ticket-id>-proof.webm` (or `recordings/<ticket-id>-<flow>.webm` for multiple flows) in the Linear workpad and PR. The runner requires an uploaded/shareable artifact link by default via `PLAYWRIGHT_PROOF_UPLOAD_CMD`; use `PLAYWRIGHT_PROOF_REQUIRE_UPLOAD=0` only for local dry runs where a repo-local path is acceptable. Prefer Flutter widget/integration tests for Dart-side behavior; Playwright proof is the human-reviewable UI evidence.
 
 ## Gotchas
 

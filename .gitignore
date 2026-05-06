@@ -33,6 +33,8 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+recordings/
+.playwright-cli/
 
 # Symbolication related
 app.*.symbols
