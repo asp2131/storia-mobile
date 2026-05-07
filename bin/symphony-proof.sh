@@ -5,6 +5,9 @@
 
 # Policy knobs:
 #   PLAYWRIGHT_PROOF_MODE=auto|always|off   default: auto
+#   PLAYWRIGHT_PROOF_CAPTURE_CMD='<command>' optional fallback; receives
+#       PLAYWRIGHT_PROOF_TICKET and must create recordings/<ticket>-*.webm.
+#     When unset, runners use bin/symphony-capture-playwright-proof.sh.
 #   PLAYWRIGHT_PROOF_UPLOAD_CMD='<command>' optional; receives env vars:
 #       PLAYWRIGHT_PROOF_FILE, PLAYWRIGHT_PROOF_TICKET
 #     and must print a shareable URL to stdout.
@@ -80,6 +83,50 @@ symphony_upload_playwright_recording() {
   url="$(printf '%s' "$url" | tail -n 1 | tr -d '\r')"
   [ -n "$url" ] || return 3
   printf '%s' "$url"
+}
+
+symphony_default_playwright_capture_script() {
+  local script_dir
+  script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+  printf '%s/symphony-capture-playwright-proof.sh' "$script_dir"
+}
+
+symphony_capture_playwright_proof() {
+  # $1 = ticket identifier. Runs the configured capture command, or the repo
+  # default capture script when available. The command receives
+  # PLAYWRIGHT_PROOF_TICKET in its environment and must create a matching WebM.
+  local ticket="$1" cmd="${PLAYWRIGHT_PROOF_CAPTURE_CMD:-}" default_script
+
+  if [ -n "$cmd" ]; then
+    PLAYWRIGHT_PROOF_TICKET="$ticket" bash -lc "$cmd"
+    return $?
+  fi
+
+  default_script="$(symphony_default_playwright_capture_script)"
+  if [ ! -x "$default_script" ]; then
+    echo "No PLAYWRIGHT_PROOF_CAPTURE_CMD set and default capture script is not executable: $default_script" >&2
+    return 127
+  fi
+
+  PLAYWRIGHT_PROOF_TICKET="$ticket" "$default_script"
+}
+
+symphony_ensure_playwright_proof() {
+  # $1 = ticket identifier. Prints proof markdown on success. If evidence is
+  # missing, attempts automated capture once and then re-validates evidence.
+  local ticket="$1"
+
+  if symphony_build_playwright_proof_markdown "$ticket"; then
+    return 0
+  fi
+
+  echo "Attempting automated Playwright proof capture for $ticket..." >&2
+  if ! symphony_capture_playwright_proof "$ticket"; then
+    echo "Playwright proof capture failed for $ticket." >&2
+    return 1
+  fi
+
+  symphony_build_playwright_proof_markdown "$ticket"
 }
 
 symphony_build_playwright_proof_markdown() {
@@ -176,6 +223,21 @@ symphony_proof_self_test() {
       echo "expected local artifact evidence when upload requirement is disabled" >&2
       exit 1
     fi
+
+    rm -f recordings/STO-TEST-proof.webm
+    PLAYWRIGHT_PROOF_CAPTURE_CMD='printf video > "recordings/${PLAYWRIGHT_PROOF_TICKET}-proof.webm"'
+    export PLAYWRIGHT_PROOF_CAPTURE_CMD
+    if ! symphony_ensure_playwright_proof STO-TEST >/tmp/symphony-proof-self-test.out 2>/tmp/symphony-proof-self-test.err; then
+      echo "expected capture fallback to create local artifact evidence" >&2
+      cat /tmp/symphony-proof-self-test.err >&2
+      exit 1
+    fi
+    if ! grep -q 'Local artifact' /tmp/symphony-proof-self-test.out; then
+      echo "expected capture fallback markdown to include local artifact" >&2
+      cat /tmp/symphony-proof-self-test.out >&2
+      exit 1
+    fi
+    unset PLAYWRIGHT_PROOF_CAPTURE_CMD
   ) || status=$?
   rm -rf "$tmp"
   rm -f /tmp/symphony-proof-self-test.out /tmp/symphony-proof-self-test.err

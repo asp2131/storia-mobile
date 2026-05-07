@@ -98,7 +98,7 @@ playwright-cli video-stop --filename=recordings/<ticket-id>-proof.webm
 playwright-cli close
 ```
 
-Record `recordings/<ticket-id>-proof.webm` (or `recordings/<ticket-id>-<flow>.webm` for multiple flows) in the Linear workpad and PR. The runner requires an uploaded/shareable artifact link by default via `PLAYWRIGHT_PROOF_UPLOAD_CMD`; use `PLAYWRIGHT_PROOF_REQUIRE_UPLOAD=0` only for local dry runs where a repo-local path is acceptable. Prefer Flutter widget/integration tests for Dart-side behavior; Playwright proof is the human-reviewable UI evidence.
+Record `recordings/<ticket-id>-proof.webm` (or `recordings/<ticket-id>-<flow>.webm` for multiple flows) in the Linear workpad and PR. At handoff, the runner first accepts an existing ticket-specific WebM; if missing, it automatically runs `PLAYWRIGHT_PROOF_CAPTURE_CMD` or the default `bin/symphony-capture-playwright-proof.sh` App Review flow, then re-validates evidence. The default script serves Flutter with the `web-server` device and creates/removes a temporary `web/` scaffold when the repo has no tracked web target. The runner requires an uploaded/shareable artifact link by default via `PLAYWRIGHT_PROOF_UPLOAD_CMD`; use `PLAYWRIGHT_PROOF_REQUIRE_UPLOAD=0` only for local dry runs where a repo-local path is acceptable. `PLAYWRIGHT_PROOF_CAPTURE_DRY_RUN=1` creates placeholder files for harness tests only, not valid PR evidence. Prefer Flutter widget/integration tests for Dart-side behavior; Playwright proof is the human-reviewable UI evidence.
 
 ## Gotchas
 

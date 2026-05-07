@@ -28,6 +28,7 @@
 #   GIT_BASE               default: main
 #   OPENCODE_MODEL         default: opencode-go/kimi-k2.6
 #   PLAYWRIGHT_PROOF_MODE  default: auto (auto|always|off)
+#   PLAYWRIGHT_PROOF_CAPTURE_CMD optional fallback command to create recordings/<ticket>-*.webm
 #   PLAYWRIGHT_PROOF_REQUIRE_UPLOAD default: 1 (set 0 to allow local paths)
 #   PLAYWRIGHT_PROOF_UPLOAD_CMD optional command that prints a shareable video URL
 #   STATE_TODO             default: Todo
@@ -326,7 +327,7 @@ Playwright proof requirement for UI/browser-verifiable work:
   if [ "$proof_status" = "0" ]; then
     log "Playwright video proof required by policy"
     proof_tmp="$(mktemp)"
-    if (cd "$wt" && symphony_build_playwright_proof_markdown "$ident") >"$proof_tmp" 2>&1; then
+    if (cd "$wt" && symphony_ensure_playwright_proof "$ident") >"$proof_tmp" 2>&1; then
       proof_md="$(cat "$proof_tmp")"
       rm -f "$proof_tmp"
     else

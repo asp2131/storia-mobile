@@ -3,8 +3,8 @@
 # inspired by OpenAI Symphony but using Pi (`pi chain ...`) instead of Codex.
 # These keys are documentation; the script reads env vars (LINEAR_API_KEY,
 # PROJECT_SLUG, WORKSPACES, POLL_S, MAX_PARALLEL, PI_CHAIN,
-# PLAYWRIGHT_PROOF_MODE, PLAYWRIGHT_PROOF_UPLOAD_CMD,
-# PLAYWRIGHT_PROOF_REQUIRE_UPLOAD). Override at launch:
+# PLAYWRIGHT_PROOF_MODE, PLAYWRIGHT_PROOF_CAPTURE_CMD,
+# PLAYWRIGHT_PROOF_UPLOAD_CMD, PLAYWRIGHT_PROOF_REQUIRE_UPLOAD). Override at launch:
 #   PROJECT_SLUG=... POLL_S=15 MAX_PARALLEL=2 ./bin/pi-symphony.sh
 runner: pi-symphony
 tracker:
@@ -105,9 +105,11 @@ Artifact expectations:
 
 - Save WebM recordings under `recordings/<ticket-id>-proof.webm` or `recordings/<ticket-id>-<flow>.webm` when multiple recordings are needed.
 - Record the exact artifact path in the Linear workpad `Validation` section and in the PR body/comment.
+- The runner now attempts proof automatically before blocking: it first accepts an existing ticket-specific WebM, then runs `PLAYWRIGHT_PROOF_CAPTURE_CMD` when set, otherwise runs `bin/symphony-capture-playwright-proof.sh`, then re-validates the WebM. The default script serves Flutter with the `web-server` device and creates/removes a temporary `web/` scaffold when the repo has no tracked web target.
 - Required proof must be uploaded/linked by the runner before PR handoff. Configure `PLAYWRIGHT_PROOF_UPLOAD_CMD` to a command that receives `PLAYWRIGHT_PROOF_FILE` and `PLAYWRIGHT_PROOF_TICKET` env vars and prints a shareable URL.
 - Local-only paths are accepted only for explicit dry runs with `PLAYWRIGHT_PROOF_REQUIRE_UPLOAD=0`.
-- If Playwright or proof upload cannot run, document the blocker in the workpad before handoff.
+- `PLAYWRIGHT_PROOF_CAPTURE_DRY_RUN=1` makes the default capture script create a placeholder file for harness tests only; do not use it as PR evidence.
+- If automated Playwright capture or proof upload cannot run, document the blocker in the workpad before handoff.
 
 Example:
 
@@ -230,7 +232,8 @@ Runner enforcement:
 - `PLAYWRIGHT_PROOF_MODE=auto` (default) requires proof when changed paths look UI/browser-verifiable.
 - `PLAYWRIGHT_PROOF_MODE=always` requires proof for every ticket.
 - `PLAYWRIGHT_PROOF_MODE=off` disables the runner gate; use only for true non-visual work or emergencies and document why.
-- Required proof must create at least one non-empty `recordings/*.webm` file.
+- Required proof must create at least one non-empty `recordings/<ticket-id>-*.webm` file.
+- If that file is missing, the runner attempts automated capture via `PLAYWRIGHT_PROOF_CAPTURE_CMD` or the default `bin/symphony-capture-playwright-proof.sh` App Review flow.
 - By default, required proof must be uploaded/linked through `PLAYWRIGHT_PROOF_UPLOAD_CMD`; set `PLAYWRIGHT_PROOF_REQUIRE_UPLOAD=0` only for local dry runs.
 
 ## PR and review flow
