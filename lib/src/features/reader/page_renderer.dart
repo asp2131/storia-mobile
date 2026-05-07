@@ -146,7 +146,7 @@ class _PageRendererState extends State<PageRenderer> {
 
         final Widget imageLayer =
             page.imageUrl != null && page.imageUrl!.isNotEmpty
-            ? _buildPageImage(hasOverlay)
+            ? _buildPageImage()
             : const ColoredBox(color: Color(0xFFDDDDD4));
 
         final Widget textLayer =
@@ -307,13 +307,13 @@ class _PageRendererState extends State<PageRenderer> {
     );
   }
 
-  Widget _buildPageImage(bool hasOverlay) {
+  Widget _buildPageImage() {
     final image = Image(
       image: CachedNetworkImageProvider(
         widget.page.imageUrl!,
         cacheManager: ResilientCacheManager.instance,
       ),
-      fit: hasOverlay ? BoxFit.contain : BoxFit.cover,
+      fit: BoxFit.contain,
       width: double.infinity,
       height: double.infinity,
     );
