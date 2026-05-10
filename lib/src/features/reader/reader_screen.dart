@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:confetti/confetti.dart';
 import 'package:gif_player/gif_player.dart';
+import 'package:gooey/gooey.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -595,18 +596,130 @@ class AudioControlsPill extends StatefulWidget {
   State<AudioControlsPill> createState() => AudioControlsPillState();
 }
 
-class AudioControlsPillState extends State<AudioControlsPill> {
+class AudioControlsPillState extends State<AudioControlsPill>
+    with TickerProviderStateMixin {
+  // ---------------------------------------------------------------------------
+  // Drag state
+  // ---------------------------------------------------------------------------
   final ValueNotifier<Offset> _dragOffsetNotifier = ValueNotifier(Offset.zero);
   bool _isDragging = false;
+
+  // ---------------------------------------------------------------------------
+  // Gooey wobble state
+  //
+  // While the pill is being dragged, a gooey overlay paints behind the pill
+  // with a small "trail" blob that lags behind the drag direction. The blob
+  // catches up smoothly on release (the outro animation), making the pill
+  // feel like jelly. When fully idle, the overlay is unmounted entirely so
+  // there is zero overhead.
+  // ---------------------------------------------------------------------------
+  final ValueNotifier<Offset> _trailVectorNotifier = ValueNotifier(Offset.zero);
+  late final AnimationController _outroController;
+  bool _wobbleActive = false;
+  Offset _outroStartVector = Offset.zero;
+
+  /// Maximum pixel distance the trail blob can lag from the pill center.
+  ///
+  /// This must be large enough to protrude past the 60px pill radius; otherwise
+  /// the gooey overlay is technically mounted but hidden under the pill body.
+  static const double _maxTrailDistance = 72.0;
+
+  /// Pixel-amplification of each per-frame pan delta when computing the
+  /// trail's target offset. Tuned so a brisk drag visibly stretches the goo
+  /// without exploding past [_maxTrailDistance].
+  static const double _trailDeltaGain = 12.0;
+
+  /// EMA smoothing factor for the trail vector. Higher = more responsive,
+  /// lower = more inertia.
+  static const double _trailSmoothing = 0.4;
+
+  /// Color of the gooey wobble blobs. Matches the pill body so the trail
+  /// reads as the same material extending out of the pill.
+  static const Color _wobbleColor = Color.fromRGBO(10, 15, 25, 0.62);
 
   static const Size _pillSize = Size(_circleSize, _circleSize);
 
   Offset get _dragOffset => _dragOffsetNotifier.value;
 
   @override
+  void initState() {
+    super.initState();
+    _outroController =
+        AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 260),
+          )
+          ..addListener(_handleOutroTick)
+          ..addStatusListener(_handleOutroStatus);
+  }
+
+  @override
   void dispose() {
+    _outroController
+      ..removeListener(_handleOutroTick)
+      ..removeStatusListener(_handleOutroStatus)
+      ..dispose();
+    _trailVectorNotifier.dispose();
     _dragOffsetNotifier.dispose();
     super.dispose();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Wobble lifecycle
+  // ---------------------------------------------------------------------------
+
+  void _activateWobble() {
+    if (_outroController.isAnimating) {
+      _outroController.stop();
+    }
+    if (!_wobbleActive) {
+      setState(() => _wobbleActive = true);
+    }
+  }
+
+  void _beginWobbleOutro() {
+    final start = _trailVectorNotifier.value;
+    if (start.distance < 0.5) {
+      _trailVectorNotifier.value = Offset.zero;
+      if (_wobbleActive) {
+        setState(() => _wobbleActive = false);
+      }
+      return;
+    }
+    _outroStartVector = start;
+    _outroController.forward(from: 0.0);
+  }
+
+  void _handleOutroTick() {
+    final progress = Curves.easeOut.transform(_outroController.value);
+    _trailVectorNotifier.value = Offset.lerp(
+      _outroStartVector,
+      Offset.zero,
+      progress,
+    )!;
+  }
+
+  void _handleOutroStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      _trailVectorNotifier.value = Offset.zero;
+      if (_wobbleActive && !_isDragging) {
+        setState(() => _wobbleActive = false);
+      }
+    }
+  }
+
+  void _updateTrail(Offset delta) {
+    final current = _trailVectorNotifier.value;
+    // Trail lags opposite to drag motion ("the pill drags itself forward,
+    // leaving a tail behind").
+    final lagTarget = -delta * _trailDeltaGain;
+    final smoothed =
+        current * (1 - _trailSmoothing) + lagTarget * _trailSmoothing;
+    final magnitude = smoothed.distance;
+    final clamped = magnitude > _maxTrailDistance
+        ? Offset.fromDirection(smoothed.direction, _maxTrailDistance)
+        : smoothed;
+    _trailVectorNotifier.value = clamped;
   }
 
   Offset _clampOffset({
@@ -691,10 +804,12 @@ class AudioControlsPillState extends State<AudioControlsPill> {
 
   void _handlePanStart() {
     setState(() => _isDragging = true);
+    _activateWobble();
   }
 
   void _handlePanEnd() {
     setState(() => _isDragging = false);
+    _beginWobbleOutro();
   }
 
   void _handlePanUpdate(
@@ -710,6 +825,61 @@ class AudioControlsPillState extends State<AudioControlsPill> {
       baseBottom: baseBottom,
     );
     _dragOffsetNotifier.value = next;
+    _updateTrail(details.delta);
+  }
+
+  /// Builds the gooey wobble overlay that paints behind the pill while it is
+  /// being dragged (and during the brief release outro). Returns `null` when
+  /// the overlay should not be rendered at all.
+  Widget? _buildWobbleOverlay() {
+    if (!_wobbleActive) return null;
+
+    // Overlay box extends beyond the pill on every side so the trail blob has
+    // room to stretch outside the 120 × 120 pill bounds.
+    const double overlaySize = _circleSize + _maxTrailDistance * 2 + 24;
+
+    return IgnorePointer(
+      child: SizedBox(
+        width: overlaySize,
+        height: overlaySize,
+        child: GooeyZone(
+          color: _wobbleColor,
+          gooiness: 38,
+          borderWidth: 1.0,
+          borderColor: const Color.fromRGBO(255, 255, 255, 0.16),
+          child: ValueListenableBuilder<Offset>(
+            valueListenable: _trailVectorNotifier,
+            builder: (context, trail, _) {
+              return Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  // Main blob: same size as the pill, centered. Hidden under
+                  // the pill's own visual; only its edges contribute to the
+                  // gooey merge with the trail.
+                  const GooeyBlob(
+                    shape: BlobShape.circle(),
+                    child: SizedBox.square(dimension: _circleSize),
+                  ),
+                  // Trail blob: lags behind the drag direction; pokes out
+                  // past the pill's edge to create the jelly tail.
+                  Transform.translate(
+                    offset: trail,
+                    child: const GooeyBlob(
+                      shape: BlobShape.circle(),
+                      child: SizedBox.square(
+                        key: ValueKey('audio-controls-gooey-trail'),
+                        dimension: 58,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   /// Icon position: center of a wedge at a given angle and radial distance.
@@ -728,19 +898,6 @@ class AudioControlsPillState extends State<AudioControlsPill> {
     required EdgeInsets safePadding,
     required double baseBottom,
   }) {
-    // Icon positions: center of each 120° wedge.
-    // Left (narration): wedge from 150° to 270° → center at 210°
-    // Right (soundscape): wedge from 270° to 390° → center at 330°
-    // Bottom (practice): wedge from 30° to 150° → center at 90°
-    //
-    // Using our wedge layout: dividers at -30°, 90°, 210°
-    // Right (soundscape): -30° to 90° → center at 30°
-    // Bottom (practice): 90° to 210° → center at 150°
-    // Left (narration): 210° to 330° → center at 270°
-    final narrationIconPos = _wedgeIconOffset(270); // left
-    final soundscapeIconPos = _wedgeIconOffset(30); // right
-    final practiceIconPos = _wedgeIconOffset(150); // bottom
-
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTapUp: (details) {
@@ -756,93 +913,120 @@ class AudioControlsPillState extends State<AudioControlsPill> {
       ),
       onPanEnd: (_) => _handlePanEnd(),
       onPanCancel: _handlePanEnd,
-      child: Container(
-        width: _circleSize,
-        height: _circleSize,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: const Color.fromRGBO(10, 15, 25, 0.50),
-          border: Border.all(
-            color: _isDragging
-                ? const Color.fromRGBO(255, 255, 255, 0.34)
-                : const Color.fromRGBO(255, 255, 255, 0.18),
-            width: _isDragging ? 1.4 : 1.1,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          if (_buildWobbleOverlay() case final overlay?) overlay,
+          _buildPillVisual(
+            viewportSize: viewportSize,
+            safePadding: safePadding,
+            baseBottom: baseBottom,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: _isDragging ? 0.34 : 0.18),
-              blurRadius: _isDragging ? 28 : 18,
-              offset: Offset(0, _isDragging ? 16 : 8),
-            ),
-          ],
+        ],
+      ),
+    );
+  }
+
+  /// The opaque, glassy pill itself: wedge icons, divider painter, blur,
+  /// and the central grip handle. Stacked on top of the gooey wobble overlay
+  /// so the trail blob only shows as material extending past the pill edge.
+  Widget _buildPillVisual({
+    required Size viewportSize,
+    required EdgeInsets safePadding,
+    required double baseBottom,
+  }) {
+    // Icon positions: center of each 120° wedge.
+    final narrationIconPos = _wedgeIconOffset(270); // left
+    final soundscapeIconPos = _wedgeIconOffset(30); // right
+    final practiceIconPos = _wedgeIconOffset(150); // bottom
+
+    return Container(
+      width: _circleSize,
+      height: _circleSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: _wobbleColor,
+        border: Border.all(
+          color: _isDragging
+              ? const Color.fromRGBO(255, 255, 255, 0.34)
+              : const Color.fromRGBO(255, 255, 255, 0.18),
+          width: _isDragging ? 1.4 : 1.1,
         ),
-        child: ClipOval(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: CustomPaint(
-              painter: _WedgePainter(
-                isNarrationActive: widget.isNarrationPlaying,
-                isSoundscapeActive: widget.isSoundscapePlaying,
-                isPracticeActive: widget.isPracticeActive || widget.isListening,
-                gripRadius: _gripSize / 2,
-              ),
-              child: SizedBox(
-                width: _circleSize,
-                height: _circleSize,
-                child: Stack(
-                  children: [
-                    // Left wedge icon (narration)
-                    Positioned(
-                      left: narrationIconPos.dx,
-                      top: narrationIconPos.dy,
-                      child: Icon(
-                        widget.isNarrationPlaying
-                            ? Icons.pause_rounded
-                            : Icons.headphones_rounded,
-                        size: 22,
-                        color: widget.isNarrationPlaying
-                            ? _narrationColor
-                            : const Color.fromRGBO(255, 255, 255, 0.85),
-                      ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: _isDragging ? 0.34 : 0.18),
+            blurRadius: _isDragging ? 28 : 18,
+            offset: Offset(0, _isDragging ? 16 : 8),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: CustomPaint(
+            painter: _WedgePainter(
+              isNarrationActive: widget.isNarrationPlaying,
+              isSoundscapeActive: widget.isSoundscapePlaying,
+              isPracticeActive: widget.isPracticeActive || widget.isListening,
+              gripRadius: _gripSize / 2,
+            ),
+            child: SizedBox(
+              width: _circleSize,
+              height: _circleSize,
+              child: Stack(
+                children: [
+                  // Left wedge icon (narration)
+                  Positioned(
+                    left: narrationIconPos.dx,
+                    top: narrationIconPos.dy,
+                    child: Icon(
+                      widget.isNarrationPlaying
+                          ? Icons.pause_rounded
+                          : Icons.headphones_rounded,
+                      size: 22,
+                      color: widget.isNarrationPlaying
+                          ? _narrationColor
+                          : const Color.fromRGBO(255, 255, 255, 0.85),
                     ),
-                    // Right wedge icon (soundscape)
-                    Positioned(
-                      left: soundscapeIconPos.dx,
-                      top: soundscapeIconPos.dy,
-                      child: Icon(
-                        widget.isSoundscapePlaying
-                            ? Icons.volume_up_rounded
-                            : Icons.waves_rounded,
-                        size: 22,
-                        color: widget.isSoundscapePlaying
-                            ? _soundscapeColor
-                            : const Color.fromRGBO(255, 255, 255, 0.85),
-                      ),
+                  ),
+                  // Right wedge icon (soundscape)
+                  Positioned(
+                    left: soundscapeIconPos.dx,
+                    top: soundscapeIconPos.dy,
+                    child: Icon(
+                      widget.isSoundscapePlaying
+                          ? Icons.volume_up_rounded
+                          : Icons.waves_rounded,
+                      size: 22,
+                      color: widget.isSoundscapePlaying
+                          ? _soundscapeColor
+                          : const Color.fromRGBO(255, 255, 255, 0.85),
                     ),
-                    // Bottom wedge icon (practice/mic)
-                    Positioned(
-                      left: practiceIconPos.dx,
-                      top: practiceIconPos.dy,
-                      child: Icon(
-                        widget.isListening
-                            ? Icons.mic_rounded
-                            : Icons.mic_off_rounded,
-                        size: 22,
-                        color: (widget.isPracticeActive || widget.isListening)
-                            ? _practiceColor
-                            : const Color.fromRGBO(255, 255, 255, 0.85),
-                      ),
+                  ),
+                  // Bottom wedge icon (practice/mic)
+                  Positioned(
+                    left: practiceIconPos.dx,
+                    top: practiceIconPos.dy,
+                    child: Icon(
+                      widget.isListening
+                          ? Icons.mic_rounded
+                          : Icons.mic_off_rounded,
+                      size: 22,
+                      color: (widget.isPracticeActive || widget.isListening)
+                          ? _practiceColor
+                          : const Color.fromRGBO(255, 255, 255, 0.85),
                     ),
-                    // Center grip handle
-                    Center(
-                      child: _buildGripHandle(
-                        viewportSize: viewportSize,
-                        safePadding: safePadding,
-                        baseBottom: baseBottom,
-                      ),
+                  ),
+                  // Center grip handle
+                  Center(
+                    child: _buildGripHandle(
+                      viewportSize: viewportSize,
+                      safePadding: safePadding,
+                      baseBottom: baseBottom,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -862,18 +1046,15 @@ class AudioControlsPillState extends State<AudioControlsPill> {
       hint: 'Drag to reposition the audio controls',
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onPanStart: (_) => setState(() => _isDragging = true),
-        onPanUpdate: (details) {
-          final next = _clampOffset(
-            candidate: _dragOffset + details.delta,
-            viewportSize: viewportSize,
-            safePadding: safePadding,
-            baseBottom: baseBottom,
-          );
-          _dragOffsetNotifier.value = next;
-        },
-        onPanEnd: (_) => setState(() => _isDragging = false),
-        onPanCancel: () => setState(() => _isDragging = false),
+        onPanStart: (_) => _handlePanStart(),
+        onPanUpdate: (details) => _handlePanUpdate(
+          details,
+          viewportSize: viewportSize,
+          safePadding: safePadding,
+          baseBottom: baseBottom,
+        ),
+        onPanEnd: (_) => _handlePanEnd(),
+        onPanCancel: _handlePanEnd,
         child: AnimatedScale(
           scale: _isDragging ? 1.06 : 1.0,
           duration: const Duration(milliseconds: 160),
