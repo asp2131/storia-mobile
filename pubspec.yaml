@@ -62,6 +62,7 @@ dependencies:
   gooey: ^0.2.0
   rive: ^0.14.4
   flutter_svg: ^2.2.1
+  vector_math: ^2.1.4
   cupertino_icons: ^1.0.8
   flame: ^1.21.0
   flame_tiled: ^1.20.0
