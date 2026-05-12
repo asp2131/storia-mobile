@@ -24,8 +24,10 @@ final readerWordHelpProvider =
     >(ReaderWordHelpController.new);
 
 class ReaderWordHelpController
-    extends AutoDisposeFamilyNotifier<WordHelpSnapshot, String> {
+    extends AutoDisposeFamilyNotifier<WordHelpSnapshot, String>
+    implements ReaderWordHelp {
   late final ReaderWordHelpEngine _engine;
+  final _snapshots = StreamController<WordHelpSnapshot>.broadcast();
   StreamSubscription<WordHelpSnapshot>? _snapshotSubscription;
   ReaderSessionAudioGuardPort? _audioGuardPort;
 
@@ -52,6 +54,9 @@ class ReaderWordHelpController
 
     _snapshotSubscription = _engine.snapshots.listen((snapshot) {
       state = snapshot;
+      if (!_snapshots.isClosed) {
+        _snapshots.add(snapshot);
+      }
     });
 
     ref.onDispose(() {
@@ -61,15 +66,29 @@ class ReaderWordHelpController
     return _engine.snapshot;
   }
 
+  @override
+  WordHelpSnapshot get snapshot => state;
+
+  @override
+  Stream<WordHelpSnapshot> get snapshots => _snapshots.stream;
+
+  @override
   Future<WordHelpResult> play(WordHelpRequest request) => _engine.play(request);
 
+  @override
   Future<void> cancel({
     WordHelpCancelReason reason = WordHelpCancelReason.user,
   }) => _engine.cancel(reason: reason);
+
+  @override
+  Future<void> dispose() => _dispose();
 
   Future<void> _dispose() async {
     await _snapshotSubscription?.cancel();
     await _engine.dispose();
     await _audioGuardPort?.dispose();
+    if (!_snapshots.isClosed) {
+      await _snapshots.close();
+    }
   }
 }
