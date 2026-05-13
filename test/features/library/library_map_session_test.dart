@@ -1,10 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/library/adapters/resilient_cover_store_adapter.dart';
 import 'package:storia_kids/src/features/library/core/library_map_layout.dart';
 import 'package:storia_kids/src/features/library/ports/library_map_event.dart';
 import 'package:storia_kids/src/features/library/ports/library_map_types.dart';
@@ -33,16 +31,11 @@ Book _makeBook({
 void main() {
   group('LibraryMapSessionImpl', () {
     late FakeLibraryMapEnginePort engine;
-    late InMemoryCoverStoreAdapter coverAdapter;
     late LibraryMapSessionImpl session;
 
     setUp(() {
       engine = FakeLibraryMapEnginePort();
-      coverAdapter = InMemoryCoverStoreAdapter();
-      session = LibraryMapSessionImpl(
-        enginePort: engine,
-        coverPort: coverAdapter,
-      );
+      session = LibraryMapSessionImpl(enginePort: engine);
     });
 
     tearDown(() {
@@ -53,11 +46,7 @@ void main() {
 
     group('loadBooks', () {
       test('with 0 books produces empty books list and worldWidth 0', () {
-        session.loadBooks(
-          [],
-          screenWidth: 400,
-          screenHeight: 800,
-        );
+        session.loadBooks([], screenWidth: 400, screenHeight: 800);
 
         expect(session.books, isEmpty);
         expect(session.visibleBookIds, isEmpty);
@@ -67,11 +56,7 @@ void main() {
 
       test('with 1 book produces correct node positions', () {
         final book = _makeBook(id: 'b1', title: 'Alpha');
-        session.loadBooks(
-          [book],
-          screenWidth: 400,
-          screenHeight: 800,
-        );
+        session.loadBooks([book], screenWidth: 400, screenHeight: 800);
 
         expect(session.books.length, equals(1));
         final placed = session.books[0];
@@ -123,7 +108,8 @@ void main() {
         // Verify offsets cycle: offset(i) = verticalOffsets[i % 10]
         const offsets = LibraryMapLayoutConstants.verticalOffsets;
         for (int i = 0; i < 15; i++) {
-          final expectedY = 800 * LibraryMapLayout.routeBaselineFraction +
+          final expectedY =
+              800 * LibraryMapLayout.routeBaselineFraction +
               offsets[i % offsets.length];
           expect(
             session.books[i].worldY,
@@ -145,7 +131,10 @@ void main() {
       });
 
       test('viewport worldWidth matches layout computed width', () {
-        final books = List.generate(5, (i) => _makeBook(id: 'b$i', title: '$i'));
+        final books = List.generate(
+          5,
+          (i) => _makeBook(id: 'b$i', title: '$i'),
+        );
         session.loadBooks(books, screenWidth: 800, screenHeight: 600);
 
         final expectedWidth = LibraryMapLayout.computeWorldWidth(5, 800);
@@ -161,6 +150,35 @@ void main() {
         // Walking is only triggered by navigateToBook, not by loadBooks
         expect(engine.walkToBookCalls, isEmpty);
       });
+
+      test('passes both screenWidth and screenHeight to engine', () {
+        final books = [_makeBook(id: 'b1', title: 'Alpha')];
+        session.loadBooks(books, screenWidth: 720, screenHeight: 480);
+
+        expect(engine.lastScreenWidth, equals(720));
+        expect(engine.lastScreenHeight, equals(480));
+      });
+
+      test('repeated loadBooks keeps a single engine listener pair', () {
+        final books = [_makeBook(id: 'b1', title: 'Alpha')];
+
+        session.loadBooks(books, screenWidth: 400, screenHeight: 800);
+        session.loadBooks(books, screenWidth: 400, screenHeight: 800);
+
+        expect(engine.cameraListenerCount, equals(1));
+        expect(engine.arrivalListenerCount, equals(1));
+      });
+
+      test('dispose removes engine listeners before disposing engine', () {
+        final books = [_makeBook(id: 'b1', title: 'Alpha')];
+        session.loadBooks(books, screenWidth: 400, screenHeight: 800);
+
+        session.dispose();
+
+        expect(engine.cameraListenerCount, equals(0));
+        expect(engine.arrivalListenerCount, equals(0));
+        expect(engine.disposed, isTrue);
+      });
     });
 
     // ── Search / filter ─────────────────────────────────────────────────
@@ -170,11 +188,36 @@ void main() {
 
       setUp(() {
         books = [
-          _makeBook(id: 'b1', title: 'The Cat in the Hat', author: 'Dr. Seuss', pageCount: 5),
-          _makeBook(id: 'b2', title: 'Green Eggs and Ham', author: 'Dr. Seuss', pageCount: 6),
-          _makeBook(id: 'b3', title: 'The Hobbit', author: 'J.R.R. Tolkien', pageCount: 40),
-          _makeBook(id: 'b4', title: 'The Cat Who Walked', author: null, pageCount: 3),
-          _makeBook(id: 'b5', title: 'Moby Dick', author: 'Herman Melville', pageCount: 50),
+          _makeBook(
+            id: 'b1',
+            title: 'The Cat in the Hat',
+            author: 'Dr. Seuss',
+            pageCount: 5,
+          ),
+          _makeBook(
+            id: 'b2',
+            title: 'Green Eggs and Ham',
+            author: 'Dr. Seuss',
+            pageCount: 6,
+          ),
+          _makeBook(
+            id: 'b3',
+            title: 'The Hobbit',
+            author: 'J.R.R. Tolkien',
+            pageCount: 40,
+          ),
+          _makeBook(
+            id: 'b4',
+            title: 'The Cat Who Walked',
+            author: null,
+            pageCount: 3,
+          ),
+          _makeBook(
+            id: 'b5',
+            title: 'Moby Dick',
+            author: 'Herman Melville',
+            pageCount: 50,
+          ),
         ];
         session.loadBooks(books, screenWidth: 400, screenHeight: 800);
       });
@@ -225,10 +268,12 @@ void main() {
       });
 
       test('applyQuery with combined query updates visibleIds', () {
-        session.applyQuery(const LibraryMapQuery(
-          searchText: 'the',
-          lengthFilter: LibraryMapLengthFilter.quickReads,
-        ));
+        session.applyQuery(
+          const LibraryMapQuery(
+            searchText: 'the',
+            lengthFilter: LibraryMapLengthFilter.quickReads,
+          ),
+        );
         expect(session.visibleBookIds, equals({'b1', 'b4'}));
       });
 
@@ -238,8 +283,10 @@ void main() {
 
         session.setSearchText('cat');
         expect(received, isA<LibraryMapVisibleBooksChanged>());
-        expect((received as LibraryMapVisibleBooksChanged).visibleIds,
-            equals({'b1', 'b4'}));
+        expect(
+          (received as LibraryMapVisibleBooksChanged).visibleIds,
+          equals({'b1', 'b4'}),
+        );
       });
     });
 
@@ -271,25 +318,20 @@ void main() {
           session.books[0],
           mode: ArrivalMode.walkAndPreview,
         );
-        // The engine receives the call; verify walkToBook was triggered
         expect(engine.walkToBookCalls.last.id, equals('b1'));
+        expect(engine.openPreviewOnArrivalCalls.last, isTrue);
       });
 
       test('walk mode passes openPreviewOnArrival=false', () {
-        session.navigateToBook(
-          session.books[0],
-          mode: ArrivalMode.walk,
-        );
-        // Engine should be called (preview depends on arrival event)
+        session.navigateToBook(session.books[0], mode: ArrivalMode.walk);
         expect(engine.walkToBookCalls.last.id, equals('b1'));
+        expect(engine.openPreviewOnArrivalCalls.last, isFalse);
       });
 
       test('jump mode does not open preview on arrival', () {
-        session.navigateToBook(
-          session.books[0],
-          mode: ArrivalMode.jump,
-        );
+        session.navigateToBook(session.books[0], mode: ArrivalMode.jump);
         expect(engine.walkToBookCalls.last.id, equals('b1'));
+        expect(engine.openPreviewOnArrivalCalls.last, isFalse);
       });
     });
 
@@ -297,9 +339,7 @@ void main() {
 
     group('preview position clamping', () {
       test('preview position clamped to viewport edges', () {
-        final books = [
-          _makeBook(id: 'b1', title: 'Alpha', pageCount: 5),
-        ];
+        final books = [_makeBook(id: 'b1', title: 'Alpha', pageCount: 5)];
         session.loadBooks(books, screenWidth: 400, screenHeight: 800);
 
         // Manually set a screen position near the left edge
@@ -349,8 +389,11 @@ void main() {
         LibraryMapEvent? received;
         session.setEventCallback((e) => received = e);
 
-        session.loadBooks([_makeBook(id: 'b1', title: 'Alpha')],
-            screenWidth: 400, screenHeight: 800);
+        session.loadBooks(
+          [_makeBook(id: 'b1', title: 'Alpha')],
+          screenWidth: 400,
+          screenHeight: 800,
+        );
 
         // Simulate camera change in engine
         engine.simulateCameraChange(50.0);
@@ -367,8 +410,11 @@ void main() {
           eventCountBefore++;
         });
 
-        session.loadBooks([_makeBook(id: 'b1', title: 'Alpha')],
-            screenWidth: 400, screenHeight: 800);
+        session.loadBooks(
+          [_makeBook(id: 'b1', title: 'Alpha')],
+          screenWidth: 400,
+          screenHeight: 800,
+        );
         final eventsAfterLoad = eventCountBefore;
 
         // Now simulate a tiny camera change below threshold
@@ -382,15 +428,21 @@ void main() {
         LibraryMapEvent? received;
         session.setEventCallback((e) => received = e);
 
-        session.loadBooks([_makeBook(id: 'b1', title: 'Alpha')],
-            screenWidth: 500, screenHeight: 900);
+        session.loadBooks(
+          [_makeBook(id: 'b1', title: 'Alpha')],
+          screenWidth: 500,
+          screenHeight: 900,
+        );
 
         engine.simulateCameraChange(100.0);
 
         final cameraEvent = received as LibraryMapCameraChanged;
         expect(cameraEvent.viewport.screenWidth, equals(500));
         expect(cameraEvent.viewport.screenHeight, equals(900));
-        expect(cameraEvent.viewport.worldWidth, equals(600)); // (1+1)*160 clamped
+        expect(
+          cameraEvent.viewport.worldWidth,
+          equals(600),
+        ); // (1+1)*160 clamped
       });
     });
 
@@ -423,11 +475,44 @@ void main() {
         LibraryMapEvent? received;
         session.setEventCallback((e) => received = e);
 
-        session.navigateToBook(session.books[0], mode: ArrivalMode.walkAndPreview);
+        session.navigateToBook(
+          session.books[0],
+          mode: ArrivalMode.walkAndPreview,
+        );
         engine.simulateArrival(books[0]);
 
         final arrived = received as LibraryMapBookArrived;
         expect(arrived.arrivalMode, equals(ArrivalMode.walkAndPreview));
+      });
+
+      test('walk arrival selects node without opening preview', () {
+        final books = [_makeBook(id: 'b1', title: 'Alpha')];
+        session.loadBooks(books, screenWidth: 400, screenHeight: 800);
+
+        session.navigateToBook(session.books[0], mode: ArrivalMode.walk);
+        engine.simulateArrival(books[0]);
+
+        expect(session.selectedNode?.id, equals('b1'));
+        expect(session.previewBook, isNull);
+      });
+
+      test('repeated loadBooks does not duplicate arrival events', () {
+        final books = [_makeBook(id: 'b1', title: 'Alpha')];
+        session.loadBooks(books, screenWidth: 400, screenHeight: 800);
+        session.loadBooks(books, screenWidth: 400, screenHeight: 800);
+
+        var arrivalEvents = 0;
+        session.setEventCallback((event) {
+          if (event is LibraryMapBookArrived) arrivalEvents++;
+        });
+
+        session.navigateToBook(
+          session.books[0],
+          mode: ArrivalMode.walkAndPreview,
+        );
+        engine.simulateArrival(books[0]);
+
+        expect(arrivalEvents, equals(1));
       });
     });
 
@@ -447,7 +532,9 @@ void main() {
         ];
 
         session.setSearchText('alpha'); // b1 matches search
-        session.applyLengthFilter(LibraryMapLengthFilter.quickReads); // b1 & b3 qualify
+        session.applyLengthFilter(
+          LibraryMapLengthFilter.quickReads,
+        ); // b1 & b3 qualify
         // visibleIds should be {'b1'} since search 'alpha' limits to b1
 
         final results = session.getBrowseResults();

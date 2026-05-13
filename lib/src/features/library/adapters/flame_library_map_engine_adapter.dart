@@ -15,7 +15,7 @@ import '../ports/library_map_types.dart';
 class FlameLibraryMapEngineAdapter implements LibraryMapEnginePort {
   FlameLibraryMapEngineAdapter._();
 
-  static LibraryMapEnginePort? _instance;
+  static FlameLibraryMapEngineAdapter? _instance;
 
   /// Returns the shared singleton adapter instance.
   ///
@@ -23,17 +23,23 @@ class FlameLibraryMapEngineAdapter implements LibraryMapEnginePort {
   /// A new [LibraryGame] is created each time [loadBooks] is called to allow
   /// recreating the map with a different world width when the screen size
   /// changes.
-  static LibraryMapEnginePort get instance {
+  static FlameLibraryMapEngineAdapter get instance {
     return _instance ??= FlameLibraryMapEngineAdapter._();
   }
 
   LibraryGame? _game;
 
   @override
-  void loadBooks(List<Book> books, {required double screenHeight}) {
+  void loadBooks(
+    List<Book> books, {
+    required double screenWidth,
+    required double screenHeight,
+  }) {
     // Dispose the old game and create a fresh one.
     _game?.dispose();
-    _game = LibraryGame(worldWidth: _worldWidthForBooks(books.length, screenHeight));
+    _game = LibraryGame(
+      worldWidth: _worldWidthForBooks(books.length, screenWidth),
+    );
     _game!.loadBooks(books, screenHeight: screenHeight);
   }
 
@@ -46,7 +52,11 @@ class FlameLibraryMapEngineAdapter implements LibraryMapEnginePort {
   void walkToBook(Book book, {bool openPreviewOnArrival = true}) {
     final centerX = _game?.nodeXForBook(book.id);
     if (centerX != null) {
-      _game?.walkToBook(book, centerX, openPreviewOnArrival: openPreviewOnArrival);
+      _game?.walkToBook(
+        book,
+        centerX,
+        openPreviewOnArrival: openPreviewOnArrival,
+      );
     }
   }
 
@@ -134,7 +144,9 @@ class _ConstantNotifier<T> implements ValueListenable<T> {
 class _ShelfFilterAdapter {
   _ShelfFilterAdapter._();
 
-  static _ShelfFilter fromLibraryMapLengthFilter(LibraryMapLengthFilter filter) {
+  static _ShelfFilter fromLibraryMapLengthFilter(
+    LibraryMapLengthFilter filter,
+  ) {
     return switch (filter) {
       LibraryMapLengthFilter.all => _ShelfFilter.all,
       LibraryMapLengthFilter.quickReads => _ShelfFilter.quick,

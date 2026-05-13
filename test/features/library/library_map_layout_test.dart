@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:storia_kids/src/data/models.dart';
 import 'package:storia_kids/src/features/library/core/library_map_layout.dart';
-import 'package:storia_kids/src/features/library/ports/library_map_types.dart';
 
 /// Test helper: creates a minimal [Book].
 Book _makeBook({
@@ -9,12 +8,7 @@ Book _makeBook({
   required String title,
   int pageCount = 10,
 }) {
-  return Book(
-    id: id,
-    title: title,
-    pageCount: pageCount,
-    pages: const [],
-  );
+  return Book(id: id, title: title, pageCount: pageCount, pages: const []);
 }
 
 void main() {
@@ -83,7 +77,10 @@ void main() {
         expect(layout2.worldWidth, equals(600));
 
         final layout5 = LibraryMapLayout.build(
-          sourceBooks: List.generate(5, (i) => _makeBook(id: 'b$i', title: '$i')),
+          sourceBooks: List.generate(
+            5,
+            (i) => _makeBook(id: 'b$i', title: '$i'),
+          ),
           screenWidth: 400,
           screenHeight: 800,
         );
@@ -127,7 +124,10 @@ void main() {
       });
 
       test('offset at index cycles for >10 books', () {
-        final books = List.generate(12, (i) => _makeBook(id: 'b$i', title: '$i'));
+        final books = List.generate(
+          12,
+          (i) => _makeBook(id: 'b$i', title: '$i'),
+        );
         final layout = LibraryMapLayout.build(
           sourceBooks: books,
           screenWidth: 400,
@@ -316,9 +316,7 @@ void main() {
     group('screenOffsetOfNode', () {
       test('returns screen offset when node is in viewport', () {
         final layout = LibraryMapLayout.build(
-          sourceBooks: [
-            _makeBook(id: 'b1', title: 'A'),
-          ],
+          sourceBooks: [_makeBook(id: 'b1', title: 'A')],
           screenWidth: 400,
           screenHeight: 800,
         );
@@ -334,9 +332,7 @@ void main() {
 
       test('returns null when node is off-screen left', () {
         final layout = LibraryMapLayout.build(
-          sourceBooks: [
-            _makeBook(id: 'b1', title: 'A'),
-          ],
+          sourceBooks: [_makeBook(id: 'b1', title: 'A')],
           screenWidth: 400,
           screenHeight: 800,
         );
@@ -349,9 +345,7 @@ void main() {
 
       test('returns null when node is off-screen right', () {
         final layout = LibraryMapLayout.build(
-          sourceBooks: [
-            _makeBook(id: 'b1', title: 'A'),
-          ],
+          sourceBooks: [_makeBook(id: 'b1', title: 'A')],
           screenWidth: 200, // small viewport
           screenHeight: 800,
         );
@@ -372,16 +366,12 @@ void main() {
     group('equality', () {
       test('identical layouts are equal', () {
         final layout1 = LibraryMapLayout.build(
-          sourceBooks: [
-            _makeBook(id: 'b1', title: 'A'),
-          ],
+          sourceBooks: [_makeBook(id: 'b1', title: 'A')],
           screenWidth: 400,
           screenHeight: 800,
         );
         final layout2 = LibraryMapLayout.build(
-          sourceBooks: [
-            _makeBook(id: 'b1', title: 'A'),
-          ],
+          sourceBooks: [_makeBook(id: 'b1', title: 'A')],
           screenWidth: 400,
           screenHeight: 800,
         );
