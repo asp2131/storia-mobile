@@ -14,12 +14,9 @@ import '../../core/theme/storia_colors.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import 'application/reader_experience_controller.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
-import 'runtime/providers/reader_session_provider.dart';
-import 'runtime/providers/reader_word_help_provider.dart';
-import 'runtime/reader_session.dart';
-import 'runtime/word_help/reader_word_help.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
   final String bookId;
@@ -34,28 +31,19 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     with WidgetsBindingObserver {
   final PageController _pageController = PageController();
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
-  final ValueNotifier<Duration> _narrationPositionNotifier = ValueNotifier(
-    Duration.zero,
-  );
   final ValueNotifier<double> _scrollOffsetNotifier = ValueNotifier(0.0);
   late final ConfettiController _confettiController;
-  bool _showCelebrationGif = false;
   late GifPlayerController _gifPlayerController;
 
-  late final ReaderSession _session;
-  StreamSubscription<ReaderViewState>? _sessionSubscription;
-  ReaderViewState _runtimeState = const ReaderViewState.initial();
+  late final ReaderExperienceControllerNotifier _controller;
   String? _initializedBookId;
   String? _preloadedManifestBookId;
-  bool _endedForLifecycle = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _session = ref.read(readerSessionProvider);
-    _sessionSubscription = _session.states.listen(_onRuntimeStateChanged);
-
+    _controller = ref.read(readerExperienceControllerProvider(widget.bookId).notifier);
     _pageController.addListener(_onPageScroll);
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
@@ -69,94 +57,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
-  void _onRuntimeStateChanged(ReaderViewState next) {
-    final previous = _runtimeState;
-    final wasCelebrating = previous.showCelebration;
-    final isCelebrating = next.showCelebration;
-
-    _narrationPositionNotifier.value = next.narrationPosition;
-
-    final needsStructuralRebuild =
-        previous.isReady != next.isReady ||
-        previous.activePageIndex != next.activePageIndex ||
-        previous.isNarrationPlaying != next.isNarrationPlaying ||
-        previous.isSoundscapePlaying != next.isSoundscapePlaying ||
-        previous.narrationVolume != next.narrationVolume ||
-        previous.soundscapeVolume != next.soundscapeVolume ||
-        previous.isPracticeMode != next.isPracticeMode ||
-        previous.isListening != next.isListening ||
-        previous.showCelebration != next.showCelebration ||
-        !_sameWordIndices(previous.spokenWordIndices, next.spokenWordIndices);
-
-    if (mounted && needsStructuralRebuild) {
-      setState(() {
-        _runtimeState = next;
-      });
-    } else {
-      _runtimeState = next;
-    }
-
-    if (isCelebrating && !wasCelebrating) {
-      _confettiController.play();
-      _gifPlayerController.seekTo(0);
-      _gifPlayerController.play();
-      if (mounted) {
-        setState(() => _showCelebrationGif = true);
-      } else {
-        _showCelebrationGif = true;
-      }
-    } else if (!isCelebrating && wasCelebrating) {
-      _gifPlayerController.pause();
-      if (mounted) {
-        setState(() => _showCelebrationGif = false);
-      } else {
-        _showCelebrationGif = false;
-      }
-    }
-  }
-
   void _onPageScroll() {
     final page = _pageController.page;
     if (page != null) _scrollOffsetNotifier.value = page;
   }
 
-  bool _sameWordIndices(Set<int> a, Set<int> b) {
-    if (identical(a, b)) {
-      return true;
-    }
-    if (a.length != b.length) {
-      return false;
-    }
-    for (final value in a) {
-      if (!b.contains(value)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      _endedForLifecycle = true;
-      unawaited(_session.dispatch(ReaderEnd(reason: 'app_${state.name}')));
-    } else if (state == AppLifecycleState.resumed && _endedForLifecycle) {
-      _endedForLifecycle = false;
-      _initializedBookId = null;
-      if (mounted) {
-        setState(() {});
-      }
-    }
+    unawaited(_controller.handleLifecycleState(state));
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    unawaited(_session.dispatch(const ReaderEnd(reason: 'screen_dispose')));
-    _sessionSubscription?.cancel();
+    unawaited(_controller.dispatch(const ReaderExperienceEnd(reason: 'screen_dispose')));
     _showChromeNotifier.dispose();
-    _narrationPositionNotifier.dispose();
     _scrollOffsetNotifier.dispose();
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
@@ -168,6 +83,24 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   @override
   Widget build(BuildContext context) {
     final bookAsync = ref.watch(currentBookProvider(widget.bookId));
+    final c = _controller;
+    final state = ref.watch(readerExperienceControllerProvider(widget.bookId));
+
+    ref.listen<ReaderExperienceState>(
+      readerExperienceControllerProvider(widget.bookId),
+      (previous, next) {
+        if (previous == null) return;
+        final wasCelebrating = previous.readerState.showCelebration;
+        final isCelebrating = next.readerState.showCelebration;
+        if (isCelebrating && !wasCelebrating) {
+          _confettiController.play();
+          _gifPlayerController.seekTo(0);
+          _gifPlayerController.play();
+        } else if (!isCelebrating && wasCelebrating) {
+          _gifPlayerController.pause();
+        }
+      },
+    );
 
     return Scaffold(
       backgroundColor: StoriaColors.readerBackground,
@@ -184,37 +117,28 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           if (_initializedBookId != book.id) {
             _initializedBookId = book.id;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) {
-                return;
-              }
-              unawaited(
-                _session.dispatch(
-                  ReaderStart(
-                    book: book,
-                    initialPageIndex: _runtimeState.activePageIndex,
-                  ),
-                ),
-              );
+              if (!mounted) return;
+              c.dispatch(ReaderExperienceStart(
+                book: book,
+                initialPageIndex: state.readerState.activePageIndex,
+              ));
             });
           }
 
           if (_preloadedManifestBookId != book.id) {
             _preloadedManifestBookId = book.id;
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) {
-                return;
-              }
-              unawaited(ref.read(bookManifestProvider(book.id).future));
+              if (!mounted) return;
+              ref.read(bookManifestProvider(book.id).future);
             });
           }
 
-          final activeIndex = _runtimeState.activePageIndex.clamp(
+          final activeIndex = state.readerState.activePageIndex.clamp(
             0,
             book.pages.length - 1,
           );
           final activePage = book.pages[activeIndex];
-          final wordHelpState = ref.watch(readerWordHelpProvider(book.id));
-          final wordHelp = ref.read(readerWordHelpProvider(book.id).notifier);
+          final wordHelpSnapshot = state.wordHelpSnapshot;
           final hasNarration = (activePage.narrationUrl ?? '').isNotEmpty;
           final hasSoundscape = (activePage.soundscapeUrl ?? '').isNotEmpty;
 
@@ -229,8 +153,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   controller: _pageController,
                   scrollDirection: Axis.vertical,
                   itemCount: book.pages.length,
-                  onPageChanged: (index) async {
-                    await _session.dispatch(ReaderGoToPage(index));
+                  onPageChanged: (index) {
+                    unawaited(c.dispatch(ReaderExperiencePageChanged(index)));
                   },
                   itemBuilder: (context, index) {
                     final isInVirtualizationWindow =
@@ -242,7 +166,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     final page = book.pages[index];
 
                     final pageRenderer = ValueListenableBuilder<Duration>(
-                      valueListenable: _narrationPositionNotifier,
+                      valueListenable: c.narrationPositionListenable,
                       builder: (context, narrationPosition, _) {
                         return PageRenderer(
                           page: page,
@@ -250,37 +174,25 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                           scrollOffsetListenable: _scrollOffsetNotifier,
                           narrationPosition: narrationPosition,
                           isActive: index == activeIndex,
-                          spokenWordIndices: _runtimeState.spokenWordIndices,
-                          tappedWordIndex: wordHelpState.activeWordIndex,
+                          spokenWordIndices: state.readerState.spokenWordIndices,
+                          tappedWordIndex: wordHelpSnapshot.activeWordIndex,
                           tappedWordHighlightParts:
-                              wordHelpState.highlightParts,
+                              wordHelpSnapshot.highlightParts,
                           activeTappedWordHighlightPartIndex:
-                              wordHelpState.activeHighlightPartIndex,
+                              wordHelpSnapshot.activeHighlightPartIndex,
                           onWordTap: (word, globalIndex) {
-                            unawaited(
-                              wordHelp.play(
-                                WordHelpRequest(
-                                  bookId: book.id,
-                                  pageIndex: index,
-                                  wordIndex: globalIndex,
-                                  rawWord: word,
-                                  mode: WordHelpMode.word,
-                                ),
-                              ),
-                            );
+                            unawaited(c.dispatch(ReaderExperienceWordTapped(
+                              word: word,
+                              globalIndex: globalIndex,
+                              pageIndex: index,
+                            )));
                           },
                           onWordLongPress: (word, globalIndex) {
-                            unawaited(
-                              wordHelp.play(
-                                WordHelpRequest(
-                                  bookId: book.id,
-                                  pageIndex: index,
-                                  wordIndex: globalIndex,
-                                  rawWord: word,
-                                  mode: WordHelpMode.breakdown,
-                                ),
-                              ),
-                            );
+                            unawaited(c.dispatch(ReaderExperienceWordLongPressed(
+                              word: word,
+                              globalIndex: globalIndex,
+                              pageIndex: index,
+                            )));
                           },
                         );
                       },
@@ -331,7 +243,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                         book: book,
                         activePageNumber: activePage.pageNumber,
                         onClose: () => Navigator.of(context).maybePop(),
-                        onAudioSettingsTap: () => _showAudioSettings(context),
+                        onAudioSettingsTap: () => _showAudioSettings(
+                          context,
+                          c,
+                          state.readerState.narrationVolume,
+                          state.readerState.soundscapeVolume,
+                        ),
                       ),
                     ),
                   );
@@ -340,18 +257,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               AudioControlsPill(
                 hasNarration: hasNarration,
                 hasSoundscape: hasSoundscape,
-                isNarrationPlaying: _runtimeState.isNarrationPlaying,
-                isSoundscapePlaying: _runtimeState.isSoundscapePlaying,
-                isPracticeActive: _runtimeState.isPracticeMode,
-                isListening: _runtimeState.isListening,
+                isNarrationPlaying: state.readerState.isNarrationPlaying,
+                isSoundscapePlaying: state.readerState.isSoundscapePlaying,
+                isPracticeActive: state.readerState.isPracticeMode,
+                isListening: state.readerState.isListening,
                 isVisible: true,
                 showGrip: true,
                 onToggleNarration: () =>
-                    _session.dispatch(const ReaderToggleNarration()),
+                    c.dispatch(const ReaderExperienceToggleNarration()),
                 onToggleSoundscape: () =>
-                    _session.dispatch(const ReaderToggleSoundscape()),
+                    c.dispatch(const ReaderExperienceToggleSoundscape()),
                 onTogglePractice: () =>
-                    _session.dispatch(const ReaderPracticePrimaryAction()),
+                    c.dispatch(const ReaderExperienceTogglePractice()),
               ),
               Align(
                 alignment: Alignment.topCenter,
@@ -370,23 +287,20 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   ],
                 ),
               ),
-              Positioned(
-                right: 16,
-                bottom: MediaQuery.paddingOf(context).bottom + 100,
-                width: 160,
-                child: IgnorePointer(
-                  child: AnimatedOpacity(
-                    opacity: _showCelebrationGif ? 1.0 : 0.0,
-                    duration: Duration(
-                      milliseconds: _showCelebrationGif ? 300 : 500,
-                    ),
+              // Only render the GIF player when celebration is active to avoid
+              // GifPlayerController disposal teardown conflicts with AnimatedOpacity.
+              if (state.showCelebrationGif)
+                Positioned(
+                  right: 16,
+                  bottom: MediaQuery.paddingOf(context).bottom + 100,
+                  width: 160,
+                  child: IgnorePointer(
                     child: GifPlayer(
                       controller: _gifPlayerController,
                       fit: BoxFit.contain,
                     ),
                   ),
                 ),
-              ),
             ],
           );
         },
@@ -403,17 +317,23 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
-  Future<void> _showAudioSettings(BuildContext context) {
-    return showModalBottomSheet<void>(
+  void _showAudioSettings(
+    BuildContext context,
+    ReaderExperienceControllerNotifier controller,
+    double narrationVolume,
+    double soundscapeVolume,
+  ) {
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: StoriaColors.paper,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
-      builder: (context) {
+      builder: (ctx) {
         return _AudioSettingsSheet(
-          session: _session,
-          initialState: _runtimeState,
+          controller: controller,
+          initialNarrationVolume: narrationVolume,
+          initialSoundscapeVolume: soundscapeVolume,
         );
       },
     );
@@ -758,30 +678,11 @@ class AudioControlsPillState extends State<AudioControlsPill>
     // Ignore taps in the grip center zone.
     if (distance < 18) return null;
 
-    // Angle: 0 = right, pi/2 = down, -pi/2 = up.
-    final angle = math.atan2(delta.dy, delta.dx);
-
-    // Wedge layout (matching sketch):
-    // Left wedge (narration):  150° to 270° (-210° to -90°)
-    // Right wedge (soundscape): 30° to 150° (top-right to bottom-right)
-    // Bottom wedge (practice): 270° to 390° (i.e. -90° to 30°)
-    //
-    // In radians, using atan2 range (-pi, pi]:
-    // Left:   angle > 5pi/6 or angle < -pi/2   → roughly left half
-    // Right:  angle > pi/6 and angle <= 5pi/6   → roughly right half
-    // Bottom: angle >= -pi/2 and angle <= pi/6  → top (grip area + bottom)
-
-    // Simpler 3-way split: 120° each, rotated so dividers go from center
-    // at -30°, 90°, 210° (matching the sketch's Y-shaped dividers).
-    // Wedge 0 (top/bottom-center = practice): -90° ± 60° → -150° to -30°
-    // Wedge 1 (right = soundscape): -30° ± 120° → -30° to 90°
-    // Wedge 2 (left = narration): 90° to 210° (= 90° to -150°)
-
     // Normalize angle to [0, 2pi)
+    final angle = math.atan2(delta.dy, delta.dx);
     final norm = angle < 0 ? angle + 2 * math.pi : angle;
 
     // Three 120° wedges, starting from -30° (= 330° = 11pi/6)
-    // Wedge boundaries at 330°, 90°, 210°
     if (norm >= 11 * math.pi / 6 || norm < math.pi / 2) {
       return _WedgeZone.right; // Soundscape (right side)
     } else if (norm >= math.pi / 2 && norm < 7 * math.pi / 6) {
@@ -834,8 +735,6 @@ class AudioControlsPillState extends State<AudioControlsPill>
   Widget? _buildWobbleOverlay() {
     if (!_wobbleActive) return null;
 
-    // Overlay box extends beyond the pill on every side so the trail blob has
-    // room to stretch outside the 120 × 120 pill bounds.
     const double overlaySize = _circleSize + _maxTrailDistance * 2 + 24;
 
     return IgnorePointer(
@@ -854,15 +753,10 @@ class AudioControlsPillState extends State<AudioControlsPill>
                 alignment: Alignment.center,
                 clipBehavior: Clip.none,
                 children: [
-                  // Main blob: same size as the pill, centered. Hidden under
-                  // the pill's own visual; only its edges contribute to the
-                  // gooey merge with the trail.
                   const GooeyBlob(
                     shape: BlobShape.circle(),
                     child: SizedBox.square(dimension: _circleSize),
                   ),
-                  // Trail blob: lags behind the drag direction; pokes out
-                  // past the pill's edge to create the jelly tail.
                   Transform.translate(
                     offset: trail,
                     child: const GooeyBlob(
@@ -885,7 +779,6 @@ class AudioControlsPillState extends State<AudioControlsPill>
   /// Icon position: center of a wedge at a given angle and radial distance.
   Offset _wedgeIconOffset(double angleDeg) {
     final angleRad = angleDeg * math.pi / 180;
-    // Place icons at ~60% of the radius, between center grip and outer edge.
     const iconRadius = (_circleSize / 2 - _gripSize / 2) / 2 + _gripSize / 2;
     return Offset(
       _circleSize / 2 + iconRadius * math.cos(angleRad) - 11,
@@ -929,14 +822,12 @@ class AudioControlsPillState extends State<AudioControlsPill>
   }
 
   /// The opaque, glassy pill itself: wedge icons, divider painter, blur,
-  /// and the central grip handle. Stacked on top of the gooey wobble overlay
-  /// so the trail blob only shows as material extending past the pill edge.
+  /// and the central grip handle.
   Widget _buildPillVisual({
     required Size viewportSize,
     required EdgeInsets safePadding,
     required double baseBottom,
   }) {
-    // Icon positions: center of each 120° wedge.
     final narrationIconPos = _wedgeIconOffset(270); // left
     final soundscapeIconPos = _wedgeIconOffset(30); // right
     final practiceIconPos = _wedgeIconOffset(150); // bottom
@@ -976,7 +867,6 @@ class AudioControlsPillState extends State<AudioControlsPill>
               height: _circleSize,
               child: Stack(
                 children: [
-                  // Left wedge icon (narration)
                   Positioned(
                     left: narrationIconPos.dx,
                     top: narrationIconPos.dy,
@@ -990,7 +880,6 @@ class AudioControlsPillState extends State<AudioControlsPill>
                           : const Color.fromRGBO(255, 255, 255, 0.85),
                     ),
                   ),
-                  // Right wedge icon (soundscape)
                   Positioned(
                     left: soundscapeIconPos.dx,
                     top: soundscapeIconPos.dy,
@@ -1004,7 +893,6 @@ class AudioControlsPillState extends State<AudioControlsPill>
                           : const Color.fromRGBO(255, 255, 255, 0.85),
                     ),
                   ),
-                  // Bottom wedge icon (practice/mic)
                   Positioned(
                     left: practiceIconPos.dx,
                     top: practiceIconPos.dy,
@@ -1018,7 +906,6 @@ class AudioControlsPillState extends State<AudioControlsPill>
                           : const Color.fromRGBO(255, 255, 255, 0.85),
                     ),
                   ),
-                  // Center grip handle
                   Center(
                     child: _buildGripHandle(
                       viewportSize: viewportSize,
@@ -1122,8 +1009,6 @@ class AudioControlsPillState extends State<AudioControlsPill>
     final baseLeft = (viewportSize.width - _circleSize) / 2;
     final baseTop = viewportSize.height - baseBottom - _circleSize;
 
-    // Pie subtree built ONCE per parent rebuild (not per drag tick) — pan
-    // updates flow through the notifier and rebuild only the outer Positioned.
     final pillSubtree = IgnorePointer(
       ignoring: !widget.isVisible,
       child: AnimatedOpacity(
@@ -1202,10 +1087,6 @@ class _WedgePainter extends CustomPainter {
     final radius = size.width / 2;
     final rect = Rect.fromCircle(center: center, radius: radius);
 
-    // Three 120° wedges. Start angles (from 3-o'clock, clockwise):
-    // Right (soundscape): -30° to 90°   → startAngle = -30°
-    // Bottom (practice):  90° to 210°   → startAngle = 90°
-    // Left (narration):   210° to 330°  → startAngle = 210°
     const sweep = 2 * math.pi / 3; // 120°
 
     final wedges = [
@@ -1226,7 +1107,6 @@ class _WedgePainter extends CustomPainter {
       ),
     ];
 
-    // Draw active wedge fills.
     for (final w in wedges) {
       if (!w.active) continue;
       final paint = Paint()
@@ -1235,7 +1115,6 @@ class _WedgePainter extends CustomPainter {
       canvas.drawArc(rect, w.startAngle, sweep, true, paint);
     }
 
-    // Draw divider lines from grip edge to outer edge at boundary angles.
     final dividerPaint = Paint()
       ..color = const Color.fromRGBO(255, 255, 255, 0.15)
       ..strokeWidth = 1.0
@@ -1323,12 +1202,14 @@ class _ChromeButton extends StatelessWidget {
 // =============================================================================
 
 class _AudioSettingsSheet extends StatefulWidget {
-  final ReaderSession session;
-  final ReaderViewState initialState;
+  final ReaderExperienceControllerNotifier controller;
+  final double initialNarrationVolume;
+  final double initialSoundscapeVolume;
 
   const _AudioSettingsSheet({
-    required this.session,
-    required this.initialState,
+    required this.controller,
+    required this.initialNarrationVolume,
+    required this.initialSoundscapeVolume,
   });
 
   @override
@@ -1342,18 +1223,18 @@ class _AudioSettingsSheetState extends State<_AudioSettingsSheet> {
   @override
   void initState() {
     super.initState();
-    _narrationVolume = widget.initialState.narrationVolume;
-    _soundscapeVolume = widget.initialState.soundscapeVolume;
+    _narrationVolume = widget.initialNarrationVolume;
+    _soundscapeVolume = widget.initialSoundscapeVolume;
   }
 
   void _setNarrationVolume(double value) {
     setState(() => _narrationVolume = value);
-    unawaited(widget.session.dispatch(ReaderSetNarrationVolume(value)));
+    unawaited(widget.controller.dispatch(ReaderExperienceSetNarrationVolume(value)));
   }
 
   void _setSoundscapeVolume(double value) {
     setState(() => _soundscapeVolume = value);
-    unawaited(widget.session.dispatch(ReaderSetSoundscapeVolume(value)));
+    unawaited(widget.controller.dispatch(ReaderExperienceSetSoundscapeVolume(value)));
   }
 
   @override
@@ -1506,35 +1387,46 @@ class _ReaderErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.auto_stories_rounded,
-              color: Color(0xFFC5CBD8),
-              size: 34,
+              Icons.sentiment_dissatisfied_outlined,
+              size: 52,
+              color: Color(0xFF8A80CC),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
-              'This story could not be loaded',
+              'Something went wrong',
               style: Theme.of(
                 context,
-              ).textTheme.titleLarge?.copyWith(color: Colors.white),
+              ).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               error,
-              textAlign: TextAlign.center,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: const Color(0xFFC5CBD8)),
+              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFFD4D8E0)),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
+            const SizedBox(height: 24),
+            FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Try again'),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF8A80CC),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
             ),
           ],
         ),
