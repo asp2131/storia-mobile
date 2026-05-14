@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cue/cue.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/resilient_cache_manager.dart';
 import '../../core/theme/storia_colors.dart';
+import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/parental_gate.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../core/widgets/sketch_card.dart';
@@ -595,30 +597,52 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(16);
+    final baseTextStyle =
+        Theme.of(context).textTheme.bodySmall ??
+        const TextStyle(fontWeight: FontWeight.w700);
+    final inactiveTextStyle = baseTextStyle.copyWith(
+      color: StoriaColors.ink,
+      fontWeight: FontWeight.w700,
+    );
+    final activeTextStyle = baseTextStyle.copyWith(
+      color: StoriaColors.paper,
+      fontWeight: FontWeight.w700,
+    );
+    final inactiveBorder = Border.all(color: StoriaColors.line, width: 1.1);
+    final activeBorder = Border.all(color: StoriaColors.ink, width: 1.1);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(
-            color: isActive
-                ? StoriaColors.ink
-                : Colors.white.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isActive ? StoriaColors.ink : StoriaColors.line,
-              width: 1.1,
-            ),
+        borderRadius: borderRadius,
+        child: Cue.onToggle(
+          debugLabel: 'library-filter-chip-$label',
+          toggled: isActive,
+          motion: const CueMotion.curved(
+            StoriaMotion.quick,
+            curve: StoriaMotion.emphasized,
           ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: isActive ? StoriaColors.paper : StoriaColors.ink,
-              fontWeight: FontWeight.w700,
+          acts: [
+            .decorate(
+              color: AnimatableValue<Color>.tween(
+                StoriaColors.paper.withValues(alpha: 0.85),
+                StoriaColors.ink,
+              ),
+              borderRadius: AnimatableValue<BorderRadiusGeometry>.fixed(
+                borderRadius,
+              ),
+              border: AnimatableValue<BoxBorder>.tween(
+                inactiveBorder,
+                activeBorder,
+              ),
             ),
+            .textStyle(from: inactiveTextStyle, to: activeTextStyle),
+          ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            child: Text(label),
           ),
         ),
       ),
@@ -718,68 +742,70 @@ class _BrowsePanel extends StatelessWidget {
 
     return IgnorePointer(
       ignoring: !show,
-      child: AnimatedSlide(
-        offset: show ? Offset.zero : const Offset(0, 1),
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOutCubic,
-        child: AnimatedOpacity(
-          opacity: show ? 1 : 0,
-          duration: const Duration(milliseconds: 180),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(12, 140, 12, 12 + bottomPadding),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 720),
-                child: SketchCard(
-                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.explore_rounded,
-                            size: 18,
-                            color: StoriaColors.ink,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _browseTitle,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w800),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tap a result to guide your avatar there on the map.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: StoriaColors.inkMuted,
+      child: Cue.onToggle(
+        debugLabel: 'library-browse-panel',
+        toggled: show,
+        motion: const CueMotion.curved(
+          StoriaMotion.medium,
+          curve: StoriaMotion.emphasized,
+        ),
+        acts: const [
+          .slideY(from: 1, to: 0),
+          .fadeIn(motion: CueMotion.easeOut(StoriaMotion.quick)),
+        ],
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(12, 140, 12, 12 + bottomPadding),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: SketchCard(
+                padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.explore_rounded,
+                          size: 18,
+                          color: StoriaColors.ink,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxHeight: 220),
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: books.length,
-                          separatorBuilder: (_, __) =>
-                              const Divider(height: 12),
-                          itemBuilder: (context, index) {
-                            final book = books[index];
-                            return _BrowseResultTile(
-                              book: book,
-                              onTap: () => onBookTap(book),
-                            );
-                          },
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _browseTitle,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                          ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tap a result to guide your avatar there on the map.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: StoriaColors.inkMuted,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: books.length,
+                        separatorBuilder: (_, __) => const Divider(height: 12),
+                        itemBuilder: (context, index) {
+                          final book = books[index];
+                          return _BrowseResultTile(
+                            book: book,
+                            onTap: () => onBookTap(book),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

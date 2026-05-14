@@ -59,62 +59,60 @@ void main() {
       expect(wordTokens[2].pronunciationHighlightParts, isEmpty);
     });
 
-    testWidgets(
-      'widget renders only active syllable with highlight',
-      (tester) async {
-        final taps = <({String word, int index})>[];
-        final element = _elementFrame(
-          raw: 'banana',
-          parts: const [
-            PronunciationHighlightPart(text: 'ba'),
-            PronunciationHighlightPart(text: 'na'),
-            PronunciationHighlightPart(text: 'na'),
-          ],
-          activeIndex: 1,
-        );
+    testWidgets('widget renders only active syllable with highlight', (
+      tester,
+    ) async {
+      final taps = <({String word, int index})>[];
+      final element = _elementFrame(
+        raw: 'banana',
+        parts: const [
+          PronunciationHighlightPart(text: 'ba'),
+          PronunciationHighlightPart(text: 'na'),
+          PronunciationHighlightPart(text: 'na'),
+        ],
+        activeIndex: 1,
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Stack(
-                children: [
-                  OverlayTextElement(
-                    element: element,
-                    isActive: true,
-                    onWordTap: (word, index) =>
-                        taps.add((word: word, index: index)),
-                  ),
-                ],
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Stack(
+              children: [
+                OverlayTextElement(
+                  element: element,
+                  onWordTap: (word, index) =>
+                      taps.add((word: word, index: index)),
+                ),
+              ],
             ),
           ),
-        );
-        await tester.pump();
+        ),
+      );
+      await tester.pump();
 
-        // Active syllable 'na' should have the full highlight treatment.
-        final activeNaSpans = _textSpansWithText('na')
-            .where((span) {
-              return span.style?.backgroundColor ==
-                      const Color.fromRGBO(139, 92, 246, 0.9) &&
-                  span.style?.color == Colors.white &&
-                  span.style?.fontWeight == FontWeight.w900;
-            })
-            .toList(growable: false);
+      // Active syllable 'na' should have the full highlight treatment.
+      final activeNaSpans = _textSpansWithText('na')
+          .where((span) {
+            return span.style?.backgroundColor ==
+                    const Color.fromRGBO(139, 92, 246, 0.9) &&
+                span.style?.color == Colors.white &&
+                span.style?.fontWeight == FontWeight.w900;
+          })
+          .toList(growable: false);
 
-        // Inactive syllable 'ba' should have NO background.
-        final inactiveSpans = _textSpansWithText('ba')
-            .where((span) {
-              return span.style?.backgroundColor == null;
-            })
-            .toList(growable: false);
+      // Inactive syllable 'ba' should have NO background.
+      final inactiveSpans = _textSpansWithText('ba')
+          .where((span) {
+            return span.style?.backgroundColor == null;
+          })
+          .toList(growable: false);
 
-        expect(activeNaSpans, hasLength(1));
-        expect(inactiveSpans, hasLength(1));
+      expect(activeNaSpans, hasLength(1));
+      expect(inactiveSpans, hasLength(1));
 
-        await tester.tap(find.byType(GestureDetector));
-        expect(taps, [(word: 'banana', index: 4)]);
-      },
-    );
+      await tester.tap(find.byType(GestureDetector));
+      expect(taps, [(word: 'banana', index: 4)]);
+    });
 
     testWidgets(
       'widget falls back to whole-word highlight when parts mismatch',
@@ -133,11 +131,7 @@ void main() {
             home: Scaffold(
               body: Stack(
                 children: [
-                  OverlayTextElement(
-                    element: element,
-                    isActive: true,
-                    onWordTap: (_, _) {},
-                  ),
+                  OverlayTextElement(element: element, onWordTap: (_, _) {}),
                 ],
               ),
             ),
@@ -153,45 +147,40 @@ void main() {
       },
     );
 
-    testWidgets(
-      'widget shows whole-word fallback when active index is null',
-      (tester) async {
-        final element = _elementFrame(
-          raw: 'banana',
-          parts: const [
-            PronunciationHighlightPart(text: 'ba'),
-            PronunciationHighlightPart(text: 'na'),
-            PronunciationHighlightPart(text: 'na'),
-          ],
-          activeIndex: null,
-        );
+    testWidgets('widget shows whole-word fallback when active index is null', (
+      tester,
+    ) async {
+      final element = _elementFrame(
+        raw: 'banana',
+        parts: const [
+          PronunciationHighlightPart(text: 'ba'),
+          PronunciationHighlightPart(text: 'na'),
+          PronunciationHighlightPart(text: 'na'),
+        ],
+        activeIndex: null,
+      );
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Stack(
-                children: [
-                  OverlayTextElement(
-                    element: element,
-                    isActive: true,
-                    onWordTap: (_, _) {},
-                  ),
-                ],
-              ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Stack(
+              children: [
+                OverlayTextElement(element: element, onWordTap: (_, _) {}),
+              ],
             ),
           ),
-        );
-        await tester.pump();
+        ),
+      );
+      await tester.pump();
 
-        final completedText = tester.widget<Text>(find.text('banana'));
-        expect(
-          completedText.style?.backgroundColor,
-          const Color.fromRGBO(139, 92, 246, 0.85),
-        );
-        expect(completedText.style?.color, Colors.white);
-        expect(completedText.style?.fontWeight, FontWeight.w900);
-      },
-    );
+      final completedText = tester.widget<Text>(find.text('banana'));
+      expect(
+        completedText.style?.backgroundColor,
+        const Color.fromRGBO(139, 92, 246, 0.85),
+      );
+      expect(completedText.style?.color, Colors.white);
+      expect(completedText.style?.fontWeight, FontWeight.w900);
+    });
   });
 }
 

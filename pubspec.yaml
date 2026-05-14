@@ -58,7 +58,7 @@ dependencies:
   flutter_tts: ^4.2.0
   confetti: ^0.8.0
   gif_player: ^0.1.0
-  cue: ^0.1.5
+  cue: ^0.2.1
   gooey: ^0.2.0
   rive: ^0.14.4
   flutter_svg: ^2.2.1

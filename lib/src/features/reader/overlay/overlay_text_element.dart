@@ -3,22 +3,19 @@ import 'package:flutter/material.dart';
 
 import 'overlay_frame.dart';
 
-/// Per-element word-stagger entrance (Feature 4).
+/// Single positioned text element in the reader overlay scene.
 ///
-/// When a page becomes active and this element mounts (virtualization window
-/// brings it into the tree), each word rises + fades in with a short stagger
-/// derived from its token index within the element. The stagger is
-/// entrance-only: once played, TTS word-highlight styling drives appearance.
+/// [OverlayTextLayer] owns the scene-level Cue. This widget adds an Actor with
+/// an element-specific delay so page text can rise + fade in as a coordinated
+/// stagger when the active page changes.
 class OverlayTextElement extends StatelessWidget {
   final OverlayElementFrame element;
-  final bool isActive;
   final void Function(String word, int globalIndex)? onWordTap;
   final void Function(String word, int globalIndex)? onWordLongPress;
 
   const OverlayTextElement({
     super.key,
     required this.element,
-    required this.isActive,
     this.onWordTap,
     this.onWordLongPress,
   });
@@ -50,25 +47,23 @@ class OverlayTextElement extends StatelessWidget {
         ? Transform.rotate(angle: element.rotationRadians, child: decorated)
         : decorated;
 
-    // Stagger: element index drives base delay. Cue.onToggle plays forward
-    // when this page becomes active and reverses when it leaves. Adjacent
-    // pages in the virtualization window stay hidden at progress 0 until they
-    // become active, matching the old flutter_animate behavior.
+    // Stagger: element index drives base delay on the parent Cue's timeline.
+    // If the element is rendered in isolation (tests/tools), skip the Actor so
+    // the text remains usable without requiring a Cue ancestor.
     final delayMs = 180 + element.index * 40;
+    final Widget sceneChild = CueScope.maybeOf(context) == null
+        ? rotated
+        : Actor(
+            delay: Duration(milliseconds: delayMs),
+            acts: const [.fadeIn(), .slideY(from: 0.12)],
+            child: rotated,
+          );
 
     return Positioned(
       left: element.left,
       top: element.top,
       width: element.width,
-      child: Cue.onToggle(
-        toggled: isActive,
-        motion: .smooth(),
-        child: Actor(
-          delay: Duration(milliseconds: delayMs),
-          acts: const [OpacityAct.fadeIn(), SlideAct.y(from: 0.12)],
-          child: rotated,
-        ),
-      ),
+      child: sceneChild,
     );
   }
 
@@ -86,14 +81,17 @@ class OverlayTextElement extends StatelessWidget {
         Widget wordWidget = token.pronunciationHighlightParts.isNotEmpty
             ? _PronunciationWordText(token: token)
             : Text(token.raw, style: token.style);
-        if (token.isTapped) {
-          wordWidget = AnimatedScale(
-            scale: 1.15,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutBack,
-            child: wordWidget,
-          );
-        }
+        wordWidget = Cue.onToggle(
+          key: ValueKey('reader-word-pop-$index'),
+          toggled: token.isTapped,
+          motion: .spring(
+            duration: const Duration(milliseconds: 220),
+            bounce: 0.35,
+          ),
+          reverseMotion: .snappy(),
+          acts: const [.scale(to: 1.15)],
+          child: wordWidget,
+        );
         spans.add(
           WidgetSpan(
             alignment: PlaceholderAlignment.baseline,

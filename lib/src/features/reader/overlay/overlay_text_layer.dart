@@ -1,3 +1,4 @@
+import 'package:cue/cue.dart';
 import 'package:flutter/material.dart';
 
 import 'overlay_frame.dart';
@@ -21,17 +22,24 @@ class OverlayTextLayer extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        for (final element in frame.elements)
-          OverlayTextElement(
-            element: element,
-            isActive: frame.isActive,
-            onWordTap: onWordTap,
-            onWordLongPress: onWordLongPress,
-          ),
-      ],
+    // One scene-level Cue drives every overlay element. Each element contributes
+    // its own Actor delay so the page entrance remains staggered while sharing
+    // a single active-page controller.
+    return Cue.onToggle(
+      debugLabel: 'reader-overlay-text',
+      toggled: frame.isActive,
+      motion: .smooth(),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          for (final element in frame.elements)
+            OverlayTextElement(
+              element: element,
+              onWordTap: onWordTap,
+              onWordLongPress: onWordLongPress,
+            ),
+        ],
+      ),
     );
   }
 }

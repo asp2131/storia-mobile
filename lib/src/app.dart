@@ -1,3 +1,5 @@
+import 'package:cue/cue.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,6 +20,10 @@ class StoriaApp extends ConsumerWidget {
       themeMode: .system,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      builder: kDebugMode
+          ? (context, child) =>
+                CueDebugTools(child: child ?? const SizedBox.shrink())
+          : null,
     );
   }
 }
