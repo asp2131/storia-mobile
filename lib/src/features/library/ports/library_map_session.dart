@@ -16,8 +16,13 @@ typedef LibraryMapEventCallback = void Function(LibraryMapEvent event);
 abstract class LibraryMapEnginePort {
   /// Starts the engine and places [books] as nodes on the map.
   ///
-  /// Must be called before any other engine method.
-  void loadBooks(List<Book> books, {required double screenHeight});
+  /// Must be called before any other engine method. [screenWidth] controls
+  /// the scrollable world width; [screenHeight] controls route placement.
+  void loadBooks(
+    List<Book> books, {
+    required double screenWidth,
+    required double screenHeight,
+  });
 
   /// Applies a visibility filter so only [visibleIds] are highlighted;
   /// books outside the set are dimmed.
@@ -73,7 +78,7 @@ abstract class LibraryMapCoverPort {
 ///
 /// Owns all state (books, query, filter, visible nodes, selected node,
 /// preview book, camera X) and orchestrates the [LibraryMapEnginePort]
-/// and [LibraryMapCoverPort] adapters. Emits [LibraryMapEvent] events
+/// adapter. Emits [LibraryMapEvent] events
 /// through the [eventCallback].
 ///
 /// Consumers (widgets, Riverpod providers) use this interface exclusively;

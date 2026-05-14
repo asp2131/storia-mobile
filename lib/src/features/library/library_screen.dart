@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -16,25 +17,17 @@ import '../../core/widgets/sketch_card.dart';
 import '../../core/widgets/sketch_icon_button.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import 'adapters/flame_library_map_engine_adapter.dart';
 import 'game/book_preview_overlay.dart';
-import 'game/library_game.dart';
+import 'ports/library_map_event.dart';
+import 'ports/library_map_types.dart';
+import 'services/library_map_session_impl.dart';
 
 // ── Shelf filter ────────────────────────────────────────────────────────
 enum _ShelfFilter { all, quick, longer }
 
 // ── Layout constants ────────────────────────────────────────────────────
 const double _kNodeWidth = 80;
-const double _kMinWorldWidth = 600;
-
-/// Adventure-map world width: enough room for nodes to spread with generous
-/// spacing (~160px per node), ensuring 4-5 nodes visible per viewport.
-double _worldWidthForBooks(int count, double screenWidth) {
-  final needed = (count + 1) * 160.0;
-  return needed.clamp(
-    screenWidth.clamp(_kMinWorldWidth, double.infinity),
-    double.infinity,
-  );
-}
 
 // ── Main screen ─────────────────────────────────────────────────────────
 
@@ -51,10 +44,26 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Timer? _searchDebounce;
   String _searchQuery = '';
   _ShelfFilter _activeFilter = _ShelfFilter.all;
-  Set<String> _visibleBookIds = const <String>{};
 
-  LibraryGame? _game;
-  Book? _previewBook;
+  late final FlameLibraryMapEngineAdapter _engineAdapter;
+  late final LibraryMapSessionImpl _session;
+  String? _loadedSignature;
+  bool _isLoadingSession = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _engineAdapter = FlameLibraryMapEngineAdapter.instance;
+    _session = LibraryMapSessionImpl(enginePort: _engineAdapter)
+      ..setEventCallback(_handleSessionEvent);
+  }
+
+  void _handleSessionEvent(LibraryMapEvent event) {
+    if (!mounted || _isLoadingSession || event is LibraryMapCameraChanged) {
+      return;
+    }
+    setState(() {});
+  }
 
   void _handleSearchChanged(String value) {
     _searchDebounce?.cancel();
@@ -71,11 +80,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   void _applyFilter() {
-    final books = ref.read(bookLibraryProvider).valueOrNull ?? [];
-    final filtered = _filterBooks(books, _searchQuery, _activeFilter);
-    final visibleIds = filtered.map((b) => b.id).toSet();
-    _visibleBookIds = visibleIds;
-    _game?.applyFilter(visibleIds);
+    _session.applyQuery(
+      LibraryMapQuery(
+        searchText: _searchQuery,
+        lengthFilter: _activeFilter.toLibraryMapLengthFilter(),
+      ),
+    );
   }
 
   bool get _hasActiveBrowseQuery =>
@@ -84,28 +94,21 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   bool get _showBrowsePanel =>
       _hasActiveBrowseQuery && _broaderBrowseResults.isNotEmpty;
 
-  List<Book> get _broaderBrowseResults =>
-      _game?.broaderBrowseResults(
-        searchQuery: _searchQuery,
-        filter: _activeFilter,
-        visibleIds: _visibleBookIds,
-      ) ??
-      const [];
-
-  void _onArrivedAtBook() {
-    final book = _game?.arrivedAtBook.value;
-    if (book != null && mounted) {
-      setState(() => _previewBook = book);
-    }
-  }
+  List<Book> get _broaderBrowseResults => _session
+      .getBrowseResults()
+      .map((book) => book.toBook())
+      .toList(growable: false);
 
   void _dismissPreview() {
-    setState(() => _previewBook = null);
-    _game?.arrivedAtBook.value = null;
+    setState(_session.dismissPreview);
+    _engineAdapter.game?.arrivedAtBook.value = null;
   }
 
   void _onBrowsePanelBookTap(Book book) {
-    _dismissPreview();
+    final mapBook = _mapBookFor(book);
+    if (mapBook == null) return;
+
+    _session.dismissPreview();
     FocusScope.of(context).unfocus();
     setState(() {
       _searchController.clear();
@@ -113,14 +116,21 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       _activeFilter = _ShelfFilter.all;
     });
     _applyFilter();
-    _game?.navigateToBookNode(book);
+    _session.selectBrowseResult(mapBook);
+  }
+
+  LibraryMapBook? _mapBookFor(Book book) {
+    for (final mapBook in _session.books) {
+      if (mapBook.id == book.id) return mapBook;
+    }
+    return null;
   }
 
   @override
   void dispose() {
     _searchDebounce?.cancel();
     _searchController.dispose();
-    _game?.arrivedAtBook.removeListener(_onArrivedAtBook);
+    _session.dispose();
     super.dispose();
   }
 
@@ -142,37 +152,29 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Widget _buildGameView(BuildContext context, List<Book> books) {
-    final screenW = MediaQuery.sizeOf(context).width;
-    final worldWidth = _worldWidthForBooks(books.length, screenW);
+    final screenSize = MediaQuery.sizeOf(context);
+    _ensureSessionLoaded(
+      books,
+      screenWidth: screenSize.width,
+      screenHeight: screenSize.height,
+    );
 
-    // Create game once, reload books when list changes.
-    if (_game == null || _game!.worldWidth != worldWidth) {
-      _game?.arrivedAtBook.removeListener(_onArrivedAtBook);
-      _game = LibraryGame(worldWidth: worldWidth);
-      _game!.arrivedAtBook.addListener(_onArrivedAtBook);
-
-      // Schedule book placement after game is loaded.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final screenH = MediaQuery.sizeOf(context).height;
-        _game!.loadBooks(books, screenHeight: screenH);
-        _applyFilter();
-      });
-    }
+    final game = _engineAdapter.game!;
+    final worldWidth = _session.viewport.worldWidth;
 
     return Stack(
       children: [
         // Layer 1: Flutter-drawn room background (synced to camera).
         _RoomBackground(
           worldWidth: worldWidth,
-          cameraNotifier: _game!.cameraXNotifier,
+          cameraNotifier: _engineAdapter.cameraXNotifier,
         ),
 
         // Layer 1.5: Sun + drifting clouds in dead sky space.
         const Positioned.fill(child: _SkyDecorations()),
 
         // Layer 2: Flame game (transparent, character + book tap targets).
-        Positioned.fill(child: GameWidget(game: _game!)),
+        Positioned.fill(child: GameWidget(game: game)),
 
         // Layer 3: Floating search + filter UI.
         Positioned(
@@ -205,7 +207,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
 
         // Layer 5: Book preview overlay (reactive to camera movement).
-        if (_previewBook != null) ...[
+        if (_session.previewBook != null) ...[
           // Dismiss scrim.
           Positioned.fill(
             child: GestureDetector(
@@ -215,14 +217,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ),
           ),
           ValueListenableBuilder<double>(
-            valueListenable: _game!.cameraXNotifier,
+            valueListenable: _engineAdapter.cameraXNotifier,
             builder: (context, _, __) {
-              final previewBook = _previewBook!;
+              final previewMapBook = _session.previewBook!;
+              final previewBook = previewMapBook.toBook();
               return BookPreviewOverlay(
                 book: previewBook,
-                position: _overlayPosition(previewBook),
+                position: _overlayPosition(previewMapBook),
                 onRead: () {
-                  final bookId = previewBook.id;
+                  final bookId = previewMapBook.id;
                   _dismissPreview();
                   context.push('/reader/$bookId');
                 },
@@ -235,8 +238,34 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  Offset _overlayPosition(Book book) {
-    final screenPos = _game?.screenPositionOfBook(book.id);
+  void _ensureSessionLoaded(
+    List<Book> books, {
+    required double screenWidth,
+    required double screenHeight,
+  }) {
+    final signature = Object.hash(
+      screenWidth,
+      screenHeight,
+      Object.hashAll(books.map((book) => book.id)),
+    ).toString();
+    if (_loadedSignature == signature) return;
+
+    _loadedSignature = signature;
+    _isLoadingSession = true;
+    try {
+      _session.loadBooks(
+        books,
+        screenWidth: screenWidth,
+        screenHeight: screenHeight,
+      );
+      _applyFilter();
+    } finally {
+      _isLoadingSession = false;
+    }
+  }
+
+  Offset _overlayPosition(LibraryMapBook book) {
+    final screenPos = _session.screenPositionOfNode(book);
     final screenSize = MediaQuery.sizeOf(context);
     if (screenPos == null) {
       return Offset(screenSize.width / 2, 200);
@@ -265,7 +294,7 @@ class _RoomBackground extends StatelessWidget {
   });
 
   final double worldWidth;
-  final ValueNotifier<double> cameraNotifier;
+  final ValueListenable<double> cameraNotifier;
 
   @override
   Widget build(BuildContext context) {
@@ -275,10 +304,7 @@ class _RoomBackground extends StatelessWidget {
         return RepaintBoundary(
           child: CustomPaint(
             size: Size.infinite,
-            painter: _SkyHillsPainter(
-              worldWidth: worldWidth,
-              cameraX: cameraX,
-            ),
+            painter: _SkyHillsPainter(worldWidth: worldWidth, cameraX: cameraX),
           ),
         );
       },
@@ -289,10 +315,7 @@ class _RoomBackground extends StatelessWidget {
 /// [CustomPainter] that draws sky (0.2x parallax) and hills (0.5x parallax).
 /// Ground rendering is handled by the isometric TMX map inside the Flame world.
 class _SkyHillsPainter extends CustomPainter {
-  _SkyHillsPainter({
-    required this.worldWidth,
-    required this.cameraX,
-  });
+  _SkyHillsPainter({required this.worldWidth, required this.cameraX});
 
   final double worldWidth;
   final double cameraX;
@@ -396,8 +419,7 @@ class _SkyHillsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SkyHillsPainter oldDelegate) =>
-      worldWidth != oldDelegate.worldWidth ||
-      cameraX != oldDelegate.cameraX;
+      worldWidth != oldDelegate.worldWidth || cameraX != oldDelegate.cameraX;
 }
 
 // ── Floating controls ───────────────────────────────────────────────────
@@ -918,10 +940,7 @@ class _SkyDecorationsState extends State<_SkyDecorations>
         builder: (context, _) {
           final t = _t.value;
           return Stack(
-            children: [
-              _sun(t),
-              for (final spec in _clouds) _cloud(spec, t),
-            ],
+            children: [_sun(t), for (final spec in _clouds) _cloud(spec, t)],
           );
         },
       ),
@@ -1000,24 +1019,12 @@ class _CloudSpec {
   final bool flip;
 }
 
-List<Book> _filterBooks(
-  List<Book> books,
-  String searchQuery,
-  _ShelfFilter filter,
-) {
-  final normalizedQuery = searchQuery.trim().toLowerCase();
-  return books
-      .where((book) {
-        final matchesSearch =
-            normalizedQuery.isEmpty ||
-            book.title.toLowerCase().contains(normalizedQuery) ||
-            (book.author ?? '').toLowerCase().contains(normalizedQuery);
-        final matchesFilter = switch (filter) {
-          _ShelfFilter.all => true,
-          _ShelfFilter.quick => book.pageCount <= 12,
-          _ShelfFilter.longer => book.pageCount > 12,
-        };
-        return matchesSearch && matchesFilter;
-      })
-      .toList(growable: false);
+extension on _ShelfFilter {
+  LibraryMapLengthFilter toLibraryMapLengthFilter() {
+    return switch (this) {
+      _ShelfFilter.all => LibraryMapLengthFilter.all,
+      _ShelfFilter.quick => LibraryMapLengthFilter.quickReads,
+      _ShelfFilter.longer => LibraryMapLengthFilter.longerReads,
+    };
+  }
 }

@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 
-import '../adapters/resilient_cover_store_adapter.dart';
 import '../core/library_map_layout.dart';
 import '../../../data/models.dart';
 import '../ports/library_map_event.dart';
@@ -12,25 +11,22 @@ const _browseResultsLimit = 8;
 
 /// Concrete implementation of [LibraryMapSession].
 ///
-/// Owns all state, connects the [LibraryMapEnginePort] (Flame) and
-/// [LibraryMapCoverPort] (cache), and emits [LibraryMapEvent]s through the
+/// Owns all state, connects the [LibraryMapEnginePort] (Flame), and emits
+/// [LibraryMapEvent]s through the
 /// registered callback.
 ///
 /// Thread-safety: all public methods are designed to be called from the
 /// Flutter main isolate. The engine and cover ports handle their own
 /// background async work internally.
 class LibraryMapSessionImpl implements LibraryMapSession {
-  LibraryMapSessionImpl({
-    required LibraryMapEnginePort enginePort,
-    LibraryMapCoverPort? coverPort,
-  })  : _engine = enginePort {
-    // ignore: unused_local_variable
-    final _ = coverPort ?? ResilientCoverStoreAdapter.instance;
-  }
+  LibraryMapSessionImpl({required LibraryMapEnginePort enginePort})
+    : _engine = enginePort;
 
   final LibraryMapEnginePort _engine;
   LibraryMapEventCallback? _onEvent;
-  ArrivalMode _pendingArrivalMode = ArrivalMode.walk;
+  ArrivalMode _pendingArrivalMode = ArrivalMode.walkAndPreview;
+  bool _hasPendingSessionNavigation = false;
+  bool _isListeningToEngine = false;
 
   // ── Mutable state ────────────────────────────────────────────────────
 
@@ -71,11 +67,11 @@ class LibraryMapSessionImpl implements LibraryMapSession {
 
   @override
   LibraryMapViewport get viewport => LibraryMapViewport(
-        screenWidth: _screenWidth,
-        screenHeight: _screenHeight,
-        cameraX: _cameraX,
-        worldWidth: _engineWorldWidth,
-      );
+    screenWidth: _screenWidth,
+    screenHeight: _screenHeight,
+    cameraX: _cameraX,
+    worldWidth: _engineWorldWidth,
+  );
 
   double get _engineWorldWidth => _screenWidth > 0
       ? LibraryMapLayout.computeWorldWidth(_sourceBooks.length, _screenWidth)
@@ -113,9 +109,10 @@ class LibraryMapSessionImpl implements LibraryMapSession {
   }) {
     _selectedNode = book;
     _pendingArrivalMode = mode;
+    _hasPendingSessionNavigation = true;
     _engine.walkToBook(
       book.toBook(),
-      openPreviewOnArrival: mode != ArrivalMode.jump,
+      openPreviewOnArrival: mode == ArrivalMode.walkAndPreview,
     );
   }
 
@@ -151,6 +148,7 @@ class LibraryMapSessionImpl implements LibraryMapSession {
 
   @override
   void dispose() {
+    _stopListeningToEngine();
     _engine.dispose();
     _onEvent = null;
   }
@@ -185,12 +183,18 @@ class LibraryMapSessionImpl implements LibraryMapSession {
     // Initialise visible set to all books.
     _visibleBookIds = _books.map((b) => b.id).toSet();
 
-    // Load into Flame engine.
-    _engine.loadBooks(books, screenHeight: screenHeight);
+    // Reloading can replace engine notifiers (real adapter) or reuse them
+    // (tests/fakes). Detach before load, then attach exactly once.
+    _stopListeningToEngine();
 
-    // Start listening to engine events.
-    _engine.cameraXNotifier.addListener(_onCameraChanged);
-    _engine.arrivedAtBook.addListener(_onBookArrived);
+    // Load into Flame engine.
+    _engine.loadBooks(
+      books,
+      screenWidth: screenWidth,
+      screenHeight: screenHeight,
+    );
+
+    _startListeningToEngine();
 
     _emitEvent(LibraryMapVisibleBooksChanged(visibleIds: _visibleBookIds));
   }
@@ -199,18 +203,21 @@ class LibraryMapSessionImpl implements LibraryMapSession {
   /// which books are visible on the map.
   void _applyQuery() {
     final normalizedQuery = _query.searchText.trim().toLowerCase();
-    final filtered = _books.where((book) {
-      final matchesSearch =
-          normalizedQuery.isEmpty ||
-          book.title.toLowerCase().contains(normalizedQuery) ||
-          (book.author ?? '').toLowerCase().contains(normalizedQuery);
-      final matchesFilter = switch (_query.lengthFilter) {
-        LibraryMapLengthFilter.all => true,
-        LibraryMapLengthFilter.quickReads => book.isQuickRead,
-        LibraryMapLengthFilter.longerReads => !book.isQuickRead,
-      };
-      return matchesSearch && matchesFilter;
-    }).map((b) => b.id).toSet();
+    final filtered = _books
+        .where((book) {
+          final matchesSearch =
+              normalizedQuery.isEmpty ||
+              book.title.toLowerCase().contains(normalizedQuery) ||
+              (book.author ?? '').toLowerCase().contains(normalizedQuery);
+          final matchesFilter = switch (_query.lengthFilter) {
+            LibraryMapLengthFilter.all => true,
+            LibraryMapLengthFilter.quickReads => book.isQuickRead,
+            LibraryMapLengthFilter.longerReads => !book.isQuickRead,
+          };
+          return matchesSearch && matchesFilter;
+        })
+        .map((b) => b.id)
+        .toSet();
 
     if (filtered.isEmpty && _query.hasActiveFilter) {
       // If filter yields nothing, keep the old visible set so the user
@@ -227,10 +234,9 @@ class LibraryMapSessionImpl implements LibraryMapSession {
     final newCameraX = _engine.cameraXNotifier.value;
     if ((newCameraX - _cameraX).abs() > 0.01) {
       _cameraX = newCameraX;
-      _emitEvent(LibraryMapCameraChanged(
-        cameraX: _cameraX,
-        viewport: viewport,
-      ));
+      _emitEvent(
+        LibraryMapCameraChanged(cameraX: _cameraX, viewport: viewport),
+      );
     }
   }
 
@@ -241,12 +247,30 @@ class LibraryMapSessionImpl implements LibraryMapSession {
     final mapBook = _toLibraryMapBook(arrivedBook);
     if (mapBook == null) return;
 
-    _previewBook = mapBook;
+    final arrivalMode = _hasPendingSessionNavigation
+        ? _pendingArrivalMode
+        : ArrivalMode.walkAndPreview;
+    if (arrivalMode == ArrivalMode.walkAndPreview) {
+      _previewBook = mapBook;
+    }
     _selectedNode = mapBook;
-    _emitEvent(LibraryMapBookArrived(
-      book: mapBook,
-      arrivalMode: _pendingArrivalMode,
-    ));
+    _hasPendingSessionNavigation = false;
+    _pendingArrivalMode = ArrivalMode.walkAndPreview;
+    _emitEvent(LibraryMapBookArrived(book: mapBook, arrivalMode: arrivalMode));
+  }
+
+  void _startListeningToEngine() {
+    if (_isListeningToEngine) return;
+    _engine.cameraXNotifier.addListener(_onCameraChanged);
+    _engine.arrivedAtBook.addListener(_onBookArrived);
+    _isListeningToEngine = true;
+  }
+
+  void _stopListeningToEngine() {
+    if (!_isListeningToEngine) return;
+    _engine.cameraXNotifier.removeListener(_onCameraChanged);
+    _engine.arrivedAtBook.removeListener(_onBookArrived);
+    _isListeningToEngine = false;
   }
 
   /// Converts a source [Book] to a [LibraryMapBook] using the precomputed

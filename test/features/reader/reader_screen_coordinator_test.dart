@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gif_player/gif_player.dart';
 
 import 'package:storia_kids/src/data/models.dart';
 import 'package:storia_kids/src/data/providers.dart';
@@ -52,8 +53,8 @@ void main() {
 
     // Tap the narration icon (headphones icon) inside the pill.
     await tester.tap(find.byIcon(Icons.headphones_rounded));
-    // Do NOT pumpAndSettle — it triggers AnimatedOpacity which calls
-    // pause() on the GifPlayerController after dispose during test teardown.
+    // Avoid pumpAndSettle here; reader chrome animations can keep this
+    // coordinator routing assertion waiting longer than necessary.
     await tester.pump();
     await tester.pump();
 
@@ -92,9 +93,57 @@ void main() {
     expect(find.text('Book not found'), findsOneWidget);
     expect(coordinatorLog.actions, isEmpty);
   });
+
+  testWidgets('ReaderScreen retains GifPlayer controller across GIF unmounts', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final coordinatorLog = _CoordinatorLog();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentBookProvider('book-1').overrideWith((ref) async => _book),
+          bookManifestProvider('book-1').overrideWith((ref) async => null),
+          readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
+          readerExperienceControllerProvider.overrideWith(
+            () => _FakeReaderExperienceControllerNotifier._(
+              coordinatorLog,
+              'book-1',
+            ),
+          ),
+          readerExperienceEffectsProvider.overrideWith(
+            (ref) => const NoopReaderExperienceEffects(),
+          ),
+        ],
+        child: const MaterialApp(home: ReaderScreen(bookId: 'book-1')),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    coordinatorLog.controller!.setShowCelebrationGif(true);
+    await tester.pump();
+    expect(find.byType(GifPlayer), findsOneWidget);
+
+    coordinatorLog.controller!.setShowCelebrationGif(false);
+    await tester.pump();
+    expect(find.byType(GifPlayer), findsNothing);
+
+    coordinatorLog.controller!.setShowCelebrationGif(true);
+    await tester.pump();
+    expect(find.byType(GifPlayer), findsOneWidget);
+  });
 }
 
 class _CoordinatorLog {
+  _FakeReaderExperienceControllerNotifier? controller;
   final actions = <ReaderExperienceAction>[];
   final lifecycleStates = <AppLifecycleState>[];
   final narrationPositionListenable = ValueNotifier<Duration>(Duration.zero);
@@ -117,10 +166,7 @@ class _FakeReaderSession implements ReaderSession {
 
 class _FakeReaderExperienceControllerNotifier
     extends ReaderExperienceControllerNotifier {
-  _FakeReaderExperienceControllerNotifier._(
-    this.log,
-    String bookId,
-  );
+  _FakeReaderExperienceControllerNotifier._(this.log, String bookId);
 
   final _CoordinatorLog log;
 
@@ -134,6 +180,7 @@ class _FakeReaderExperienceControllerNotifier
 
   @override
   ReaderExperienceState build(String bookId) {
+    log.controller = this;
     return ReaderExperienceState(
       readerState: ReaderViewState(
         isReady: true,
@@ -152,6 +199,10 @@ class _FakeReaderExperienceControllerNotifier
       showCelebrationGif: false,
       endedForLifecycle: false,
     );
+  }
+
+  void setShowCelebrationGif(bool visible) {
+    state = state.copyWith(showCelebrationGif: visible);
   }
 
   @override

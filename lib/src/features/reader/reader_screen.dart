@@ -43,7 +43,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _controller = ref.read(readerExperienceControllerProvider(widget.bookId).notifier);
+    _controller = ref.read(
+      readerExperienceControllerProvider(widget.bookId).notifier,
+    );
     _pageController.addListener(_onPageScroll);
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
@@ -70,7 +72,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    unawaited(_controller.dispatch(const ReaderExperienceEnd(reason: 'screen_dispose')));
+    unawaited(
+      _controller.dispatch(const ReaderExperienceEnd(reason: 'screen_dispose')),
+    );
     _showChromeNotifier.dispose();
     _scrollOffsetNotifier.dispose();
     _pageController.removeListener(_onPageScroll);
@@ -118,10 +122,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             _initializedBookId = book.id;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
-              c.dispatch(ReaderExperienceStart(
-                book: book,
-                initialPageIndex: state.readerState.activePageIndex,
-              ));
+              c.dispatch(
+                ReaderExperienceStart(
+                  book: book,
+                  initialPageIndex: state.readerState.activePageIndex,
+                ),
+              );
             });
           }
 
@@ -174,25 +180,34 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                           scrollOffsetListenable: _scrollOffsetNotifier,
                           narrationPosition: narrationPosition,
                           isActive: index == activeIndex,
-                          spokenWordIndices: state.readerState.spokenWordIndices,
+                          spokenWordIndices:
+                              state.readerState.spokenWordIndices,
                           tappedWordIndex: wordHelpSnapshot.activeWordIndex,
                           tappedWordHighlightParts:
                               wordHelpSnapshot.highlightParts,
                           activeTappedWordHighlightPartIndex:
                               wordHelpSnapshot.activeHighlightPartIndex,
                           onWordTap: (word, globalIndex) {
-                            unawaited(c.dispatch(ReaderExperienceWordTapped(
-                              word: word,
-                              globalIndex: globalIndex,
-                              pageIndex: index,
-                            )));
+                            unawaited(
+                              c.dispatch(
+                                ReaderExperienceWordTapped(
+                                  word: word,
+                                  globalIndex: globalIndex,
+                                  pageIndex: index,
+                                ),
+                              ),
+                            );
                           },
                           onWordLongPress: (word, globalIndex) {
-                            unawaited(c.dispatch(ReaderExperienceWordLongPressed(
-                              word: word,
-                              globalIndex: globalIndex,
-                              pageIndex: index,
-                            )));
+                            unawaited(
+                              c.dispatch(
+                                ReaderExperienceWordLongPressed(
+                                  word: word,
+                                  globalIndex: globalIndex,
+                                  pageIndex: index,
+                                ),
+                              ),
+                            );
                           },
                         );
                       },
@@ -287,8 +302,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   ],
                 ),
               ),
-              // Only render the GIF player when celebration is active to avoid
-              // GifPlayerController disposal teardown conflicts with AnimatedOpacity.
+              // Only render the GIF player when celebration is active. The
+              // controller is owned by ReaderScreen so it can survive these
+              // conditional unmounts and be disposed exactly once in dispose().
               if (state.showCelebrationGif)
                 Positioned(
                   right: 16,
@@ -297,6 +313,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   child: IgnorePointer(
                     child: GifPlayer(
                       controller: _gifPlayerController,
+                      isAutoDisposeController: false,
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -1229,12 +1246,16 @@ class _AudioSettingsSheetState extends State<_AudioSettingsSheet> {
 
   void _setNarrationVolume(double value) {
     setState(() => _narrationVolume = value);
-    unawaited(widget.controller.dispatch(ReaderExperienceSetNarrationVolume(value)));
+    unawaited(
+      widget.controller.dispatch(ReaderExperienceSetNarrationVolume(value)),
+    );
   }
 
   void _setSoundscapeVolume(double value) {
     setState(() => _soundscapeVolume = value);
-    unawaited(widget.controller.dispatch(ReaderExperienceSetSoundscapeVolume(value)));
+    unawaited(
+      widget.controller.dispatch(ReaderExperienceSetSoundscapeVolume(value)),
+    );
   }
 
   @override
@@ -1399,9 +1420,7 @@ class _ReaderErrorState extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Something went wrong',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
               ),

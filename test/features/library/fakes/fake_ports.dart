@@ -19,6 +19,9 @@ class FakeLibraryMapEnginePort implements LibraryMapEnginePort {
   /// Calls made to [applyFilter].
   final List<Set<String>> applyFilterCalls = [];
 
+  /// Values passed for [openPreviewOnArrival] in [walkToBook] calls.
+  final List<bool> openPreviewOnArrivalCalls = [];
+
   /// Callback invoked with the book argument whenever [walkToBook] is called.
   void Function(Book book)? onWalkToBook;
 
@@ -27,13 +30,22 @@ class FakeLibraryMapEnginePort implements LibraryMapEnginePort {
 
   // ── State ──────────────────────────────────────────────────────────────
 
-  List<Book> _loadedBooks = [];
+  List<Book> loadedBooks = [];
 
   /// Camera X that listeners will observe.
-  final ValueNotifier<double> _cameraXNotifier = ValueNotifier(0.0);
+  final TestValueNotifier<double> _cameraXNotifier = TestValueNotifier(0.0);
 
   /// Book the player has arrived at.
-  final ValueNotifier<Book?> _arrivedAtBook = ValueNotifier<Book?>(null);
+  final TestValueNotifier<Book?> _arrivedAtBook = TestValueNotifier<Book?>(
+    null,
+  );
+
+  /// Last dimensions received by [loadBooks].
+  double? lastScreenWidth;
+  double? lastScreenHeight;
+
+  /// Whether [dispose] was called.
+  bool disposed = false;
 
   /// Manually set world width.
   double worldWidth = 0;
@@ -48,32 +60,42 @@ class FakeLibraryMapEnginePort implements LibraryMapEnginePort {
   List<Book> browseResults = [];
 
   /// Mutable set of visible IDs for [applyFilter].
-  Set<String> _currentVisibleIds = {};
+  Set<String> currentVisibleIds = {};
 
   void setLoadedBooks(List<Book> books) {
-    _loadedBooks = books;
-    _currentVisibleIds = books.map((b) => b.id).toSet();
+    loadedBooks = books;
+    currentVisibleIds = books.map((b) => b.id).toSet();
   }
 
   void simulateCameraChange(double x) {
-    _cameraXNotifier.value = x;
+    _cameraXNotifier.update(x);
   }
 
   void simulateArrival(Book book) {
-    _arrivedAtBook.value = book;
+    _arrivedAtBook.update(book);
   }
+
+  int get cameraListenerCount => _cameraXNotifier.listenerCount;
+
+  int get arrivalListenerCount => _arrivedAtBook.listenerCount;
 
   // ── LibraryMapEnginePort ───────────────────────────────────────────────
 
   @override
-  void loadBooks(List<Book> books, {required double screenHeight}) {
-    _loadedBooks = books;
-    _currentVisibleIds = books.map((b) => b.id).toSet();
+  void loadBooks(
+    List<Book> books, {
+    required double screenWidth,
+    required double screenHeight,
+  }) {
+    loadedBooks = books;
+    currentVisibleIds = books.map((b) => b.id).toSet();
+    lastScreenWidth = screenWidth;
+    lastScreenHeight = screenHeight;
   }
 
   @override
   void applyFilter(Set<String> visibleIds) {
-    _currentVisibleIds = visibleIds;
+    currentVisibleIds = visibleIds;
     applyFilterCalls.add(visibleIds);
     onApplyFilter?.call(visibleIds);
   }
@@ -81,6 +103,7 @@ class FakeLibraryMapEnginePort implements LibraryMapEnginePort {
   @override
   void walkToBook(Book book, {bool openPreviewOnArrival = true}) {
     walkToBookCalls.add(book);
+    openPreviewOnArrivalCalls.add(openPreviewOnArrival);
     onWalkToBook?.call(book);
   }
 
@@ -103,8 +126,7 @@ class FakeLibraryMapEnginePort implements LibraryMapEnginePort {
     required LibraryMapLengthFilter filter,
     required Set<String> visibleIds,
     int limit = 8,
-  }) =>
-      browseResults;
+  }) => browseResults;
 
   @override
   ValueListenable<double> get cameraXNotifier => _cameraXNotifier;
@@ -114,8 +136,7 @@ class FakeLibraryMapEnginePort implements LibraryMapEnginePort {
 
   @override
   void dispose() {
-    _cameraXNotifier.dispose();
-    _arrivedAtBook.dispose();
+    disposed = true;
   }
 }
 
@@ -165,7 +186,9 @@ class TestValueNotifier<T> implements ValueListenable<T> {
 
   void update(T value) {
     _value = value;
-    for (final l in _listeners) l();
+    for (final listener in _listeners) {
+      listener();
+    }
   }
 
   @override
@@ -175,6 +198,7 @@ class TestValueNotifier<T> implements ValueListenable<T> {
   void addListener(VoidCallback listener) => _listeners.add(listener);
 
   @override
-  void removeListener(VoidCallback listener) =>
-      _listeners.remove(listener);
+  void removeListener(VoidCallback listener) => _listeners.remove(listener);
+
+  int get listenerCount => _listeners.length;
 }

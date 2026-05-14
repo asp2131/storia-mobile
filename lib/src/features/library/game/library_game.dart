@@ -218,8 +218,6 @@ class LibraryGame extends FlameGame with TapCallbacks {
   /// corresponding [MapBookNodeComponent]. Failures are silently swallowed
   /// so the placeholder remains visible.
   void _loadCoverImages(List<Book> books) {
-    final cacheManager = ResilientCacheManager.instance;
-
     for (final book in books) {
       final url = book.coverUrl;
       if (url == null || url.isEmpty) {
@@ -231,7 +229,7 @@ class LibraryGame extends FlameGame with TapCallbacks {
       // Fire-and-forget per book.
       () async {
         try {
-          final file = await cacheManager.getSingleFile(url);
+          final file = await ResilientCacheManager.instance.getSingleFile(url);
           final bytes = await file.readAsBytes();
           final codec = await ui.instantiateImageCodec(bytes);
           final frame = await codec.getNextFrame();
