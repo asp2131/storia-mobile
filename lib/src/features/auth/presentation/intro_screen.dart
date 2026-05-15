@@ -376,7 +376,7 @@ class _IntroScreenState extends State<IntroScreen>
     final dy =
         math.sin((_controller.value + phase) * math.pi * 2) * yAmplitude;
 
-    Widget cloud = SvgPicture.asset('assets/svgs/book.svg');
+    Widget cloud = SvgPicture.asset('assets/svgs/cloud.svg');
 
     if (flipX) {
       cloud = Transform.flip(flipX: true, child: cloud);
@@ -431,7 +431,7 @@ class _IntroScreenState extends State<IntroScreen>
 
     Widget cloud = Transform.flip(
       flipX: true,
-      child: SvgPicture.asset('assets/svgs/book.svg'),
+      child: SvgPicture.asset('assets/svgs/cloud.svg'),
     );
 
     return Positioned(

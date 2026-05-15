@@ -3,14 +3,15 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:confetti/confetti.dart';
+import 'package:cue/cue.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gif_player/gif_player.dart';
 import 'package:gooey/gooey.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/storia_colors.dart';
+import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
@@ -250,10 +251,16 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                 builder: (context, showChrome, child) {
                   return IgnorePointer(
                     ignoring: !showChrome,
-                    child: AnimatedOpacity(
-                      opacity: showChrome ? 1 : 0,
-                      duration: 220.ms,
-                      curve: Curves.easeOut,
+                    // TODO(STO-13): CueFlexibleSpaceBar needs a SliverAppBar +
+                    // CustomScrollView reader refactor; keep Stack chrome for now.
+                    child: Cue.onToggle(
+                      debugLabel: 'reader-top-bar-chrome',
+                      toggled: showChrome,
+                      motion: const CueMotion.curved(
+                        StoriaMotion.quick,
+                        curve: StoriaMotion.emphasized,
+                      ),
+                      acts: const [.fadeIn()],
                       child: _ReaderTopBar(
                         book: book,
                         activePageNumber: activePage.pageNumber,

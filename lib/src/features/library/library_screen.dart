@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cue/cue.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
+import 'package:gooey/gooey.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -547,52 +548,217 @@ class _SearchField extends StatelessWidget {
 
 // ── Shelf filters ───────────────────────────────────────────────────────
 
-class _ShelfFilters extends StatelessWidget {
+class _ShelfFilters extends StatefulWidget {
   const _ShelfFilters({required this.activeFilter, required this.onSelected});
 
   final _ShelfFilter activeFilter;
   final ValueChanged<_ShelfFilter> onSelected;
 
   @override
+  State<_ShelfFilters> createState() => _ShelfFiltersState();
+}
+
+class _ShelfFiltersState extends State<_ShelfFilters> {
+  static const _gap = 8.0;
+  static const _options = [
+    _FilterOption(_ShelfFilter.all, 'All Tales'),
+    _FilterOption(_ShelfFilter.quick, 'Quick Reads'),
+    _FilterOption(_ShelfFilter.longer, 'Longer Reads'),
+  ];
+
+  final _rowKey = GlobalKey();
+  final _chipKeys = {for (final option in _options) option.filter: GlobalKey()};
+
+  Map<_ShelfFilter, Rect> _chipRects = const {};
+  bool _measurementScheduled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleMeasure();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ShelfFilters oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _scheduleMeasure();
+  }
+
+  void _scheduleMeasure() {
+    if (_measurementScheduled) return;
+    _measurementScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _measurementScheduled = false;
+      if (!mounted) return;
+      _measureChipRects();
+    });
+  }
+
+  void _measureChipRects() {
+    final rowRenderObject = _rowKey.currentContext?.findRenderObject();
+    if (rowRenderObject is! RenderBox || !rowRenderObject.hasSize) return;
+
+    final nextRects = <_ShelfFilter, Rect>{};
+    for (final option in _options) {
+      final chipRenderObject = _chipKeys[option.filter]?.currentContext
+          ?.findRenderObject();
+      if (chipRenderObject is! RenderBox || !chipRenderObject.hasSize) {
+        continue;
+      }
+      final topLeft = rowRenderObject.globalToLocal(
+        chipRenderObject.localToGlobal(Offset.zero),
+      );
+      nextRects[option.filter] = topLeft & chipRenderObject.size;
+    }
+
+    if (nextRects.length != _options.length ||
+        _rectMapsAreClose(nextRects, _chipRects)) {
+      return;
+    }
+
+    setState(() => _chipRects = nextRects);
+  }
+
+  bool _rectMapsAreClose(Map<_ShelfFilter, Rect> a, Map<_ShelfFilter, Rect> b) {
+    if (a.length != b.length) return false;
+    for (final option in _options) {
+      final first = a[option.filter];
+      final second = b[option.filter];
+      if (first == null || second == null) return first == second;
+      if ((first.left - second.left).abs() > 0.5 ||
+          (first.top - second.top).abs() > 0.5 ||
+          (first.width - second.width).abs() > 0.5 ||
+          (first.height - second.height).abs() > 0.5) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    _scheduleMeasure();
+    final activeRect = _chipRects[widget.activeFilter];
+    final indicatorReady = activeRect != null;
+
     return SizedBox(
       height: 38,
-      child: ListView(
+      child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        children: [
-          _FilterChip(
-            label: 'All Tales',
-            isActive: activeFilter == _ShelfFilter.all,
-            onTap: () => onSelected(_ShelfFilter.all),
-          ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Quick Reads',
-            isActive: activeFilter == _ShelfFilter.quick,
-            onTap: () => onSelected(_ShelfFilter.quick),
-          ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Longer Reads',
-            isActive: activeFilter == _ShelfFilter.longer,
-            onTap: () => onSelected(_ShelfFilter.longer),
-          ),
-        ],
+        child: Stack(
+          key: _rowKey,
+          clipBehavior: Clip.none,
+          children: [
+            if (activeRect != null)
+              _FilterGooeyIndicator(activeRect: activeRect),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < _options.length; i++) ...[
+                  if (i > 0) const SizedBox(width: _gap),
+                  _FilterChip(
+                    key: _chipKeys[_options[i].filter],
+                    label: _options[i].label,
+                    isActive: widget.activeFilter == _options[i].filter,
+                    useActiveTextColor:
+                        indicatorReady &&
+                        widget.activeFilter == _options[i].filter,
+                    onTap: () => widget.onSelected(_options[i].filter),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+class _FilterGooeyIndicator extends StatelessWidget {
+  const _FilterGooeyIndicator({required this.activeRect});
+
+  final Rect activeRect;
+
+  @override
+  Widget build(BuildContext context) {
+    final pillRect = Rect.fromLTWH(
+      activeRect.left,
+      activeRect.top + 2,
+      activeRect.width,
+      activeRect.height - 4,
+    );
+    final trailSize = math.min(36.0, pillRect.height);
+    final trailLeft = pillRect.center.dx - trailSize / 2;
+    final trailTop = pillRect.center.dy - trailSize / 2;
+
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: RepaintBoundary(
+          child: GooeyZone(
+            key: const ValueKey('library-filter-gooey-indicator'),
+            color: StoriaColors.ink,
+            gooiness: 34,
+            borderWidth: 1,
+            borderColor: StoriaColors.paper.withValues(alpha: 0.16),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedPositioned(
+                  duration: StoriaMotion.slow,
+                  curve: StoriaMotion.emphasized,
+                  left: trailLeft,
+                  top: trailTop,
+                  width: trailSize,
+                  height: trailSize,
+                  child: const GooeyBlob(
+                    key: ValueKey('library-filter-gooey-trail'),
+                    shape: BlobShape.circle(),
+                    child: SizedBox.expand(),
+                  ),
+                ),
+                AnimatedPositioned(
+                  duration: StoriaMotion.medium,
+                  curve: StoriaMotion.emphasized,
+                  left: pillRect.left,
+                  top: pillRect.top,
+                  width: pillRect.width,
+                  height: pillRect.height,
+                  child: const GooeyBlob(
+                    key: ValueKey('library-filter-gooey-main'),
+                    shape: BlobShape.rounded(16),
+                    child: SizedBox.expand(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterOption {
+  const _FilterOption(this.filter, this.label);
+
+  final _ShelfFilter filter;
+  final String label;
+}
+
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
+    super.key,
     required this.label,
     required this.isActive,
+    required this.useActiveTextColor,
     required this.onTap,
   });
 
   final String label;
   final bool isActive;
+  final bool useActiveTextColor;
   final VoidCallback onTap;
 
   @override
@@ -601,48 +767,30 @@ class _FilterChip extends StatelessWidget {
     final baseTextStyle =
         Theme.of(context).textTheme.bodySmall ??
         const TextStyle(fontWeight: FontWeight.w700);
-    final inactiveTextStyle = baseTextStyle.copyWith(
-      color: StoriaColors.ink,
+    final textStyle = baseTextStyle.copyWith(
+      color: useActiveTextColor ? StoriaColors.paper : StoriaColors.ink,
       fontWeight: FontWeight.w700,
     );
-    final activeTextStyle = baseTextStyle.copyWith(
-      color: StoriaColors.paper,
-      fontWeight: FontWeight.w700,
-    );
-    final inactiveBorder = Border.all(color: StoriaColors.line, width: 1.1);
-    final activeBorder = Border.all(color: StoriaColors.ink, width: 1.1);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: borderRadius,
-        child: Cue.onToggle(
-          debugLabel: 'library-filter-chip-$label',
-          toggled: isActive,
-          motion: const CueMotion.curved(
-            StoriaMotion.quick,
-            curve: StoriaMotion.emphasized,
-          ),
-          acts: [
-            .decorate(
-              color: AnimatableValue<Color>.tween(
-                StoriaColors.paper.withValues(alpha: 0.85),
-                StoriaColors.ink,
-              ),
-              borderRadius: AnimatableValue<BorderRadiusGeometry>.fixed(
-                borderRadius,
-              ),
-              border: AnimatableValue<BoxBorder>.tween(
-                inactiveBorder,
-                activeBorder,
+    return SizedBox(
+      height: 38,
+      child: Semantics(
+        selected: isActive,
+        button: true,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: borderRadius,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              child: AnimatedDefaultTextStyle(
+                duration: StoriaMotion.quick,
+                curve: StoriaMotion.emphasized,
+                style: textStyle,
+                child: Text(label),
               ),
             ),
-            .textStyle(from: inactiveTextStyle, to: activeTextStyle),
-          ],
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-            child: Text(label),
           ),
         ),
       ),

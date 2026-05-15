@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gooey/gooey.dart';
 import 'package:go_router/go_router.dart';
 import 'package:storia_kids/src/data/models.dart';
 import 'package:storia_kids/src/data/providers.dart' as providers;
@@ -282,9 +283,19 @@ void main() {
       expect(find.text('All Tales'), findsOneWidget);
       expect(find.text('Quick Reads'), findsOneWidget);
       expect(find.text('Longer Reads'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('library-filter-gooey-indicator')),
+        findsOneWidget,
+      );
+      expect(find.byType(GooeyZone), findsOneWidget);
+      expect(find.byType(GooeyBlob), findsNWidgets(2));
 
       await tester.tap(find.text('Quick Reads'));
       await _pumpNavigation(tester);
+      expect(
+        find.byKey(const ValueKey('library-filter-gooey-indicator')),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Longer Reads'));
       await _pumpNavigation(tester);
