@@ -15,6 +15,7 @@ import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import '../gen_ui/presentation/reader_activity_card.dart';
 import 'application/reader_experience_controller.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
@@ -275,6 +276,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     ),
                   );
                 },
+              ),
+              ReaderActivityPromptOverlay(
+                bookId: book.id,
+                pageIndex: activeIndex,
+                bottomInset: MediaQuery.paddingOf(context).bottom + 128,
               ),
               AudioControlsPill(
                 hasNarration: hasNarration,

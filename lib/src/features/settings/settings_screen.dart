@@ -8,6 +8,8 @@ import '../auth/data/auth_providers.dart';
 import '../auth/data/auth_repository.dart';
 import '../auth/domain/auth_state.dart';
 import '../child/data/child_profile_providers.dart';
+import '../gen_ui/data/gen_ui_providers.dart';
+import '../gen_ui/presentation/parent_insight_cards.dart';
 import '../onboarding/data/app_review_flow_providers.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -32,6 +34,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
+          ParentInsightCards(
+            log: ref.watch(genUiActivityControllerProvider),
+            profileName: activeProfile.maybeWhen(
+              data: (profile) => profile?.displayName ?? 'Your reader',
+              orElse: () => 'Your reader',
+            ),
+          ),
+          const Divider(height: 32),
           const ListTile(
             title: Text('Reader'),
             subtitle: Text('Child profile used for progress and analytics'),
