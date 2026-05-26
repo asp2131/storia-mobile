@@ -36,9 +36,10 @@ listen-and-respond, speech recognition) are out of scope and become separate spe
 | Dismissal | Close button **and** tapping the scrim both skip neutrally |
 | Feel | Narration pauses on appear, smooth fade/scale animation in/out, narration auto-resumes on dismiss |
 | Scope | Presentation **and** trigger timing (mid-passage). New input types excluded. |
-| Trigger (read-aloud) | Fire when the highlighted word crosses the card's anchor word |
-| Trigger (self-read) | Fire when the anchor word scrolls past the reading line |
-| Missed anchor | If the page is about to leave and the card is still pending, fire before the page leaves |
+| Trigger (read-aloud) | Fire when the active narrated word index reaches the card's `anchorWordIndex` |
+| Trigger (self-read, MVP) | No within-page progress signal exists → fire on page load (today's behavior). True mid-passage self-read deferred to a future spec. |
+| Missed anchor (read-aloud) | Defer/skip — do not show a departed page's card over the next page; not shown this pass |
+| Audio | Explicit `ReaderExperienceActivityShown` (stores `wasNarrationPlaying`, pauses only if playing) + `ReaderExperienceActivityDismissed` (resumes only if it paused) |
 
 ## Architecture
 
@@ -65,7 +66,8 @@ Add an optional anchor to `GenUiCardSchema`:
   - **Non-null** → mid-passage card; fires when reading crosses that word.
   - **Null** → page-level card; fires on page load (preserves today's behavior).
 - No new validation errors (anchor is optional). An anchor index that exceeds the page's word
-  count degrades to the page-leave backstop.
+  count (or a page with no `narrationTimestamps`) never fires mid-passage and falls through to
+  the page-load / self-read path.
 
 Update `mock_gen_ui_cards.dart` so the existing demo cards carry representative anchor indices,
 plus at least one null-anchor card to exercise the page-load path.
@@ -75,18 +77,33 @@ plus at least one null-anchor card to exercise the page-load path.
 A notifier (Riverpod, matching the feature's existing `StateNotifier` style) that, for the
 **active page only**, tracks a card through states: `pending → live → dismissed`.
 
+**Correct signals (verified against the codebase):**
+- Narration highlight is **not** `spokenWordIndices`. `spokenWordIndices` is speech-practice
+  recognition state (populated from `_speechPort.startListening` / `matchSpokenWords` in
+  `reader_session_impl.dart`).
+- The active narrated word is `computeActiveWordIndex(page.narrationTimestamps,
+  narrationPosition)` (see `overlay/text_overlay_utils.dart`, already used by `page_renderer.dart`).
+- `_scrollOffsetNotifier` is the **vertical PageView page position** (`localOffset = scrollOffset
+  - index`), not within-page reading progress. Pages are static full-screen; there is no
+  per-word scroll position or "reading line" while a child self-reads.
+
 Inputs it observes:
-- The chosen card for the active page (`readerGenUiCardProvider`).
-- `spokenWordIndices` (read-aloud progress) and `isNarrationPlaying` from reader state.
-- The active page's scroll offset (`_scrollOffsetNotifier` in `reader_screen.dart`).
-- Active page changes.
+- The chosen card for the active page (`readerGenUiCardProvider`) and its `anchorWordIndex`.
+- `narrationPosition` (+ the active page's `narrationTimestamps`) and `isNarrationPlaying`.
+- Active page changes (`ReaderExperiencePageChanged`).
 
 Transition rules (`pending → live`):
 - **Null anchor:** live on page load.
-- **Narration playing:** live when `spokenWordIndices` contains/exceeds `anchorWordIndex`.
-- **Narration off:** live when the scroll offset moves the anchor word above the reading line.
-- **Backstop:** if the active page is leaving (or its content end is reached) and the card is
-  still `pending`, force it live before the page leaves so the check-in is not silently lost.
+- **Read-aloud (narration playing):** compute the active narrated word index via
+  `computeActiveWordIndex(narrationTimestamps, narrationPosition)`; go live when it reaches/passes
+  `anchorWordIndex`. This is the only path with a genuine mid-passage signal.
+- **Self-read MVP (narration off):** no within-page progress signal exists → live on page load
+  (matches today's behavior). True mid-passage self-read is **out of scope** for this effort
+  (requires new page-internal word/scroll tracking — see Out of Scope).
+- **Missed anchor (read-aloud):** if the child swipes away before narration reaches the anchor,
+  **defer/skip** — the card is simply not shown on this pass. We do **not** show a departed
+  page's card over the next page, and we do **not** block the swipe. If the page is later
+  re-entered without active narration, it shows via the page-load path.
 
 `live → dismissed` happens on answer or skip (skip includes scrim tap). Dismissed cards are not
 re-shown for that page (consistent with `log.hasInteractedWith`).
@@ -118,11 +135,18 @@ that resets state on session start / page reset.)
 - Card: scale + slide-up on enter; reverse on exit. Use a `CueMotion` preset consistent with
   existing reader chrome motion (`StoriaMotion`).
 
-**Audio coordination:**
-- On `live`: signal `ReaderExperienceController` to pause narration (soundscape continues).
-- On dismiss (answer / skip / scrim): resume narration if it was playing when the card appeared.
-- This is a new hook from the overlay/trigger into the reader controller; the gen-UI activity
-  controller continues to own answer/skip logging.
+**Audio coordination (explicit pause/restore, not toggle):**
+Narration currently exposes only `ReaderExperienceToggleNarration` — toggling to "pause" would
+flip narration *on* if it was already off. The activity flow must use intent-explicit actions:
+- Add `ReaderExperienceActivityShown`: capture `wasNarrationPlaying = isNarrationPlaying`, and
+  pause narration **only if** it was playing. Soundscape is untouched. Requires a discrete
+  narration-pause path at the session level (e.g. `ReaderPauseNarration`) rather than a toggle.
+- Add `ReaderExperienceActivityDismissed`: resume narration **only if** this flow paused it
+  (`wasNarrationPlaying`). Idempotent — dismissing when nothing was paused is a no-op.
+- `wasNarrationPlaying` is owned by reader experience state (not the overlay), so it survives
+  rebuilds and double-dismiss.
+- The gen-UI activity controller continues to own answer/skip logging; these new actions only
+  coordinate audio and are dispatched on `live` (shown) and on dismiss (answer / skip / scrim).
 
 ### Accessibility
 
@@ -134,39 +158,53 @@ that resets state on session start / page reset.)
 ## Data Flow
 
 1. Child reads page N. `readerGenUiCardProvider(N)` yields a candidate card (policy unchanged).
-2. `ReaderActivityTrigger` holds it `pending` and watches narration/scroll for page N.
-3. Anchor crossed (highlight or scroll) → card goes `live`.
-4. Overlay shows takeover; narration pauses with a smooth animated entrance.
+2. `ReaderActivityTrigger` holds it `pending` for page N.
+3. Card goes `live` when: anchor is null (on load), OR narration is off (on load, self-read MVP),
+   OR narration is playing and the active narrated word index reaches `anchorWordIndex`.
+4. On `live`, dispatch `ReaderExperienceActivityShown` (pauses narration only if it was playing);
+   overlay shows the takeover with a smooth animated entrance.
 5. Child answers (logged via `genUiActivityControllerProvider.answer`) or skips / taps scrim
-   (`skip`). Card animates out; narration resumes.
-6. If the child leaves page N before the anchor is crossed, the backstop fires the card before
-   the page leaves.
+   (`skip`). Card animates out; `ReaderExperienceActivityDismissed` resumes narration only if this
+   flow paused it.
+6. If the child swipes away during read-aloud before the anchor is reached, the card is deferred
+   (not shown this pass) — no transition blocking, no cross-page display.
 
 ## Error Handling / Edge Cases
 
 - **Invalid card:** existing "activity unavailable" fallback.
-- **Anchor beyond word count:** degrades to page-leave backstop.
-- **Narration toggled mid-page:** trigger re-evaluates against the current mode (highlight vs
-  scroll).
-- **Rapid page swipes:** backstop ensures a pending card fires before its page leaves; once
-  dismissed it does not reappear.
+- **Anchor beyond word count / null timestamps:** `computeActiveWordIndex` returns -1 when there
+  are no timestamps; an unreachable anchor never fires mid-passage and falls through to the
+  page-load / self-read path on the next eligible entry.
+- **Narration toggled mid-page:** turning narration off mid-page makes the card eligible via the
+  self-read (page-load) path; turning it on resumes the active-narrated-word evaluation.
+- **Rapid page swipes during read-aloud:** pending card is deferred (not shown); once dismissed
+  it does not reappear for that page.
+- **Double dismiss / rebuild:** `ReaderExperienceActivityDismissed` is idempotent and keyed on
+  `wasNarrationPlaying`, so narration is never resumed twice or resumed when it was already off.
 - **Reduced motion:** fade-only entrance/exit.
 
 ## Testing
 
 **Unit (trigger engine):**
 - Null anchor → live on page load.
-- Narration on → live when `spokenWordIndices` crosses anchor; not before.
-- Narration off → live when anchor word scrolls past the reading line.
-- Page-leave backstop fires a still-pending card.
+- Narration off → live on page load (self-read MVP).
+- Narration on → live when `computeActiveWordIndex(narrationTimestamps, narrationPosition)`
+  reaches `anchorWordIndex`; not before.
+- Swipe away during read-aloud before anchor reached → card deferred (never `live`, no
+  cross-page display).
 - Dismissed card does not re-trigger for the same page.
+
+**Unit (audio coordination):**
+- `ActivityShown` pauses narration only when `isNarrationPlaying` was true; no-op otherwise.
+- `ActivityDismissed` resumes narration only when this flow paused it; idempotent on double
+  dismiss; never resumes when narration was already off.
 
 **Widget (presentation):**
 - Adaptive layout: short emoji choices render tile grid; long labels render stacked rows; odd
   count spans last tile.
 - Scrim tap invokes skip.
 - Opaque card (no transparency).
-- Pause-on-show / resume-on-dismiss dispatched to the reader controller.
+- `ActivityShown` / `ActivityDismissed` dispatched on show / dismiss.
 
 **Regression:**
 - Update `test/features/reader/reader_screen_coordinator_test.dart` and reader session tests for
@@ -175,5 +213,7 @@ that resets state on session start / page reset.)
 ## Out of Scope
 
 - New answer modalities: drag-and-drop, listen-and-respond, speech recognition.
+- True mid-passage triggering while self-reading (narration off). Requires new page-internal
+  scroll/word-position tracking; this effort uses the page-load fallback for self-read.
 - Server-driven card content (mock repository remains).
 - Selection-policy changes (`GenUiPromptPolicy` unchanged).
