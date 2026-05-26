@@ -125,6 +125,20 @@ class ReaderSessionImpl implements ReaderSession {
       await _startListening();
       return;
     }
+    if (intent is ReaderPauseNarration) {
+      if (_state.isNarrationPlaying) {
+        await _audioPort.toggleNarration();
+        _emit(_state.copyWith(isNarrationPlaying: false));
+      }
+      return;
+    }
+    if (intent is ReaderResumeNarration) {
+      if (!_state.isNarrationPlaying) {
+        await _audioPort.toggleNarration();
+        _emit(_state.copyWith(isNarrationPlaying: true));
+      }
+      return;
+    }
     if (intent is ReaderPracticePrimaryAction) {
       await _handlePracticePrimaryAction();
       return;

@@ -131,6 +131,14 @@ final class ReaderResumeListening extends ReaderIntent {
   const ReaderResumeListening();
 }
 
+final class ReaderPauseNarration extends ReaderIntent {
+  const ReaderPauseNarration();
+}
+
+final class ReaderResumeNarration extends ReaderIntent {
+  const ReaderResumeNarration();
+}
+
 final class ReaderAckCelebration extends ReaderIntent {
   const ReaderAckCelebration();
 }
