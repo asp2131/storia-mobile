@@ -124,12 +124,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             _initializedBookId = book.id;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
-              c.dispatch(
-                ReaderExperienceStart(
-                  book: book,
-                  initialPageIndex: state.readerState.activePageIndex,
-                ),
-              );
+              // Always open at the beginning. Starting at page 0 (the default)
+              // also resets any page index a surviving reader controller or the
+              // singleton session retained from a prior visit, so the physical
+              // PageView (which starts at 0) and the logical active page agree
+              // and re-entering a book is deterministic.
+              c.dispatch(ReaderExperienceStart(book: book));
             });
           }
 

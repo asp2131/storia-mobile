@@ -64,6 +64,51 @@ void main() {
     );
   });
 
+  testWidgets('fresh open always starts at page 0 ignoring retained page', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final coordinatorLog = _CoordinatorLog();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentBookProvider(
+            'book-multi',
+          ).overrideWith((ref) async => _multiPageBook),
+          bookManifestProvider('book-multi').overrideWith((ref) async => null),
+          readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
+          readerExperienceControllerProvider.overrideWith(
+            // Simulate a controller that retained a later page from a prior
+            // visit. A fresh open must still begin at page 0.
+            () => _FakeReaderExperienceControllerNotifier._(
+              coordinatorLog,
+              'book-multi',
+              initialPageIndex: 2,
+            ),
+          ),
+          readerExperienceEffectsProvider.overrideWith(
+            (ref) => const NoopReaderExperienceEffects(),
+          ),
+        ],
+        child: const MaterialApp(home: ReaderScreen(bookId: 'book-multi')),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    final start = coordinatorLog.actions
+        .whereType<ReaderExperienceStart>()
+        .single;
+    expect(start.initialPageIndex, 0);
+  });
+
   testWidgets('ReaderScreen keeps book-not-found flow outside coordinator', (
     tester,
   ) async {
@@ -166,9 +211,14 @@ class _FakeReaderSession implements ReaderSession {
 
 class _FakeReaderExperienceControllerNotifier
     extends ReaderExperienceControllerNotifier {
-  _FakeReaderExperienceControllerNotifier._(this.log, String bookId);
+  _FakeReaderExperienceControllerNotifier._(
+    this.log,
+    String bookId, {
+    this.initialPageIndex = 0,
+  });
 
   final _CoordinatorLog log;
+  final int initialPageIndex;
 
   @override
   ValueListenable<Duration> get narrationPositionListenable =>
@@ -184,7 +234,7 @@ class _FakeReaderExperienceControllerNotifier
     return ReaderExperienceState(
       readerState: ReaderViewState(
         isReady: true,
-        activePageIndex: 0,
+        activePageIndex: initialPageIndex,
         isNarrationPlaying: false,
         isSoundscapePlaying: false,
         narrationVolume: 1,
@@ -231,5 +281,16 @@ const _book = Book(
       narrationUrl: 'https://example.test/narration.mp3',
       soundscapeUrl: 'https://example.test/soundscape.mp3',
     ),
+  ],
+);
+
+const _multiPageBook = Book(
+  id: 'book-multi',
+  title: 'Multi Page Book',
+  pageCount: 3,
+  pages: [
+    PageData(id: 'mp-1', pageNumber: 1, textContent: 'page one'),
+    PageData(id: 'mp-2', pageNumber: 2, textContent: 'page two'),
+    PageData(id: 'mp-3', pageNumber: 3, textContent: 'page three'),
   ],
 );

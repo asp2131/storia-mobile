@@ -136,7 +136,18 @@ class ReaderSessionImpl implements ReaderSession {
     if (intent is ReaderEnd) {
       _completeSpeechAttempt(reason: intent.reason);
       _analyticsTracker?.endSession(reason: intent.reason);
+      // Clear in-memory state so a future subscriber (e.g. re-entering the
+      // book) does not inherit the stale end page. Reset silently — no emit —
+      // so the app-lifecycle pause→resume path keeps the controller's retained
+      // page index for its ReaderStart re-seed.
+      _resetState();
     }
+  }
+
+  void _resetState() {
+    _celebrationTask?.cancel();
+    _celebrationTask = null;
+    _state = const ReaderViewState.initial();
   }
 
   Future<void> _handleStart(ReaderStart intent) async {
