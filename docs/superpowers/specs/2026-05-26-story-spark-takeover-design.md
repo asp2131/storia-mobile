@@ -72,10 +72,14 @@ Add an optional anchor to `GenUiCardSchema`:
 Update `mock_gen_ui_cards.dart` so the existing demo cards carry representative anchor indices,
 plus at least one null-anchor card to exercise the page-load path.
 
-### 2. Trigger engine — new `ReaderActivityTrigger`
+### 2. Trigger — pure `isActivityLive` predicate
 
-A notifier (Riverpod, matching the feature's existing `StateNotifier` style) that, for the
-**active page only**, tracks a card through states: `pending → live → dismissed`.
+The "when" is a **pure predicate**, `isActivityLive(...)`, evaluated for the active page on each
+build — not a stateful notifier. There is no separate `pending → live → dismissed` state machine:
+"pending" is simply the predicate returning `false`; "dismissed" is handled by the existing
+activity log (`log.hasInteractedWith`), which makes `readerGenUiCardProvider` return `null` after
+the child answers or skips, so the predicate naturally stops returning `true`. This keeps the
+trigger logic trivially unit-testable and avoids duplicating dismissal state.
 
 **Correct signals (verified against the codebase):**
 - Narration highlight is **not** `spokenWordIndices`. `spokenWordIndices` is speech-practice
@@ -87,29 +91,28 @@ A notifier (Riverpod, matching the feature's existing `StateNotifier` style) tha
   - index`), not within-page reading progress. Pages are static full-screen; there is no
   per-word scroll position or "reading line" while a child self-reads.
 
-Inputs it observes:
+Inputs (all passed into the predicate / computed at the call site, no stored state):
 - The chosen card for the active page (`readerGenUiCardProvider`) and its `anchorWordIndex`.
-- `narrationPosition` (+ the active page's `narrationTimestamps`) and `isNarrationPlaying`.
-- Active page changes (`ReaderExperiencePageChanged`).
+- `isNarrationPlaying` and the active narrated word index, computed from
+  `computeActiveWordIndex(page.narrationTimestamps, narrationPosition)`.
 
-Transition rules (`pending → live`):
-- **Null anchor:** live on page load.
-- **Read-aloud (narration playing):** compute the active narrated word index via
-  `computeActiveWordIndex(narrationTimestamps, narrationPosition)`; go live when it reaches/passes
-  `anchorWordIndex`. This is the only path with a genuine mid-passage signal.
-- **Self-read MVP (narration off):** no within-page progress signal exists → live on page load
-  (matches today's behavior). True mid-passage self-read is **out of scope** for this effort
-  (requires new page-internal word/scroll tracking — see Out of Scope).
-- **Missed anchor (read-aloud):** if the child swipes away before narration reaches the anchor,
-  **defer/skip** — the card is simply not shown on this pass. We do **not** show a departed
-  page's card over the next page, and we do **not** block the swipe. If the page is later
-  re-entered without active narration, it shows via the page-load path.
+`isActivityLive` rules:
+- **No card:** never live.
+- **Null anchor:** live (on page load).
+- **Self-read MVP (narration off):** live (on page load) — no within-page progress signal exists.
+  True mid-passage self-read is **out of scope** (requires page-internal word/scroll tracking).
+- **Read-aloud (narration playing):** live once the active narrated word index reaches/passes
+  `anchorWordIndex`. The only path with a genuine mid-passage signal.
 
-`live → dismissed` happens on answer or skip (skip includes scrim tap). Dismissed cards are not
-re-shown for that page (consistent with `log.hasInteractedWith`).
+**Missed anchor (read-aloud):** if the child swipes away before narration reaches the anchor, the
+predicate simply never returns `true` for that pass — the card is not shown. We do **not** show a
+departed page's card over the next page, and we do **not** block the swipe. Re-entering the page
+without active narration shows it via the page-load path. No backstop state to manage.
 
-Resetting: a fresh page resets trigger state for that page. (Aligns with existing reader behavior
-that resets state on session start / page reset.)
+**Dismissal:** answering or skipping (skip includes scrim tap) logs the interaction; thereafter
+`readerGenUiCardProvider` returns `null` for that card (`log.hasInteractedWith`) and the predicate
+returns `false`. The overlay tracks a local `_shown` boolean only to fire the audio
+shown/dismissed actions exactly once (see Presentation).
 
 ### 3. Presentation — `presentation/reader_activity_card.dart`
 

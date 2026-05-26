@@ -635,8 +635,10 @@ void main() {
     expect(find.text('Lantern'), findsOneWidget);
     expect(find.text('Rain'), findsOneWidget);
     expect(find.text('Butterfly'), findsOneWidget);
-    // Tile-grid layout uses a GridView/Wrap-of-tiles tagged by key.
+    // Tile-grid layout uses a Wrap-of-tiles tagged by key.
     expect(find.byKey(const ValueKey('activity-answers-tiles')), findsOneWidget);
+    // 3 choices (odd) -> the final tile spans the full row.
+    expect(find.byKey(const ValueKey('activity-tile-wide')), findsOneWidget);
   });
 
   testWidgets('long labels render as stacked rows', (tester) async {
@@ -710,13 +712,19 @@ class _ActivityAnswers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_useTiles) {
+      final lastIndex = choices.length - 1;
       return Wrap(
         key: const ValueKey('activity-answers-tiles'),
         spacing: StoriaSpacing.sm,
         runSpacing: StoriaSpacing.sm,
         children: [
-          for (final choice in choices)
-            _AnswerTile(choice: choice, onTap: () => onChoiceSelected(choice)),
+          for (var i = 0; i < choices.length; i++)
+            _AnswerTile(
+              choice: choices[i],
+              // Odd count -> final tile spans the full row.
+              fullWidth: choices.length.isOdd && i == lastIndex,
+              onTap: () => onChoiceSelected(choices[i]),
+            ),
         ],
       );
     }
@@ -734,20 +742,27 @@ class _ActivityAnswers extends StatelessWidget {
 }
 
 class _AnswerTile extends StatelessWidget {
-  const _AnswerTile({required this.choice, required this.onTap});
+  const _AnswerTile({
+    required this.choice,
+    required this.onTap,
+    this.fullWidth = false,
+  });
 
   final GenUiChoiceSchema choice;
   final VoidCallback onTap;
+  final bool fullWidth;
 
   @override
   Widget build(BuildContext context) {
-    // Two columns: each tile ~half the available width minus the Wrap spacing.
-    final width = (MediaQuery.sizeOf(context).width.clamp(0.0, 460.0)
-            - StoriaSpacing.lg * 2 - StoriaSpacing.sm) / 2;
+    final available = MediaQuery.sizeOf(context).width.clamp(0.0, 460.0)
+        - StoriaSpacing.lg * 2;
+    // Full-width tile (odd-count last item) spans the row; others are 2-col.
+    final width = fullWidth ? available : (available - StoriaSpacing.sm) / 2;
     return Semantics(
       button: true,
       label: choice.accessibilityLabel,
       child: SizedBox(
+        key: fullWidth ? const ValueKey('activity-tile-wide') : null,
         width: width,
         child: SketchButton(
           label: choice.emoji == null
@@ -916,6 +931,8 @@ class _ActivityTakeover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Reduced-motion: fade only, no slide (spec accessibility requirement).
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
     return Positioned.fill(
       child: Stack(
         children: [
@@ -943,7 +960,9 @@ class _ActivityTakeover extends StatelessWidget {
                       StoriaMotion.medium,
                       curve: StoriaMotion.emphasized,
                     ),
-                    acts: const [.fadeIn(), .slideY(from: 0.12)],
+                    acts: reduceMotion
+                        ? const [.fadeIn()]
+                        : const [.fadeIn(), .slideY(from: 0.12)],
                     child: ReaderActivityCard(
                       card: card,
                       onChoiceSelected: onChoiceSelected,
@@ -966,12 +985,15 @@ Add imports at the top of the file:
 ```dart
 import 'package:cue/cue.dart';
 import 'package:flutter/foundation.dart';
+import '../../../core/theme/storia_motion.dart';
 import '../../../data/models.dart';
 import '../../reader/overlay/text_overlay_utils.dart';
 import '../domain/reader_activity_trigger.dart';
 ```
 
-NOTE: Animation polish (exit animation, reduced-motion fallback) — invoke the `cue-animations` skill to refine. Confirmed-available acts in cue 0.2.1: `.fadeIn()`, `.slideY(from:)`. If `.slideY` signature differs, the skill will correct it. Entrance-only is acceptable for this task; an exit animation is a nice-to-have, not required by tests.
+(`storia_colors.dart` and `storia_spacing.dart` are already imported by this file; `storia_motion.dart` is new — `_ActivityTakeover` uses `StoriaMotion.medium`/`StoriaMotion.emphasized`.)
+
+NOTE: The `Cue.onMount` entrance is an enter-only animation; an exit animation is a nice-to-have, not required by tests. If you want to polish it (e.g. animate the card out before removal), invoke the `cue-animations` skill. Confirmed-available acts in cue 0.2.1: `.fadeIn()`, `.slideY(from:)`. If `.slideY` signature differs, the skill will correct it.
 
 - [ ] **Step 6: Run the presentation tests + analyze**
 
@@ -1054,7 +1076,13 @@ Expected: PASS. With no cards, the overlay renders `SizedBox.shrink()` and exist
 
 - [ ] **Step 3: Add an integration test for the audio dispatch (Task 4 behavioral coverage)**
 
-This test deliberately lets a card show (no empty-repo override) and asserts the wiring dispatches `ReaderExperienceActivityShown` on show and `ReaderExperienceActivityDismissed` on skip, using the existing action-recording fake notifier. Add to `test/features/reader/reader_screen_coordinator_test.dart` inside `main()`:
+This test deliberately lets a card show (no empty-repo override) and asserts the wiring dispatches `ReaderExperienceActivityShown` on show and `ReaderExperienceActivityDismissed` on skip, using the existing action-recording fake notifier. It references `ReaderActivityCard`, so add the import to the test file:
+
+```dart
+import 'package:storia_kids/src/features/gen_ui/presentation/reader_activity_card.dart';
+```
+
+Add to `test/features/reader/reader_screen_coordinator_test.dart` inside `main()`:
 
 ```dart
   testWidgets('Story Spark takeover dispatches activity shown/dismissed', (
@@ -1098,8 +1126,14 @@ This test deliberately lets a card show (no empty-repo override) and asserts the
       hasLength(1),
     );
 
-    // Skip via the card's close button.
-    await tester.tap(find.byIcon(Icons.close_rounded));
+    // Skip via the card's close button. Scope the finder to the activity card
+    // so it can't match any other close icon in the chrome.
+    final closeButton = find.descendant(
+      of: find.byType(ReaderActivityCard),
+      matching: find.byIcon(Icons.close_rounded),
+    );
+    expect(closeButton, findsOneWidget);
+    await tester.tap(closeButton);
     await tester.pump();
 
     expect(
@@ -1146,12 +1180,14 @@ Verify on a book whose pages have anchored cards:
 
 - [ ] **Step 3: Update `.wolf` project memory**
 
-Append the outcome to `.wolf/memory.md` and update `.wolf/anatomy.md` per project rules.
+Append the outcome to `.wolf/memory.md`. Do **not** hand-edit `.wolf/anatomy.md` — it is auto-generated by OpenWolf hooks (AGENTS.md:107); the hook updates it after file writes. If a bug was hit and fixed during execution, log it to `.wolf/buglog.json` per project rules.
 
 - [ ] **Step 4: Final commit (if any verification fixes were made)**
 
+Use explicit paths — the repo has unrelated untracked files (`assets/audio/`, `assets/images/footstep.png`, `.superpowers/`) that must NOT be committed. Do **not** use `git add -A`.
+
 ```bash
-git add -A
+git add <only the files you changed during verification>
 git commit -m "test(gen_ui): verify Story Spark takeover end-to-end"
 ```
 
