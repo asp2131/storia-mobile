@@ -134,9 +134,9 @@ shown/dismissed actions exactly once (see Presentation).
 - Invalid-card fallback message unchanged.
 
 **Animation (Cue package, per cue-animations conventions):**
-- Scrim: `fadeIn` on enter, fade out on exit.
-- Card: scale + slide-up on enter; reverse on exit. Use a `CueMotion` preset consistent with
-  existing reader chrome motion (`StoriaMotion`).
+- Scrim/card: animated entrance using fade + gentle slide/scale motion.
+- Reduced motion uses fade only.
+- Exit animation is a future polish pass; this implementation may remove the overlay immediately on dismissal.
 
 **Audio coordination (explicit pause/restore, not toggle):**
 Narration currently exposes only `ReaderExperienceToggleNarration` — toggling to "pause" would
@@ -161,14 +161,14 @@ flip narration *on* if it was already off. The activity flow must use intent-exp
 ## Data Flow
 
 1. Child reads page N. `readerGenUiCardProvider(N)` yields a candidate card (policy unchanged).
-2. `ReaderActivityTrigger` holds it `pending` for page N.
+2. The overlay evaluates `isActivityLive(...)` for page N on each build.
 3. Card goes `live` when: anchor is null (on load), OR narration is off (on load, self-read MVP),
    OR narration is playing and the active narrated word index reaches `anchorWordIndex`.
 4. On `live`, dispatch `ReaderExperienceActivityShown` (pauses narration only if it was playing);
    overlay shows the takeover with a smooth animated entrance.
 5. Child answers (logged via `genUiActivityControllerProvider.answer`) or skips / taps scrim
-   (`skip`). Card animates out; `ReaderExperienceActivityDismissed` resumes narration only if this
-   flow paused it.
+   (`skip`). The overlay is dismissed; `ReaderExperienceActivityDismissed` resumes narration only
+   if this flow paused it.
 6. If the child swipes away during read-aloud before the anchor is reached, the card is deferred
    (not shown this pass) — no transition blocking, no cross-page display.
 
