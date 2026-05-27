@@ -280,7 +280,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
               ReaderActivityPromptOverlay(
                 bookId: book.id,
                 pageIndex: activeIndex,
-                bottomInset: MediaQuery.paddingOf(context).bottom + 128,
+                isNarrationPlaying: state.readerState.isNarrationPlaying,
+                narrationPositionListenable: c.narrationPositionListenable,
+                narrationTimestamps: activePage.narrationTimestamps,
+                onActivityShown: () => unawaited(
+                  c.dispatch(const ReaderExperienceActivityShown()),
+                ),
+                onActivityDismissed: () => unawaited(
+                  c.dispatch(const ReaderExperienceActivityDismissed()),
+                ),
               ),
               AudioControlsPill(
                 hasNarration: hasNarration,
