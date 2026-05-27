@@ -43,10 +43,24 @@ class _ReaderActivityPromptOverlayState
     extends ConsumerState<ReaderActivityPromptOverlay> {
   bool _shown = false;
 
+  @override
+  void didUpdateWidget(covariant ReaderActivityPromptOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final pageChanged = oldWidget.pageIndex != widget.pageIndex ||
+        oldWidget.bookId != widget.bookId;
+    if (pageChanged && _shown) {
+      // Left the page while the takeover was still up: treat as dismissal so
+      // narration resumes, and re-arm so the next page's activity can show.
+      _shown = false;
+      widget.onActivityDismissed();
+    }
+  }
+
   void _handleLive(bool live) {
     if (live && !_shown) {
       _shown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         widget.onActivityShown();
       });
     }
@@ -145,6 +159,7 @@ class _ActivityTakeover extends StatelessWidget {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 460),
                   child: Cue.onMount(
+                    debugLabel: 'story-spark-takeover',
                     motion: const CueMotion.curved(
                       StoriaMotion.medium,
                       curve: StoriaMotion.emphasized,
