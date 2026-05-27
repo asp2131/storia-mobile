@@ -31,12 +31,14 @@ void main() {
 
     await session.dispatch(const ReaderPauseNarration());
     expect(audio.toggleNarrationCalls, 2); // was playing -> paused
+    expect((await session.states.first).isNarrationPlaying, isFalse);
 
     await session.dispatch(const ReaderPauseNarration());
     expect(audio.toggleNarrationCalls, 2); // already paused -> no-op
 
     await session.dispatch(const ReaderResumeNarration());
     expect(audio.toggleNarrationCalls, 3); // was paused -> resumed
+    expect((await session.states.first).isNarrationPlaying, isTrue);
 
     await session.dispatch(const ReaderResumeNarration());
     expect(audio.toggleNarrationCalls, 3); // already playing -> no-op
