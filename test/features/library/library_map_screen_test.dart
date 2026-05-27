@@ -7,6 +7,7 @@ import 'package:gooey/gooey.dart';
 import 'package:go_router/go_router.dart';
 import 'package:storia_kids/src/data/models.dart';
 import 'package:storia_kids/src/data/providers.dart' as providers;
+import 'package:storia_kids/src/features/library/adapters/flame_library_map_engine_adapter.dart';
 import 'package:storia_kids/src/features/library/library_screen.dart';
 
 // ── Book helpers ───────────────────────────────────────────────────────────
@@ -344,6 +345,30 @@ void main() {
 
       expect(find.text('Settings'), findsOneWidget);
     });
+
+    // ── Engine lifecycle ───────────────────────────────────────────────
+
+    testWidgets(
+      'recreates game if adapter is disposed while screen is mounted',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [_twoBooksOverride()],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await _pumpLoadedLibrary(tester);
+
+        FlameLibraryMapEngineAdapter.instance.dispose();
+        await tester.enterText(find.byType(TextField), 'cat');
+        await tester.pump(const Duration(milliseconds: 250));
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(LibraryScreen), findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
+      },
+    );
 
     // ── Empty library ─────────────────────────────────────────────────
 

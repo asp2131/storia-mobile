@@ -162,7 +162,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       screenHeight: screenSize.height,
     );
 
-    final game = _engineAdapter.game!;
+    final game = _engineAdapter.game;
+    if (game == null) {
+      return const _LoadingState();
+    }
+
     final worldWidth = _session.viewport.worldWidth;
 
     return Stack(
@@ -251,9 +255,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       screenHeight,
       Object.hashAll(books.map((book) => book.id)),
     ).toString();
-    if (_loadedSignature == signature) return;
+    if (_loadedSignature == signature && _engineAdapter.game != null) return;
 
-    _loadedSignature = signature;
     _isLoadingSession = true;
     try {
       _session.loadBooks(
@@ -261,6 +264,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         screenWidth: screenWidth,
         screenHeight: screenHeight,
       );
+      _loadedSignature = signature;
       _applyFilter();
     } finally {
       _isLoadingSession = false;
