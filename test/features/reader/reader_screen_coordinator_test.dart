@@ -248,6 +248,7 @@ class _FakeReaderExperienceControllerNotifier
       wordHelpSnapshot: const WordHelpSnapshot.idle(),
       showCelebrationGif: false,
       endedForLifecycle: false,
+      activityNarrationPaused: false,
     );
   }
 

@@ -34,30 +34,36 @@ class ReaderExperienceState {
     required this.wordHelpSnapshot,
     required this.showCelebrationGif,
     required this.endedForLifecycle,
+    required this.activityNarrationPaused,
   });
 
   const ReaderExperienceState.initial()
     : readerState = const ReaderViewState.initial(),
       wordHelpSnapshot = const WordHelpSnapshot.idle(),
       showCelebrationGif = false,
-      endedForLifecycle = false;
+      endedForLifecycle = false,
+      activityNarrationPaused = false;
 
   final ReaderViewState readerState;
   final WordHelpSnapshot wordHelpSnapshot;
   final bool showCelebrationGif;
   final bool endedForLifecycle;
+  final bool activityNarrationPaused;
 
   ReaderExperienceState copyWith({
     ReaderViewState? readerState,
     WordHelpSnapshot? wordHelpSnapshot,
     bool? showCelebrationGif,
     bool? endedForLifecycle,
+    bool? activityNarrationPaused,
   }) {
     return ReaderExperienceState(
       readerState: readerState ?? this.readerState,
       wordHelpSnapshot: wordHelpSnapshot ?? this.wordHelpSnapshot,
       showCelebrationGif: showCelebrationGif ?? this.showCelebrationGif,
       endedForLifecycle: endedForLifecycle ?? this.endedForLifecycle,
+      activityNarrationPaused:
+          activityNarrationPaused ?? this.activityNarrationPaused,
     );
   }
 }
@@ -141,6 +147,14 @@ final class ReaderExperienceResumeListening extends ReaderExperienceAction {
   const ReaderExperienceResumeListening();
 }
 
+final class ReaderExperienceActivityShown extends ReaderExperienceAction {
+  const ReaderExperienceActivityShown();
+}
+
+final class ReaderExperienceActivityDismissed extends ReaderExperienceAction {
+  const ReaderExperienceActivityDismissed();
+}
+
 final class ReaderExperienceAckCelebration extends ReaderExperienceAction {
   const ReaderExperienceAckCelebration();
 }
@@ -164,6 +178,7 @@ class ReaderExperienceController {
          wordHelpSnapshot: wordHelp.snapshot,
          showCelebrationGif: false,
          endedForLifecycle: false,
+         activityNarrationPaused: false,
        ) {
     _sessionSubscription = _session.states.listen(_onReaderStateChanged);
     _wordHelpSubscription = _wordHelp.snapshots.listen(_onWordHelpChanged);
@@ -239,6 +254,16 @@ class ReaderExperienceController {
         await _session.dispatch(const ReaderPauseListening());
       case ReaderExperienceResumeListening():
         await _session.dispatch(const ReaderResumeListening());
+      case ReaderExperienceActivityShown():
+        if (_state.readerState.isNarrationPlaying) {
+          _setState(_state.copyWith(activityNarrationPaused: true));
+          await _session.dispatch(const ReaderPauseNarration());
+        }
+      case ReaderExperienceActivityDismissed():
+        if (_state.activityNarrationPaused) {
+          _setState(_state.copyWith(activityNarrationPaused: false));
+          await _session.dispatch(const ReaderResumeNarration());
+        }
       case ReaderExperienceAckCelebration():
         await _session.dispatch(const ReaderAckCelebration());
       case ReaderExperienceEnd(:final reason):
