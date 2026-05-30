@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:storia_kids/src/data/analytics_repository.dart';
@@ -174,21 +175,34 @@ void main() {
     );
 
     test('analytics transport failures do not break reader flow', () async {
-      transport.error = StateError('network');
+      await _withSuppressedDebugPrint(() async {
+        transport.error = StateError('network');
 
-      await expectLater(session.dispatch(ReaderStart(book: _book)), completes);
-      await pumpEventQueue();
-      var state = await session.states.first;
-      expect(state.isReady, true);
-      expect(state.activePageIndex, 0);
+        await expectLater(session.dispatch(ReaderStart(book: _book)), completes);
+        await pumpEventQueue();
+        var state = await session.states.first;
+        expect(state.isReady, true);
+        expect(state.activePageIndex, 0);
 
-      await expectLater(session.dispatch(const ReaderGoToPage(1)), completes);
-      await pumpEventQueue();
-      state = await session.states.first;
-      expect(state.activePageIndex, 1);
-      expect(transport.events, isEmpty);
+        await expectLater(session.dispatch(const ReaderGoToPage(1)), completes);
+        await pumpEventQueue();
+        state = await session.states.first;
+        expect(state.activePageIndex, 1);
+        expect(transport.events, isEmpty);
+        transport.error = null;
+      });
     });
   });
+}
+
+Future<T> _withSuppressedDebugPrint<T>(Future<T> Function() body) async {
+  final previousDebugPrint = debugPrint;
+  debugPrint = (String? message, {int? wrapWidth}) {};
+  try {
+    return await body();
+  } finally {
+    debugPrint = previousDebugPrint;
+  }
 }
 
 String _eventName(Map<String, dynamic> body) => body['event'] as String;

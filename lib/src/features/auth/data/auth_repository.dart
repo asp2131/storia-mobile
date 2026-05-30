@@ -105,6 +105,9 @@ class AuthRepository {
           throw const AppAuthException('Apple sign-in was canceled.');
         case AuthorizationErrorCode.failed:
         case AuthorizationErrorCode.notHandled:
+        case AuthorizationErrorCode.credentialExport:
+        case AuthorizationErrorCode.credentialImport:
+        case AuthorizationErrorCode.matchedExcludedCredential:
           throw const AppAuthException(
             'Apple sign-in failed. Verify Sign in with Apple is enabled for this app and that this device is signed into an Apple ID.',
           );

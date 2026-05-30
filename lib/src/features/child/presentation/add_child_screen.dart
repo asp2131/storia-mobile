@@ -233,15 +233,16 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
                                 const SizedBox(height: 18),
                                 Semantics(
                                   container: true,
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: StoriaColors.paperAlt,
+                                  child: Material(
+                                    color: StoriaColors.paperAlt,
+                                    shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(
+                                      side: const BorderSide(
                                         color: StoriaColors.line,
                                         width: 1.2,
                                       ),
                                     ),
+                                    clipBehavior: Clip.antiAlias,
                                     child: SwitchListTile.adaptive(
                                       value: _isDefault,
                                       onChanged: _isSubmitting

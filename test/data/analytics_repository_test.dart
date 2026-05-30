@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -190,7 +191,9 @@ void main() {
         final transport = _FakeAnalyticsTransport();
         final repository = AnalyticsRepository(transport: transport);
 
-        final didTrack = await repository.track(AnalyticsEventType.pageViewed);
+        final didTrack = await _withSuppressedDebugPrint(
+          () => repository.track(AnalyticsEventType.pageViewed),
+        );
 
         expect(didTrack, isFalse);
         expect(transport.requests, isEmpty);
@@ -203,7 +206,9 @@ void main() {
         currentChildProfileId: () => 'child-1',
       );
 
-      final didTrack = await repository.track(AnalyticsEventType.pageViewed);
+      final didTrack = await _withSuppressedDebugPrint(
+        () => repository.track(AnalyticsEventType.pageViewed),
+      );
 
       expect(didTrack, isFalse);
     });
@@ -253,6 +258,16 @@ void main() {
       );
     });
   });
+}
+
+Future<T> _withSuppressedDebugPrint<T>(Future<T> Function() body) async {
+  final previousDebugPrint = debugPrint;
+  debugPrint = (String? message, {int? wrapWidth}) {};
+  try {
+    return await body();
+  } finally {
+    debugPrint = previousDebugPrint;
+  }
 }
 
 class _FakeAnalyticsRequest {

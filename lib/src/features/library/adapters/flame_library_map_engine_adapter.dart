@@ -17,7 +17,29 @@ class FlameLibraryMapEngineAdapter implements LibraryMapEnginePort {
 
   static FlameLibraryMapEngineAdapter? _instance;
 
+  /// Creates a fresh, non-shared adapter that owns its own [LibraryGame].
+  ///
+  /// Each [LibraryScreen] mount must own its own adapter so the Flame game
+  /// lifecycle is tied to that screen. Sharing one process-wide game across
+  /// screen mounts caused two failures that left the Flame layer blank (no
+  /// character, no book nodes) after returning to the app:
+  ///
+  /// 1. **Reuse-blank** — a [FlameGame] instance is single-attach; reusing it
+  ///    on a freshly mounted `GameWidget` (or after the render surface was
+  ///    lost on background→resume) re-attaches with an empty world.
+  /// 2. **Dispose race** — a teardown of one screen disposed the game a newly
+  ///    mounted screen was actively rendering.
+  ///
+  /// The Flutter background (sky/clouds/sun) kept painting in both cases,
+  /// which matched the observed "library with no game character" bug.
+  factory FlameLibraryMapEngineAdapter.create() =>
+      FlameLibraryMapEngineAdapter._();
+
   /// Returns the shared singleton adapter instance.
+  ///
+  /// Retained for tests and any caller that needs a process-wide handle. The
+  /// [LibraryScreen] itself uses [FlameLibraryMapEngineAdapter.create] so its
+  /// game is scoped to the screen mount.
   ///
   /// The underlying [LibraryGame] is lazily created on first [loadBooks] call.
   /// A new [LibraryGame] is created each time [loadBooks] is called to allow
@@ -105,7 +127,11 @@ class FlameLibraryMapEngineAdapter implements LibraryMapEnginePort {
   void dispose() {
     _game?.dispose();
     _game = null;
-    _instance = null;
+    // Only clear the shared singleton slot when disposing the shared instance.
+    // Per-screen adapters created via [create] must never null the singleton.
+    if (identical(_instance, this)) {
+      _instance = null;
+    }
   }
 
   /// Mirrors [_worldWidthForBooks] from [LibraryScreen].

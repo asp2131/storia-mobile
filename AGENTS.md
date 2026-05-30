@@ -49,7 +49,7 @@ UI/web proof is mandatory for UI/browser-verifiable tickets — see Playwright s
 | `WORKFLOW.md` | Symphony Linear SOP (workpad template, status map, validation gates). |
 | `.wolf/` | OpenWolf state — see Gotchas. |
 | `.pi/` | Pi Coding Agent harness (orchestrator, leads, workers, expertise, evolution). Canonical agent location — see Gotchas. |
-| `.claude/skills/` | Repo-local Flutter/Riverpod skill bodies. |
+| `skills-lock.json` | Pins the official Dart & Flutter skills (sourced from the `flutter/skills` GitHub repo) installed globally under `~/.agents/skills/`. |
 | `bin/` | `bootstrap.sh` (env setup), `verify.sh` (analyze + test gate), `pi-symphony.sh` (Linear poller). |
 | `coverage/`, `build/`, `.dart_tool/` | Generated. Do not commit. |
 
@@ -123,23 +123,26 @@ pi team storia-quality
 
 Symphony does **not** spawn nested long-running orchestration; the primary worker is the Codex app-server session. Use `pi` only when it helps the current ticket. See `README.md` "Agent Harness (Pi Coding Agent)" for full pipeline list.
 
-## Skills (Flutter / Riverpod knowledge bodies)
+## Skills (official Dart & Flutter knowledge bodies)
 
-Detailed how-tos live in `.claude/skills/<name>/SKILL.md`. Open the relevant skill body when a task matches its description. Available:
+The official Dart & Flutter skills ([introduced by the Flutter team](https://blog.flutter.dev/introducing-skills-for-dart-and-flutter-23837c6ec0ae)) are installed globally under `~/.agents/skills/<name>/SKILL.md` and pinned for this repo via `skills-lock.json` (sourced from the `flutter/skills` GitHub repo). Open the relevant skill body when a task matches its description. Available:
 
-- flutter-accessibility, flutter-animation, flutter-app-size, flutter-architecture, flutter-caching, flutter-concurrency, flutter-databases, flutter-environment-setup-{linux,macos,windows}, flutter-home-screen-widget, flutter-http-and-json, flutter-layout, flutter-localization, flutter-native-interop, flutter-performance, flutter-platform-views, flutter-plugins, flutter-routing-and-navigation, flutter-state-management, flutter-testing, flutter-theming
-- riverpod-3-0-migration, riverpod-auto-dispose, riverpod-cancel, riverpod-codegen-and-hooks, riverpod-consumers, riverpod-containers, riverpod-eager-initialization, riverpod-family, riverpod-faq-and-practices, riverpod-from-provider, riverpod-getting-started, riverpod-migration, riverpod-mutations, riverpod-observers, riverpod-offline, riverpod-overrides, riverpod-providers, riverpod-pull-to-refresh, riverpod-refs, riverpod-retry, riverpod-scoping, riverpod-select, riverpod-testing
+- **Dart:** dart-add-unit-test, dart-build-cli-app, dart-collect-coverage, dart-fix-runtime-errors, dart-generate-test-mocks, dart-migrate-to-checks-package, dart-resolve-package-conflicts, dart-run-static-analysis, dart-use-pattern-matching
+- **Flutter:** flutter-add-integration-test, flutter-add-widget-preview, flutter-add-widget-test, flutter-apply-architecture-best-practices, flutter-build-responsive-layout, flutter-fix-layout-issues, flutter-implement-json-serialization, flutter-setup-declarative-routing, flutter-setup-localization, flutter-use-http-package
 
-**Note:** This repo currently uses Riverpod 2.6.1, not 3.x. The `riverpod-3-0-migration` skill is available but do not migrate without an explicit ticket.
+**Notes:**
+- This repo uses Riverpod 2.6.1 and **no codegen** (no `build_runner`/`freezed`). Skills that lean on codegen (e.g. `dart-generate-test-mocks` with `build_runner`) conflict with repo conventions — follow the hand-written patterns in this repo instead, and don't introduce codegen without a ticket.
+- Prefer this repo's existing theme tokens, sketch/watercolor primitives, and provider patterns over a skill's generic scaffolding when they diverge.
 
 ### Skill usage rules
 
-1. If a task clearly matches a skill's description, open `.claude/skills/<name>/SKILL.md` and follow its workflow.
+1. If a task clearly matches a skill's description, open `~/.agents/skills/<name>/SKILL.md` and follow its workflow.
 2. Resolve relative paths inside SKILL.md against the skill directory.
 3. Load files from `references/` only when needed.
 4. Reuse `scripts/` and `assets/` if the skill ships them.
 5. Multiple skills relevant? State the order, use the minimal set.
-6. Skill missing or path unreadable? Say so and proceed with best-effort fallback.
+6. Where a skill conflicts with repo conventions (no codegen, design tokens, Riverpod 2.x patterns), repo conventions win.
+7. Skill missing or path unreadable? Say so and proceed with best-effort fallback.
 
 ## Top files to bookmark
 

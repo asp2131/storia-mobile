@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -366,6 +367,44 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(LibraryScreen), findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'rebuilds the game view after the app returns from the background',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [_twoBooksOverride()],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await _pumpLoadedLibrary(tester);
+        final gameWidgetFinder = find.byWidgetPredicate((w) => w is GameWidget);
+        expect(gameWidgetFinder, findsOneWidget);
+
+        // Simulate the OS backgrounding then resuming the app, following the
+        // valid lifecycle transitions enforced by AppLifecycleListener:
+        // resumed -> inactive -> hidden -> paused -> hidden -> inactive ->
+        // resumed.
+        for (final state in const [
+          AppLifecycleState.inactive,
+          AppLifecycleState.hidden,
+          AppLifecycleState.paused,
+          AppLifecycleState.hidden,
+          AppLifecycleState.inactive,
+          AppLifecycleState.resumed,
+        ]) {
+          tester.binding.handleAppLifecycleStateChanged(state);
+        }
+        await _pumpLoadedLibrary(tester);
+
+        // The Flame game view must be present again (not a blank background).
+        expect(tester.takeException(), isNull);
+        expect(find.byType(LibraryScreen), findsOneWidget);
+        expect(gameWidgetFinder, findsOneWidget);
         expect(find.byType(TextField), findsOneWidget);
       },
     );

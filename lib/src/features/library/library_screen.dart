@@ -41,7 +41,8 @@ class LibraryScreen extends ConsumerStatefulWidget {
   ConsumerState<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends ConsumerState<LibraryScreen> {
+class _LibraryScreenState extends ConsumerState<LibraryScreen>
+    with WidgetsBindingObserver {
   static const _searchDebounceDuration = Duration(milliseconds: 220);
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
@@ -56,9 +57,26 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   @override
   void initState() {
     super.initState();
-    _engineAdapter = FlameLibraryMapEngineAdapter.instance;
+    // Own a per-screen Flame adapter so the game lifecycle is scoped to this
+    // screen mount. Sharing a process-wide game left the Flame layer blank
+    // (no character/book nodes) after returning to the app.
+    _engineAdapter = FlameLibraryMapEngineAdapter.create();
     _session = LibraryMapSessionImpl(enginePort: _engineAdapter)
       ..setEventCallback(_handleSessionEvent);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // A FlameGame's render surface can be torn down while the app is
+    // backgrounded; reusing the same game on resume re-attaches with an empty
+    // world (sky/clouds still paint, but no ground/character/book nodes).
+    // Force a fresh game on resume so the map is always rebuilt correctly.
+    if (state == AppLifecycleState.resumed && mounted) {
+      _loadedSignature = null;
+      setState(() {});
+    }
   }
 
   void _handleSessionEvent(LibraryMapEvent event) {
@@ -131,6 +149,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchDebounce?.cancel();
     _searchController.dispose();
     _session.dispose();
