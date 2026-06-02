@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/resilient_cache_manager.dart';
 import '../../core/theme/storia_colors.dart';
 import '../../core/theme/storia_motion.dart';
+import '../../core/theme/storia_spacing.dart';
 import '../../core/widgets/parental_gate.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../core/widgets/sketch_card.dart';
@@ -220,6 +221,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
               if (!context.mounted || !passed) return;
               context.push('/settings');
             },
+            onMusicDemoTap: () => context.push('/aac-music-demo'),
           ),
         ),
 
@@ -457,6 +459,7 @@ class _FloatingControls extends StatelessWidget {
     required this.onSearchChanged,
     required this.onFilterChanged,
     required this.onSettingsTap,
+    required this.onMusicDemoTap,
   });
 
   final TextEditingController searchController;
@@ -464,6 +467,7 @@ class _FloatingControls extends StatelessWidget {
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<_ShelfFilter> onFilterChanged;
   final VoidCallback onSettingsTap;
+  final VoidCallback onMusicDemoTap;
 
   @override
   Widget build(BuildContext context) {
@@ -492,7 +496,13 @@ class _FloatingControls extends StatelessWidget {
                   onChanged: onSearchChanged,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: StoriaSpacing.sm),
+              SketchIconButton(
+                icon: Icons.music_note_outlined,
+                onPressed: onMusicDemoTap,
+                tooltip: 'Open AAC music demo',
+              ),
+              const SizedBox(width: StoriaSpacing.sm),
               SketchIconButton(
                 icon: Icons.settings_outlined,
                 onPressed: onSettingsTap,

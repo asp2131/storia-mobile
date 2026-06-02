@@ -53,6 +53,11 @@ GoRouter _testRouter({void Function(String)? onNavigate}) {
         path: '/settings',
         builder: (context, state) => const Scaffold(body: Text('Settings')),
       ),
+      GoRoute(
+        path: '/aac-music-demo',
+        builder: (context, state) =>
+            const Scaffold(body: Text('AAC Music Demo')),
+      ),
     ],
   );
 }
@@ -215,6 +220,24 @@ void main() {
       expect(find.text('All Tales'), findsOneWidget);
       expect(find.text('Quick Reads'), findsOneWidget);
       expect(find.text('Longer Reads'), findsOneWidget);
+    });
+
+    testWidgets('AAC music demo button navigates to the demo route', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [_twoBooksOverride()],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await _pumpLoadedLibrary(tester);
+
+      await tester.tap(find.byTooltip('Open AAC music demo'));
+      await _pumpNavigation(tester);
+
+      expect(find.text('AAC Music Demo'), findsOneWidget);
     });
 
     // ── Search debounce ───────────────────────────────────────────────
