@@ -30,7 +30,7 @@ lib/src/features/aac_music_demo/
     aac_music_demo_controller.dart  # Riverpod StateNotifier: utterance/mode/send
     aac_music_demo_screen.dart      # board UI (replaces current placeholder)
 assets/aac/demo_board.json          # vocabulary + music mapping + palette config
-assets/aac/soundfonts/<name>.sf2    # soft soundfont (added in Task 9)
+assets/aac/soundfonts/soundfont.sf2 # soft soundfont (already present, 9.9MB)
 
 test/features/aac_music_demo/
   music_theory_test.dart
@@ -1173,7 +1173,7 @@ git commit -m "feat(aac): add flutter_tts speech adapter"
 
 **Files:**
 - Modify: `pubspec.yaml` (add `flutter_midi_pro`)
-- Add: a soft soundfont at `assets/aac/soundfonts/<name>.sf2` + register `assets/aac/soundfonts/` in `pubspec.yaml`
+- Use the existing soundfont at `assets/aac/soundfonts/soundfont.sf2` + register `assets/aac/soundfonts/` in `pubspec.yaml`
 - Create: `lib/src/features/aac_music_demo/adapters/midi_audio_backend.dart`
 - Verify against the installed `flutter_midi_pro` README for exact method signatures.
 
@@ -1183,7 +1183,7 @@ git commit -m "feat(aac): add flutter_tts speech adapter"
 flutter pub add flutter_midi_pro
 ```
 
-Place a small, soft General-MIDI-style soundfont (bell / mallet / electric-piano) at `assets/aac/soundfonts/calm.sf2`. Register the folder in `pubspec.yaml`:
+The soundfont already exists at `assets/aac/soundfonts/soundfont.sf2` (RIFF SoundFont/Bank, ~9.9MB). Register the folder in `pubspec.yaml`:
 
 ```yaml
   assets:
@@ -1223,7 +1223,7 @@ import '../domain/sequencer.dart';
 
 class MidiAudioBackend implements AudioBackend {
   MidiAudioBackend({
-    this.soundfontAsset = 'assets/aac/soundfonts/calm.sf2',
+    this.soundfontAsset = 'assets/aac/soundfonts/soundfont.sf2',
     this.channel = 0,
     this.sustain = const Duration(milliseconds: 900),
   });
@@ -1299,9 +1299,14 @@ Expected: No issues. (If `_Reserved`/`Uint8List` trips a lint, delete those two 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add pubspec.yaml pubspec.lock lib/src/features/aac_music_demo/adapters/midi_audio_backend.dart assets/aac/soundfonts/
+# Add the soundfont explicitly to avoid committing assets/aac/soundfonts/.DS_Store
+git add pubspec.yaml pubspec.lock \
+  lib/src/features/aac_music_demo/adapters/midi_audio_backend.dart \
+  assets/aac/soundfonts/soundfont.sf2
 git commit -m "feat(aac): add flutter_midi_pro audio backend with warm-up"
 ```
+
+> Note: a stray `assets/aac/soundfonts/.DS_Store` exists in the working tree. Do NOT commit it; add `.DS_Store` to `.gitignore` if it isn't already ignored.
 
 ---
 
