@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../features/aac_music_demo/aac_music_demo_screen.dart';
+import '../features/aac_music_demo/presentation/aac_music_demo_screen.dart';
 import '../features/auth/data/auth_providers.dart';
 import '../features/auth/presentation/auth_gate.dart';
 import '../features/auth/presentation/intro_screen.dart';
