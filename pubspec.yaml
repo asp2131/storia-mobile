@@ -67,6 +67,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flame: ^1.21.0
   flame_tiled: ^1.20.0
+  flutter_midi_pro: ^3.1.6
 
 dependency_overrides:
   # better_auth_flutter 0.0.7 constrains flutter_web_auth_2 to ^4.1.0, but
@@ -101,6 +102,7 @@ flutter:
     - assets/images/
     - assets/tiles/
     - assets/aac/
+    - assets/aac/soundfonts/
 
 flutter_launcher_icons:
   android: true
