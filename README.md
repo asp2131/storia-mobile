@@ -24,6 +24,7 @@ The `bin/` directory contains helper scripts used by both humans and Symphony ag
 - `bin/bootstrap.sh` sets up a fresh checkout by running `flutter pub get`, creating `.env` from `.env.example` when needed, and running `pod install` on macOS when iOS pods are available.
 - `bin/verify.sh` is the pre-handoff validation gate; it runs `flutter analyze` and `flutter test`.
 - `bin/pi-symphony.sh` polls Linear and dispatches Pi/Symphony workspaces for automated ticket processing.
+- `bin/loopany-storia.sh` runs the globally-installed loopany CLI with a Storia-scoped `LOOPANY_HOME`; see `docs/tooling/loopany.md`.
 
 ## iOS Sign In with Apple
 
