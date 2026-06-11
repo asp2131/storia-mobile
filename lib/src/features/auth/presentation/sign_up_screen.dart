@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_text_field.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../../onboarding/data/app_review_flow_providers.dart';
 import '../data/auth_providers.dart';
 import '../data/auth_repository.dart';
@@ -177,7 +178,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/parent-birth-year');
+      continueJourney(ref, context);
     } catch (_) {
       if (mounted) {
         setState(() => _errorMessage = 'Could not start the App Review flow.');

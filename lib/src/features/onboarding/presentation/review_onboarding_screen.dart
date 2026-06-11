@@ -7,6 +7,7 @@ import '../../../core/widgets/sketch_border.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/sketch_text_field.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../../auth/presentation/widgets/auth_screen_shell.dart';
 import '../data/app_review_flow_providers.dart';
 import '../domain/review_onboarding_profile.dart';
@@ -172,7 +173,7 @@ class _ReviewOnboardingScreenState
       if (!mounted) {
         return;
       }
-      context.go('/library');
+      continueJourney(ref, context);
     } catch (_) {
       if (!mounted) {
         return;

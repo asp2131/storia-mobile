@@ -7,6 +7,7 @@ import '../../../core/theme/storia_spacing.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/watercolor_scaffold.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../data/child_profile_providers.dart';
 import '../domain/child_profile.dart';
 
@@ -60,7 +61,7 @@ class ProfilePickerScreen extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      context.go('/library');
+      continueJourney(ref, context);
     } catch (_) {
       if (!context.mounted) {
         return;

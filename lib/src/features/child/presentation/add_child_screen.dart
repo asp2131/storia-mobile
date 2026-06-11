@@ -10,6 +10,7 @@ import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/sketch_icon_button.dart';
 import '../../../core/widgets/sketch_text_field.dart';
 import '../../../core/widgets/watercolor_scaffold.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../data/child_profile_providers.dart';
 import '../data/child_profile_repository.dart';
 import '../domain/child_profile.dart';
@@ -395,7 +396,7 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/library');
+      continueJourney(ref, context);
     } catch (error, stackTrace) {
       debugPrint('[AddChildScreen] create child failed: $error');
       debugPrintStack(stackTrace: stackTrace);

@@ -12,6 +12,7 @@ import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/sketch_icon_button.dart';
 import '../../../core/widgets/watercolor_scaffold.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../data/app_review_flow_providers.dart';
 
 class ParentBirthYearScreen extends ConsumerStatefulWidget {
@@ -444,7 +445,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/onboarding');
+      continueJourney(ref, context);
     } catch (_) {
       if (!mounted) {
         return;
