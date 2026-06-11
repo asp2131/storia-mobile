@@ -21,9 +21,12 @@ import 'journey/journey_policy.dart';
 import 'journey/journey_providers.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authNotifier = ref.watch(authStateNotifierProvider);
-  final appReviewNotifier = ref.watch(appReviewFlowNotifierProvider);
-  final childProfileNotifier = ref.watch(childProfileRouterRefreshProvider);
+  // Read stable notifier instances once. The GoRouter itself should not
+  // rebuild on every auth/profile preference tick; the merged Listenable
+  // below is what re-runs redirect with a fresh JourneySnapshot.
+  final authNotifier = ref.read(authStateNotifierProvider);
+  final appReviewNotifier = ref.read(appReviewFlowNotifierProvider);
+  final childProfileNotifier = ref.read(childProfileRouterRefreshProvider);
 
   return GoRouter(
     initialLocation: JourneyRoutes.root,

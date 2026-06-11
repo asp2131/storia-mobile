@@ -69,14 +69,9 @@ const _readyNoBypass = AppReviewFlowState(
   onboardingProfile: null,
 );
 
-/// Mirrors appRouterProvider's wiring with stub pages.
-///
-/// One intentional difference: the notifiers are `ref.read` here (their
-/// instances are stable singletons) so this test exercises ONLY the
-/// refreshListenable -> redirect -> JourneyPolicy mechanism. In production
-/// app_router.dart additionally `ref.watch`es them, which rebuilds the
-/// router provider on every notification — the backstop works either way,
-/// but watching would invalidate this harness's provider ref mid-test.
+/// Mirrors appRouterProvider's production wiring with stub pages: read stable
+/// notifier instances once, then let refreshListenable re-run redirect with a
+/// fresh JourneySnapshot on every auth/profile/app-review tick.
 final _testRouterProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.read(authStateNotifierProvider);
   final appReviewNotifier = ref.read(appReviewFlowNotifierProvider);
