@@ -9,7 +9,6 @@ import '../../../routing/journey/journey_actions.dart';
 import '../../onboarding/data/app_review_flow_providers.dart';
 import '../data/auth_providers.dart';
 import '../data/auth_repository.dart';
-import '../domain/auth_state.dart';
 import 'widgets/auth_screen_shell.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -33,18 +32,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthViewState>(authViewStateProvider, (previous, next) {
-      if (!mounted || !next.isAuthenticated) {
-        return;
-      }
-      final location = GoRouterState.of(context).matchedLocation;
-      if (location == '/sign-up' ||
-          location == '/sign-in' ||
-          location == '/intro') {
-        context.go('/library');
-      }
-    });
-
+    // Post-auth advancement is owned by the router redirect backstop:
+    // authStateNotifierProvider is in the router's refreshListenable, so
+    // JourneyPolicy moves the user off this screen the moment auth flips.
+    // (A screen-side listener here used to hardcode '/library', skipping
+    // the profile-picker gate and causing a visible double hop.)
     final textTheme = Theme.of(context).textTheme;
 
     return AuthScreenShell(
