@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -9,9 +8,15 @@ import 'package:flutter/material.dart';
 /// dashed lighter-tan line, creating a dotted-trail-over-dirt-road look.
 class MapRouteComponent extends PositionComponent {
   MapRouteComponent({required List<Vector2> nodePositions})
-    : _nodePositions = nodePositions;
+    : _allNodePositions = List<Vector2>.from(nodePositions),
+      _nodePositions = List<Vector2>.from(nodePositions);
 
-  final List<Vector2> _nodePositions;
+  /// Every node position, in book order. Retained so the route can be rebuilt
+  /// through an arbitrary visible subset without losing the originals.
+  final List<Vector2> _allNodePositions;
+
+  /// The subset currently drawn through — defaults to all nodes.
+  List<Vector2> _nodePositions;
 
   double _highlightProgress = -1;
   double _highlightTargetProgress = -1;
@@ -29,7 +34,8 @@ class MapRouteComponent extends PositionComponent {
   late final Paint _basePaint;
   late final Paint _dashPaint;
   late final Paint _highlightPaint;
-  late final Path _routePath;
+  late Path _routePath;
+  bool _loaded = false;
 
   @override
   Future<void> onLoad() async {
@@ -53,7 +59,31 @@ class MapRouteComponent extends PositionComponent {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
     _routePath = _buildPath();
+    _loaded = true;
   }
+
+  /// Redraws the route through only [visiblePositions] (already in book order),
+  /// so the dirt road connects the books that pass the active filter and skips
+  /// the hidden ones. Pass the full set to restore the complete route.
+  void setVisibleNodePositions(List<Vector2> visiblePositions) {
+    _nodePositions = List<Vector2>.from(visiblePositions);
+    if (_loaded) {
+      _routePath = _buildPath();
+    }
+  }
+
+  /// All node positions in book order, for callers rebuilding the visible set.
+  List<Vector2> get allNodePositions =>
+      List<Vector2>.unmodifiable(_allNodePositions);
+
+  List<Vector2> get visibleNodePositions =>
+      List<Vector2>.unmodifiable(_nodePositions);
+
+  @visibleForTesting
+  List<Vector2> get debugVisibleNodePositions => visibleNodePositions;
+
+  @visibleForTesting
+  double get debugHighlightTargetProgress => _highlightTargetProgress;
 
   @override
   void update(double dt) {
