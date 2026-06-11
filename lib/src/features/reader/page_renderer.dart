@@ -149,8 +149,17 @@ class _PageRendererState extends State<PageRenderer> {
             ? _buildPageImage()
             : const ColoredBox(color: Color(0xFFDDDDD4));
 
+        // Overlay text is sized/positioned against the *contained* image rect,
+        // which needs the resolved source-image dimensions. Until those arrive,
+        // `imageRect` falls back to the full container (taller than the
+        // letterboxed image), which would render the text oversized for one
+        // frame and then snap to the correct size. Gate on `sourceImageSize` so
+        // the text appears together with the illustration at the right scale.
         final Widget textLayer =
-            hasOverlay && page.overlay != null && imageRect != Rect.zero
+            hasOverlay &&
+                page.overlay != null &&
+                sourceImageSize != null &&
+                imageRect != Rect.zero
             ? Positioned(
                 left: imageRect.left,
                 top: imageRect.top,
