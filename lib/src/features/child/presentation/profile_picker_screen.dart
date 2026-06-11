@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/theme/storia_spacing.dart';
@@ -147,7 +146,7 @@ class _ProfilePickerContent extends StatelessWidget {
                         tone: SketchButtonTone.secondary,
                         onPressed: isSaving
                             ? null
-                            : () => context.push('/profiles/new'),
+                            : () => pushAddProfile(context),
                       ),
                     ],
                   ],
@@ -322,7 +321,7 @@ class _NoProfilesCard extends StatelessWidget {
           SketchButton(
             label: 'Add child profile',
             leading: const Icon(Icons.add_rounded),
-            onPressed: () => context.push('/profiles/new'),
+            onPressed: () => pushAddProfile(context),
           ),
         ],
       ),

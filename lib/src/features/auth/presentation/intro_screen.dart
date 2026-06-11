@@ -4,10 +4,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rive/rive.dart' as rive;
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/storia_colors.dart';
+import '../../../routing/journey/journey_actions.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -277,7 +277,7 @@ class _IntroScreenState extends State<IntroScreen>
                             foreground: primary,
                             borderColor: primary,
                             trailing: const Icon(Icons.arrow_forward, size: 20),
-                            onPressed: () => context.go('/sign-up'),
+                            onPressed: () => enterAuth(context, AuthEntry.signUp),
                           ),
                           const SizedBox(height: 14),
                           _TactileButton(
@@ -285,7 +285,7 @@ class _IntroScreenState extends State<IntroScreen>
                             background: Colors.white,
                             foreground: primary,
                             borderColor: primary,
-                            onPressed: () => context.go('/sign-in'),
+                            onPressed: () => enterAuth(context, AuthEntry.signIn),
                           ),
                         ],
                       ),

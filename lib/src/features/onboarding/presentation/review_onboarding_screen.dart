@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_border.dart';
@@ -188,13 +187,7 @@ class _ReviewOnboardingScreenState
     }
   }
 
-  Future<void> _startOver() async {
-    await ref.read(appReviewFlowNotifierProvider).clearReviewFlow();
-    if (!mounted) {
-      return;
-    }
-    context.go('/sign-in');
-  }
+  Future<void> _startOver() => restartJourney(ref, context);
 }
 
 class _GoalCard extends StatelessWidget {

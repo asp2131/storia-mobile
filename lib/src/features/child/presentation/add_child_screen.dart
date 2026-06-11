@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/theme/storia_spacing.dart';
@@ -69,7 +68,7 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
                           icon: Icons.arrow_back_ios_new_rounded,
                           onPressed: _isSubmitting
                               ? null
-                              : () => context.go('/profiles/select'),
+                              : () => backOutOfJourneyStep(context),
                           tooltip: 'Back to reader chooser',
                         ),
                         const SizedBox(height: StoriaSpacing.xl),

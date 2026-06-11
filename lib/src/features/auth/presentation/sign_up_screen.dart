@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_button.dart';
@@ -35,7 +34,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     // Post-auth advancement is owned by the router redirect backstop:
     // authStateNotifierProvider is in the router's refreshListenable, so
     // JourneyPolicy moves the user off this screen the moment auth flips.
-    // (A screen-side listener here used to hardcode '/library', skipping
+    // (A screen-side listener here used to hardcode the library route, skipping
     // the profile-picker gate and causing a visible double hop.)
     final textTheme = Theme.of(context).textTheme;
 
@@ -43,7 +42,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       title: 'Join the Library',
       subtitle:
           'Create a Storia parent account with a magic link. No password to remember, no reset flow to babysit.',
-      onBack: () => context.go('/intro'),
+      onBack: () => backOutOfJourneyStep(context),
       footer: Center(
         child: Wrap(
           alignment: WrapAlignment.center,
@@ -57,7 +56,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => context.go('/sign-in'),
+              onPressed: () => enterAuth(context, AuthEntry.signIn),
               style: TextButton.styleFrom(foregroundColor: StoriaColors.ink),
               child: const Text('Sign in'),
             ),

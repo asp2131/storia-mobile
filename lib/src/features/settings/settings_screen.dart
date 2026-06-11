@@ -11,6 +11,7 @@ import '../child/data/child_profile_providers.dart';
 import '../gen_ui/data/gen_ui_providers.dart';
 import '../gen_ui/presentation/parent_insight_cards.dart';
 import '../onboarding/data/app_review_flow_providers.dart';
+import '../../routing/journey/journey_policy.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -57,7 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
             trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.push('/profiles/select'),
+            onTap: () => context.push(JourneyRoutes.profilePicker),
           ),
           const Divider(height: 32),
           const ListTile(
@@ -140,7 +141,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/intro');
+      context.go(JourneyRoutes.intro);
     } on AppAuthException catch (error) {
       if (!mounted) {
         return;
