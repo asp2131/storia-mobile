@@ -1,0 +1,2839 @@
+{
+  "version": 1,
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-03-25T19:23:39.102Z",
+      "error_message": "Wrong reference: 0xFF4A5BE7 should be 0xFF2C3358",
+      "file": "lib/src/features/onboarding/presentation/parent_birth_year_screen.dart",
+      "root_cause": "Used \"0xFF4A5BE7\" instead of \"0xFF2C3358\"",
+      "fix": "Changed 0xFF4A5BE7 \u2192 0xFF2C3358",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-03-25T19:23:50.376Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-03-25T19:23:56.680Z",
+      "error_message": "Missing import: ../../../../core/theme/storia_colors.dart",
+      "file": "lib/src/features/auth/presentation/intro_screen.dart",
+      "root_cause": "Module(s) not imported: ../../../../core/theme/storia_colors.dart",
+      "fix": "Added import(s) for ../../../../core/theme/storia_colors.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-25T19:23:56.680Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-03-25T19:24:23.171Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/auth/presentation/intro_screen.dart",
+      "root_cause": "Had '../../../../core/theme/storia_colors.dart'",
+      "fix": "Changed to '../../../core/theme/storia_colors.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-25T19:24:23.171Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-03-25T20:59:30.783Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "Had '../../core/widgets/sketch_card.dart'",
+      "fix": "Changed to '../../core/widgets/sketch_button.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-25T20:59:30.783Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-03-26T14:42:52.234Z",
+      "error_message": "Wrong return value",
+      "file": "lib/src/features/reader/overlay/overlay_layout_engine.dart",
+      "root_cause": "Was returning: OverlayFrame(elements: elements, isActive: isActiv",
+      "fix": "Now returns: OverlayFrame(",
+      "tags": [
+        "auto-detected",
+        "return-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-26T14:42:52.234Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-03-26T14:45:20.383Z",
+      "error_message": "Missing import: runtime/providers/word_tts_provider.dart",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Module(s) not imported: runtime/providers/word_tts_provider.dart",
+      "fix": "Added import(s) for runtime/providers/word_tts_provider.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-26T14:45:20.383Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-03-26T14:45:47.089Z",
+      "error_message": "Missing import: package:flutter_riverpod/flutter_riverpod.dart, runtime/providers/word_tts_provider.dart",
+      "file": "lib/src/features/reader/page_renderer.dart",
+      "root_cause": "Module(s) not imported: package:flutter_riverpod/flutter_riverpod.dart, runtime/providers/word_tts_provider.dart",
+      "fix": "Added import(s) for package:flutter_riverpod/flutter_riverpod.dart, runtime/providers/word_tts_provider.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-26T14:45:47.089Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-03-26T14:45:50.375Z",
+      "error_message": "Wrong reference: StatefulWidget should be ConsumerStatefulWidget",
+      "file": "lib/src/features/reader/page_renderer.dart",
+      "root_cause": "Used \"StatefulWidget\" instead of \"ConsumerStatefulWidget\"",
+      "fix": "Changed StatefulWidget \u2192 ConsumerStatefulWidget",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-26T14:45:50.375Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-03-26T14:50:50.307Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/reader/runtime/services/word_tts_service.dart",
+      "root_cause": "No early return/throw for edge case: syllableList.length <= 1",
+      "fix": "Added guard clause: if (syllableList.length <= 1)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-26T14:50:50.307Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-03-26T14:51:26.459Z",
+      "error_message": "Missing await",
+      "file": "lib/src/features/reader/runtime/providers/word_tts_provider.dart",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-03-26T14:51:26.459Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-04-02T01:58:05.833Z",
+      "error_message": "Missing import: dart:ui",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Module(s) not imported: dart:ui",
+      "fix": "Added import(s) for dart:ui",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T01:58:05.833Z"
+    },
+    {
+      "id": "bug-012",
+      "timestamp": "2026-04-02T02:01:02.815Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "No early return/throw for edge case: comp == null",
+      "fix": "Added guard clause: if (comp == null)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:01:02.815Z"
+    },
+    {
+      "id": "bug-013",
+      "timestamp": "2026-04-02T02:07:40.260Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/game/book_shelf_component.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 11\u219223 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:07:40.260Z"
+    },
+    {
+      "id": "bug-014",
+      "timestamp": "2026-04-02T02:07:50.628Z",
+      "error_message": "Missing import: ../../../core/resilient_cache_manager.dart",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Module(s) not imported: ../../../core/resilient_cache_manager.dart",
+      "fix": "Added import(s) for ../../../core/resilient_cache_manager.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-02T02:08:50.222Z"
+    },
+    {
+      "id": "bug-015",
+      "timestamp": "2026-04-02T02:08:27.558Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Code path had no error handling \u2014 exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:08:27.558Z"
+    },
+    {
+      "id": "bug-016",
+      "timestamp": "2026-04-02T02:09:08.287Z",
+      "error_message": "Wrong reference: opacity should be baseOpacity",
+      "file": "lib/src/features/library/game/book_shelf_component.dart",
+      "root_cause": "Used \"opacity\" instead of \"baseOpacity\"",
+      "fix": "Changed opacity \u2192 baseOpacity",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-02T02:09:34.251Z"
+    },
+    {
+      "id": "bug-017",
+      "timestamp": "2026-04-02T02:09:30.457Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "8 lines replaced/restructured",
+      "fix": "Rewrote 98\u2192163 lines (8 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:09:30.457Z"
+    },
+    {
+      "id": "bug-018",
+      "timestamp": "2026-04-02T02:09:59.184Z",
+      "error_message": "Wrong reference: isLoading should be isCoverLoading",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Used \"isLoading\" instead of \"isCoverLoading\"",
+      "fix": "Changed isLoading \u2192 isCoverLoading",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:09:59.184Z"
+    },
+    {
+      "id": "bug-019",
+      "timestamp": "2026-04-02T02:10:28.385Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Had 'package:flame/events.dart'",
+      "fix": "Changed to 'package:flame/components.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:10:28.385Z"
+    },
+    {
+      "id": "bug-020",
+      "timestamp": "2026-04-02T02:33:37.961Z",
+      "error_message": "Wrong reference: idle should be idleFront",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "Used \"idle\" instead of \"idleFront\"",
+      "fix": "Changed idle \u2192 idleFront",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:33:37.961Z"
+    },
+    {
+      "id": "bug-021",
+      "timestamp": "2026-04-02T02:34:12.251Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 42\u219262 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:34:12.251Z"
+    },
+    {
+      "id": "bug-022",
+      "timestamp": "2026-04-02T02:39:09.459Z",
+      "error_message": "Wrong reference: true should be false",
+      "file": "../../../.claude/skills/normalize-sprites/SKILL.md",
+      "root_cause": "Used \"true\" instead of \"false\"",
+      "fix": "Changed true \u2192 false",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-02T02:39:09.459Z"
+    },
+    {
+      "id": "bug-023",
+      "timestamp": "2026-04-02T18:21:43.315Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 23\u219228 lines (2 removed) | Also: return Offset(MediaQuery.sizeOf(context).width / 2; // Position above the book with some padding.",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-02T18:21:53.293Z"
+    },
+    {
+      "id": "bug-024",
+      "timestamp": "2026-04-03T18:29:58.904Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Had 'book_shelf_component.dart'",
+      "fix": "Changed to 'map_book_node_component.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:29:58.904Z"
+    },
+    {
+      "id": "bug-025",
+      "timestamp": "2026-04-03T18:30:02.002Z",
+      "error_message": "Wrong reference: BookShelfComponent should be MapBookNodeComponent",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Used \"BookShelfComponent\" instead of \"MapBookNodeComponent\"",
+      "fix": "Changed BookShelfComponent \u2192 MapBookNodeComponent",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:30:02.002Z"
+    },
+    {
+      "id": "bug-026",
+      "timestamp": "2026-04-03T18:31:02.105Z",
+      "error_message": "Missing import: ../../../data/models.dart",
+      "file": ".claude/worktrees/agent-aae9ea82/lib/src/features/library/game/library_game.dart",
+      "root_cause": "Module(s) not imported: ../../../data/models.dart",
+      "fix": "Added import(s) for ../../../data/models.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:31:02.105Z"
+    },
+    {
+      "id": "bug-027",
+      "timestamp": "2026-04-03T18:31:40.911Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/library/game/map_book_node_component.dart",
+      "root_cause": "Had 'package:flutter/painting.dart'",
+      "fix": "Changed to '../../../data/models.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:31:40.911Z"
+    },
+    {
+      "id": "bug-028",
+      "timestamp": "2026-04-03T18:37:39.181Z",
+      "error_message": "Missing import: map_route_component.dart",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Module(s) not imported: map_route_component.dart",
+      "fix": "Added import(s) for map_route_component.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:37:39.181Z"
+    },
+    {
+      "id": "bug-029",
+      "timestamp": "2026-04-03T18:38:03.381Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:38:03.381Z"
+    },
+    {
+      "id": "bug-030",
+      "timestamp": "2026-04-03T18:38:35.953Z",
+      "error_message": "Wrong reference: _kBookWidth should be _kNodeWidth",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "Used \"_kBookWidth\" instead of \"_kNodeWidth\"",
+      "fix": "Changed _kBookWidth \u2192 _kNodeWidth",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:38:35.953Z"
+    },
+    {
+      "id": "bug-031",
+      "timestamp": "2026-04-03T18:40:13.175Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 17\u219232 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:40:13.175Z"
+    },
+    {
+      "id": "bug-032",
+      "timestamp": "2026-04-03T18:40:22.599Z",
+      "error_message": "Wrong operator: == should be >=",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "Used \"==\" instead of \">=\"",
+      "fix": "Changed operator == \u2192 >=",
+      "tags": [
+        "auto-detected",
+        "operator-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:40:22.599Z"
+    },
+    {
+      "id": "bug-033",
+      "timestamp": "2026-04-03T18:40:43.638Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "No early return/throw for edge case: _nodePositions.isEmpty",
+      "fix": "Added guard clause: if (_nodePositions.isEmpty)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-03T18:44:38.370Z"
+    },
+    {
+      "id": "bug-034",
+      "timestamp": "2026-04-03T18:44:45.150Z",
+      "error_message": "Missing import: package:cached_network_image/cached_network_image.dart, ../../core/resilient_cache_manager.dart",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "Module(s) not imported: package:cached_network_image/cached_network_image.dart, ../../core/resilient_cache_manager.dart",
+      "fix": "Added import(s) for package:cached_network_image/cached_network_image.dart, ../../core/resilient_cache_manager.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-03T18:44:45.150Z"
+    },
+    {
+      "id": "bug-035",
+      "timestamp": "2026-04-04T03:02:46.477Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Had 'map_book_node_component.dart'",
+      "fix": "Changed to 'isometric_ground_component.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:02:46.477Z"
+    },
+    {
+      "id": "bug-036",
+      "timestamp": "2026-04-04T03:03:06.383Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "28 lines replaced/restructured",
+      "fix": "Rewrote 67\u219227 lines (28 removed) | Also: /// Single [CustomPainter] that draws three parall; /// map background: sky (0.2x), hills (0.5x), and  | Also: import 'dart:math' as math;; import 'dart:ui' as ui;",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-04T03:03:58.845Z"
+    },
+    {
+      "id": "bug-037",
+      "timestamp": "2026-04-04T03:04:17.154Z",
+      "error_message": "Wrong reference: HasGameRef should be HasGameReference",
+      "file": "lib/src/features/library/game/isometric_ground_component.dart",
+      "root_cause": "Used \"HasGameRef\" instead of \"HasGameReference\"",
+      "fix": "Changed HasGameRef \u2192 HasGameReference",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:04:17.154Z"
+    },
+    {
+      "id": "bug-038",
+      "timestamp": "2026-04-04T03:08:55.554Z",
+      "error_message": "Incorrect value in code",
+      "file": "assets/tiles/GroundTileDiscreet_Dirt2.tsx",
+      "root_cause": "Had \"images/GroundTileDiscreet_Dirt2.png\"",
+      "fix": "Changed to \"GroundTileDiscreet_Dirt2.png\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:08:55.554Z"
+    },
+    {
+      "id": "bug-039",
+      "timestamp": "2026-04-04T03:08:56.809Z",
+      "error_message": "Incorrect value in code",
+      "file": "assets/tiles/TileOverlayDiscreet_Grass2.tsx",
+      "root_cause": "Had \"images/TileOverlayDiscreet_Grass2.png\"",
+      "fix": "Changed to \"TileOverlayDiscreet_Grass2.png\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:08:56.809Z"
+    },
+    {
+      "id": "bug-040",
+      "timestamp": "2026-04-04T03:08:57.648Z",
+      "error_message": "Incorrect value in code",
+      "file": "assets/tiles/CherryTree_Spring.tsx",
+      "root_cause": "Had \"images/CherryTree_Spring.png\"",
+      "fix": "Changed to \"CherryTree_Spring.png\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:08:57.648Z"
+    },
+    {
+      "id": "bug-041",
+      "timestamp": "2026-04-04T03:08:58.555Z",
+      "error_message": "Incorrect value in code",
+      "file": "assets/tiles/GroundTile_Water.tsx",
+      "root_cause": "Had \"images/GroundTile_Water.png\"",
+      "fix": "Changed to \"GroundTile_Water.png\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:08:58.555Z"
+    },
+    {
+      "id": "bug-042",
+      "timestamp": "2026-04-04T03:08:59.990Z",
+      "error_message": "Incorrect value in code",
+      "file": "assets/tiles/GroundTileDiscreet_Water.tsx",
+      "root_cause": "Had \"images/GroundTileDiscreet_Water.png\"",
+      "fix": "Changed to \"GroundTileDiscreet_Water.png\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:08:59.991Z"
+    },
+    {
+      "id": "bug-043",
+      "timestamp": "2026-04-04T03:09:00.758Z",
+      "error_message": "Incorrect value in code",
+      "file": "assets/tiles/TileOverlay_Flower10.tsx",
+      "root_cause": "Had \"images/TileOverlay_Flower10.png\"",
+      "fix": "Changed to \"TileOverlay_Flower10.png\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:09:00.758Z"
+    },
+    {
+      "id": "bug-044",
+      "timestamp": "2026-04-04T03:10:23.124Z",
+      "error_message": "Missing import: package:flutter/scheduler.dart",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Module(s) not imported: package:flutter/scheduler.dart",
+      "fix": "Added import(s) for package:flutter/scheduler.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:10:23.124Z"
+    },
+    {
+      "id": "bug-045",
+      "timestamp": "2026-04-04T03:24:45.881Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 6\u21929 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-04T03:24:45.881Z"
+    },
+    {
+      "id": "bug-046",
+      "timestamp": "2026-04-05T14:38:33.671Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/runtime/reader_session_impl.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 26\u219253 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T14:38:33.671Z"
+    },
+    {
+      "id": "bug-047",
+      "timestamp": "2026-04-05T14:38:40.928Z",
+      "error_message": "Missing await",
+      "file": "lib/src/features/reader/runtime/reader_session_impl.dart",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T14:38:40.928Z"
+    },
+    {
+      "id": "bug-048",
+      "timestamp": "2026-04-05T14:39:17.462Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "7 lines replaced/restructured",
+      "fix": "Rewrote 13\u21926 lines (7 removed) | Also: final bool isPracticeMode;; final bool isListening; | Also: top: -12,; right: -8,",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-05T14:40:23.689Z"
+    },
+    {
+      "id": "bug-049",
+      "timestamp": "2026-04-05T14:40:17.648Z",
+      "error_message": "Wrong operator: && should be ||",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Used \"&&\" instead of \"||\"",
+      "fix": "Changed operator && \u2192 ||",
+      "tags": [
+        "auto-detected",
+        "operator-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T14:40:17.648Z"
+    },
+    {
+      "id": "bug-050",
+      "timestamp": "2026-04-05T14:57:30.609Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T14:57:30.609Z"
+    },
+    {
+      "id": "bug-051",
+      "timestamp": "2026-04-05T15:46:53.576Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Had 'package:flutter_animate/flutter_animate.dart'",
+      "fix": "Changed to 'package:dough/dough.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T15:46:53.576Z"
+    },
+    {
+      "id": "bug-052",
+      "timestamp": "2026-04-05T15:53:58.573Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Had 'package:dough/dough.dart'",
+      "fix": "Changed to 'package:dough_sensors/dough_sensors.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T15:53:58.573Z"
+    },
+    {
+      "id": "bug-053",
+      "timestamp": "2026-04-05T15:53:59.403Z",
+      "error_message": "Wrong reference: PressableDough should be GyroDough",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Used \"PressableDough\" instead of \"GyroDough\"",
+      "fix": "Changed PressableDough \u2192 GyroDough",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T15:53:59.403Z"
+    },
+    {
+      "id": "bug-054",
+      "timestamp": "2026-04-05T17:05:55.783Z",
+      "error_message": "Missing import: gooey_edge.dart, gooey_edge_clipper.dart, gooey_side.dart",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Module(s) not imported: gooey_edge.dart, gooey_edge_clipper.dart, gooey_side.dart",
+      "fix": "Added import(s) for gooey_edge.dart, gooey_edge_clipper.dart, gooey_side.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-05T17:06:10.318Z"
+    },
+    {
+      "id": "bug-055",
+      "timestamp": "2026-04-05T17:06:57.204Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "8 lines replaced/restructured",
+      "fix": "Rewrote 16\u21927 lines (8 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:06:57.204Z"
+    },
+    {
+      "id": "bug-056",
+      "timestamp": "2026-04-05T17:07:08.452Z",
+      "error_message": "Wrong reference: revealFromTop should be shouldClipWithWave",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Used \"revealFromTop\" instead of \"shouldClipWithWave\"",
+      "fix": "Changed revealFromTop \u2192 shouldClipWithWave",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:07:08.452Z"
+    },
+    {
+      "id": "bug-057",
+      "timestamp": "2026-04-05T17:08:36.566Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: // Finger X determines where along the horizontal edge the b; final fingerX = _lastPointerPos?.dx ?? size.width * 0.5;",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-05T17:09:20.881Z"
+    },
+    {
+      "id": "bug-058",
+      "timestamp": "2026-04-05T17:17:52.459Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "No early return/throw for edge case: _dragOffset.abs(",
+      "fix": "Added guard clause: if (_dragOffset.abs()",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:17:52.459Z"
+    },
+    {
+      "id": "bug-059",
+      "timestamp": "2026-04-05T17:18:08.242Z",
+      "error_message": "Wrong reference: _snapTo should be _animateSnapTo",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Used \"_snapTo\" instead of \"_animateSnapTo\"",
+      "fix": "Changed _snapTo \u2192 _animateSnapTo",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-05T17:19:53.606Z"
+    },
+    {
+      "id": "bug-060",
+      "timestamp": "2026-04-05T17:19:06.643Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "68 lines replaced/restructured",
+      "fix": "Rewrote 93\u219259 lines (68 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:19:06.643Z"
+    },
+    {
+      "id": "bug-061",
+      "timestamp": "2026-04-05T17:19:39.448Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:19:39.448Z"
+    },
+    {
+      "id": "bug-062",
+      "timestamp": "2026-04-05T17:28:49.217Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 29\u219238 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:28:49.217Z"
+    },
+    {
+      "id": "bug-063",
+      "timestamp": "2026-04-05T17:53:35.547Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
+      "root_cause": "Had 'package:flutter/services.dart'",
+      "fix": "Changed to 'package:flutter/scheduler.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:53:35.547Z"
+    },
+    {
+      "id": "bug-064",
+      "timestamp": "2026-04-05T17:53:40.463Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Had 'liquid_page_clipper.dart'",
+      "fix": "Changed to 'page_renderer.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:53:40.463Z"
+    },
+    {
+      "id": "bug-065",
+      "timestamp": "2026-04-05T17:54:07.433Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 7\u21924 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:54:07.433Z"
+    },
+    {
+      "id": "bug-066",
+      "timestamp": "2026-04-05T17:54:12.517Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:54:12.517Z"
+    },
+    {
+      "id": "bug-067",
+      "timestamp": "2026-04-05T17:54:44.495Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 6\u21924 lines (2 removed) | Also: GestureDetector(; behavior: HitTestBehavior.translucent,",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-05T17:55:04.355Z"
+    },
+    {
+      "id": "bug-068",
+      "timestamp": "2026-04-05T17:56:05.032Z",
+      "error_message": "Wrong reference: storia_flutter should be Storia_Kids",
+      "file": "test/features/reader/vertical_liquid_swipe_test.dart",
+      "root_cause": "Used \"storia_flutter\" instead of \"Storia_Kids\"",
+      "fix": "Changed storia_flutter \u2192 Storia_Kids",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T17:56:05.032Z"
+    },
+    {
+      "id": "bug-069",
+      "timestamp": "2026-04-05T18:01:06.356Z",
+      "error_message": "Wrong reference: SingleTickerProviderStateMixin should be TickerProviderStateMixin",
+      "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
+      "root_cause": "Used \"SingleTickerProviderStateMixin\" instead of \"TickerProviderStateMixin\"",
+      "fix": "Changed SingleTickerProviderStateMixin \u2192 TickerProviderStateMixin",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T18:01:06.356Z"
+    },
+    {
+      "id": "bug-070",
+      "timestamp": "2026-04-05T18:25:07.285Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 11\u219217 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T18:25:07.285Z"
+    },
+    {
+      "id": "bug-071",
+      "timestamp": "2026-04-05T18:33:34.731Z",
+      "error_message": "Wrong reference: showChrome should be true",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Used \"showChrome\" instead of \"true\"",
+      "fix": "Changed showChrome \u2192 true",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-05T18:33:34.731Z"
+    },
+    {
+      "id": "bug-072",
+      "timestamp": "2026-04-06T02:28:45.245Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 6\u21924 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-06T02:28:45.245Z"
+    },
+    {
+      "id": "bug-073",
+      "timestamp": "2026-04-06T02:28:59.876Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 3\u21925 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-06T02:28:59.876Z"
+    },
+    {
+      "id": "bug-074",
+      "timestamp": "2026-04-06T21:59:47.848Z",
+      "error_message": "Null/undefined access in ",
+      "file": "extensions/agent-team.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-06T21:59:47.848Z"
+    },
+    {
+      "id": "bug-075",
+      "timestamp": "2026-04-06T22:00:16.462Z",
+      "error_message": "Incorrect value in code",
+      "file": "extensions/agent-team.ts",
+      "root_cause": "Had \"openai-codex/gpt-5.4-nano\"",
+      "fix": "Changed to \"openai-codex/gpt-5.3\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-06T22:00:16.462Z"
+    },
+    {
+      "id": "bug-076",
+      "timestamp": "2026-04-08T14:59:45.954Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/game/book_preview_overlay.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 20\u219239 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-08T14:59:45.954Z"
+    },
+    {
+      "id": "bug-077",
+      "timestamp": "2026-04-08T15:09:04.654Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/game/book_preview_overlay.dart",
+      "root_cause": "16 lines replaced/restructured",
+      "fix": "Rewrote 21\u219233 lines (16 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-08T15:09:04.654Z"
+    },
+    {
+      "id": "bug-078",
+      "timestamp": "2026-04-15T02:00:45.277Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/reader/application/reading_session_coordinator.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-15T02:00:45.277Z"
+    },
+    {
+      "id": "bug-079",
+      "timestamp": "2026-04-15T02:09:51.947Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/routing/app_router.dart",
+      "root_cause": "Had '../features/reader/reader_screen.dart'",
+      "fix": "Changed to '../features/comprehension/presentation/comprehens",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-15T02:09:51.947Z"
+    },
+    {
+      "id": "bug-080",
+      "timestamp": "2026-04-15T02:09:54.831Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/routing/app_router.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-15T02:09:54.831Z"
+    },
+    {
+      "id": "bug-081",
+      "timestamp": "2026-04-15T02:10:21.196Z",
+      "error_message": "Missing import: package:go_router/go_router.dart, presentation/widgets/completion_handoff_sheet.dart, providers/reading_session_coordinator_provider.dart",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Module(s) not imported: package:go_router/go_router.dart, presentation/widgets/completion_handoff_sheet.dart, providers/reading_session_coordinator_provider.dart",
+      "fix": "Added import(s) for package:go_router/go_router.dart, presentation/widgets/completion_handoff_sheet.dart, providers/reading_session_coordinator_provider.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-15T02:10:21.196Z"
+    },
+    {
+      "id": "bug-082",
+      "timestamp": "2026-04-15T02:10:48.377Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "No early return/throw for edge case: _handoffShown || !mounted",
+      "fix": "Added guard clause: if (_handoffShown || !mounted)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-15T02:10:48.377Z"
+    },
+    {
+      "id": "bug-083",
+      "timestamp": "2026-04-16T14:57:35.995Z",
+      "error_message": "Missing await",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T14:57:35.995Z"
+    },
+    {
+      "id": "bug-084",
+      "timestamp": "2026-04-16T14:57:56.455Z",
+      "error_message": "Incorrect value in code",
+      "file": "../storia/src/app/api/books/[id]/questions/route.ts",
+      "root_cause": "Had \"@/lib/prisma\"",
+      "fix": "Changed to \"@/lib/child-auth\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T14:57:56.455Z"
+    },
+    {
+      "id": "bug-085",
+      "timestamp": "2026-04-16T20:07:17.383Z",
+      "error_message": "Wrong return value",
+      "file": "lib/src/features/comprehension/providers/comprehension_providers.dart",
+      "root_cause": "Was returning: ComprehensionRepository(supabase);",
+      "fix": "Now returns: ComprehensionRepository(supabase, apiClient);",
+      "tags": [
+        "auto-detected",
+        "return-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T20:07:17.383Z"
+    },
+    {
+      "id": "bug-086",
+      "timestamp": "2026-04-16T20:07:57.377Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T20:07:57.377Z"
+    },
+    {
+      "id": "bug-087",
+      "timestamp": "2026-04-16T20:12:00.936Z",
+      "error_message": "Null/undefined access in ",
+      "file": "test/features/comprehension/presentation/comprehension_screen_test.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T20:12:00.936Z"
+    },
+    {
+      "id": "bug-088",
+      "timestamp": "2026-04-16T20:12:33.758Z",
+      "error_message": "Null/undefined access in ",
+      "file": "test/features/comprehension/presentation/widgets/question_card_test.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T20:12:33.758Z"
+    },
+    {
+      "id": "bug-089",
+      "timestamp": "2026-04-16T22:51:56.793Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/child/presentation/add_child_screen.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: String _errorMessage(Object error) {; if (error is ApiClientException) {",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-16T22:54:28.544Z"
+    },
+    {
+      "id": "bug-090",
+      "timestamp": "2026-04-16T22:54:18.632Z",
+      "error_message": "Missing import: package:flutter/foundation.dart, ../../../data/api_client.dart",
+      "file": "lib/src/features/child/presentation/add_child_screen.dart",
+      "root_cause": "Module(s) not imported: package:flutter/foundation.dart, ../../../data/api_client.dart",
+      "fix": "Added import(s) for package:flutter/foundation.dart, ../../../data/api_client.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T22:54:18.632Z"
+    },
+    {
+      "id": "bug-091",
+      "timestamp": "2026-04-16T22:54:23.828Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/child/presentation/add_child_screen.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 12\u219214 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T22:54:23.828Z"
+    },
+    {
+      "id": "bug-092",
+      "timestamp": "2026-04-16T22:54:36.920Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/child/presentation/add_child_screen.dart",
+      "root_cause": "Had 'package:flutter/foundation.dart'",
+      "fix": "Changed to 'package:flutter/material.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T22:54:36.920Z"
+    },
+    {
+      "id": "bug-093",
+      "timestamp": "2026-04-16T23:01:45.397Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "lib/src/data/api_client.dart",
+      "root_cause": "Code path had no error handling \u2014 exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T23:01:45.397Z"
+    },
+    {
+      "id": "bug-094",
+      "timestamp": "2026-04-16T23:18:05.779Z",
+      "error_message": "Null/undefined access in ",
+      "file": "../storia/src/lib/child-auth.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T23:18:05.779Z"
+    },
+    {
+      "id": "bug-095",
+      "timestamp": "2026-04-23T14:28:59.741Z",
+      "error_message": "Missing import: package:flutter/foundation.dart",
+      "file": "lib/src/features/reader/page_renderer.dart",
+      "root_cause": "Module(s) not imported: package:flutter/foundation.dart",
+      "fix": "Added import(s) for package:flutter/foundation.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-23T14:28:59.741Z"
+    },
+    {
+      "id": "bug-096",
+      "timestamp": "2026-04-25T19:36:45.367Z",
+      "error_message": "Missing import: dart:async",
+      "file": "lib/src/audio/audio_engine.dart",
+      "root_cause": "Module(s) not imported: dart:async",
+      "fix": "Added import(s) for dart:async",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T19:36:45.367Z"
+    },
+    {
+      "id": "bug-097",
+      "timestamp": "2026-04-25T19:36:58.616Z",
+      "error_message": "Missing await",
+      "file": "lib/src/audio/audio_engine.dart",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T19:36:58.616Z"
+    },
+    {
+      "id": "bug-098",
+      "timestamp": "2026-04-26T02:20:39.062Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/runtime/providers/word_tts_provider.dart",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 31\u219242 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-26T02:20:39.062Z"
+    },
+    {
+      "id": "bug-099",
+      "timestamp": "2026-04-26T02:21:21.898845Z",
+      "error_message": "Word tap on reader plays OS TTS voice instead of Supabase pronunciation audio",
+      "file": "lib/src/features/reader/runtime/providers/word_tts_provider.dart",
+      "root_cause": "onWordTapped called _service.speak() unconditionally, bypassing manifest. onWordLongPressed already manifest-first. Web parity broken.",
+      "fix": "Routed onWordTapped through _pronunciation.tryPlayBreakdownFor(); fall back to TTS speak only on PronunciationOutcome.fallback/error.",
+      "tags": [
+        "reader",
+        "pronunciation",
+        "tts",
+        "manifest",
+        "web-parity"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-26T02:21:21.899093Z"
+    },
+    {
+      "id": "bug-100",
+      "timestamp": "2026-04-26T13:27:27.880Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/data/pronunciation_repository.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 39\u219255 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-26T13:27:27.880Z"
+    },
+    {
+      "id": "bug-101",
+      "timestamp": "2026-04-26T13:27:34.707Z",
+      "error_message": "Missing import: package:flutter/foundation.dart",
+      "file": "lib/src/features/reader/runtime/services/pronunciation_playback_service.dart",
+      "root_cause": "Module(s) not imported: package:flutter/foundation.dart",
+      "fix": "Added import(s) for package:flutter/foundation.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-26T13:27:34.707Z"
+    },
+    {
+      "id": "bug-102",
+      "timestamp": "2026-04-26T13:27:51.047Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/runtime/services/pronunciation_playback_service.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 46\u219263 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-26T13:27:51.047Z"
+    },
+    {
+      "id": "bug-103",
+      "timestamp": "2026-04-26T13:28:29.482204+00:00",
+      "error_message": "After routing tap through manifest, mobile still plays OS TTS for ElevenLabs-generated book",
+      "file": "lib/src/data/pronunciation_repository.dart, lib/src/features/reader/runtime/services/pronunciation_playback_service.dart",
+      "root_cause": "Unknown \u2014 added debugPrint diagnostics. Top suspects: anon RLS on book_pronunciations, mobile status filter narrower than web (mobile drops != generated/reviewed; web /api returns all), normalization regex divergence (mobile strips on Letter only, web on Letter+Number).",
+      "fix": "Diagnostics-only this pass; awaiting log output. Pending: relax status filter, align normalizer, or route via /api/books/[id]/pronunciations.",
+      "tags": [
+        "reader",
+        "pronunciation",
+        "manifest",
+        "rls",
+        "diagnostics"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-26T13:28:29.482335+00:00"
+    },
+    {
+      "id": "bug-104",
+      "timestamp": "2026-04-26T13:51:01.285458+00:00",
+      "error_message": "Mobile pronunciation manifest empty for book with 34 DB rows",
+      "file": "supabase: book_pronunciations RLS",
+      "root_cause": "RLS enabled on public.book_pronunciations with no policies. Web Prisma server uses service role (bypasses RLS); Flutter Supabase client uses anon JWT and gets denied \u2192 empty result \u2192 empty manifest \u2192 fallback to OS TTS.",
+      "fix": "Add SELECT policy for anon+authenticated on public.book_pronunciations. Confirm storage bucket also publicly readable for full_word_url/breakdown_url.",
+      "tags": [
+        "supabase",
+        "rls",
+        "pronunciation",
+        "anon",
+        "manifest"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-26T13:51:01.285652+00:00"
+    },
+    {
+      "id": "bug-105",
+      "timestamp": "2026-04-29T14:45:17.228Z",
+      "error_message": "Incorrect value in code",
+      "file": ".claude/settings.local.json",
+      "root_cause": "Had \"Bash(rg -n \\\"",
+      "fix": "Changed to \"Bash(rg:*)\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-29T14:45:17.228Z"
+    },
+    {
+      "id": "bug-106",
+      "timestamp": "2026-04-29T14:47:44.553Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-29T14:47:44.553Z"
+    },
+    {
+      "id": "bug-107",
+      "timestamp": "2026-05-03T19:12:12.630Z",
+      "error_message": "Significant refactor of ",
+      "file": "WORKFLOW.md",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 8\u219213 lines (5 removed) | Also: Primary Flutter validation:; flutter pub get | Also: 2. Inspect relevant repo files.; 3. Update the workpad with: | Also: 1. Use repo-local Flutter/Riverpod architecture an; 2. Keep state-management, routing, data, and UI bo",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 4,
+      "last_seen": "2026-05-03T19:12:50.964Z"
+    },
+    {
+      "id": "bug-108",
+      "timestamp": "2026-05-03T19:57:08.670Z",
+      "error_message": "Wrong reference: Codex should be Symphony",
+      "file": "bin/pi-symphony.sh",
+      "root_cause": "Used \"Codex\" instead of \"Symphony\"",
+      "fix": "Changed Codex \u2192 Symphony",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "sh"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T19:57:08.670Z"
+    },
+    {
+      "id": "bug-109",
+      "timestamp": "2026-05-03T19:59:33.880Z",
+      "error_message": "Significant refactor of ",
+      "file": "bin/pi-symphony.sh",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 11\u219216 lines (3 removed) | Also: local id ident title desc url; log \"=== $ident \u2014 $title ===\" | Also: # Polls Linear for tickets in `Todo`, dispatches `; # in an isolated git worktree, runs ./bin/verify.s",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "sh"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-05-03T20:00:18.209Z"
+    },
+    {
+      "id": "bug-110",
+      "timestamp": "2026-05-03T20:10:50.146Z",
+      "error_message": "Significant refactor of ",
+      "file": "bin/pi-symphony.sh",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 13\u219219 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "sh"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T20:10:50.146Z"
+    },
+    {
+      "id": "bug-111",
+      "timestamp": "2026-05-03T20:10:51.278Z",
+      "error_message": "Incorrect value in code",
+      "file": "bin/pi-symphony.sh",
+      "root_cause": "Had \"Human Review\"",
+      "fix": "Changed to \"$STATE_REVIEW\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "sh"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-05-03T20:10:59.028Z"
+    },
+    {
+      "id": "bug-112",
+      "timestamp": "2026-05-03T20:20:28.390Z",
+      "error_message": "Significant refactor of ",
+      "file": "bin/pi-symphony.sh",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 10\u219215 lines (3 removed) | Also: linear_gql \"$q\" \"$(jq -nc --arg p \"$pid\" --argjson; | jq -c '.data.issues.nodes[]?'",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "sh"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-03T20:21:27.819Z"
+    },
+    {
+      "id": "bug-113",
+      "timestamp": "2026-05-03T20:26:34.960Z",
+      "error_message": "pi-symphony --dry-run fetched Linear issues but did not dispatch; later surfaced macOS Bash bad substitution and EXIT trap unbound variable",
+      "file": "bin/pi-symphony.sh",
+      "root_cause": "running_count used ls in a pipe under set -euo pipefail, so no *.lock matches returned non-zero; process_ticket also used Bash 4 ${ident,,} on macOS Bash 3.2 and an EXIT trap referenced local $lock after the function returned.",
+      "fix": "Replaced ls pipeline with a guarded glob loop that echoes 0 for empty lock dirs, lowercased branch names via tr, and stored the lock path in a non-local trap variable so dry-run exits cleanly and removes locks.",
+      "tags": [
+        "shell",
+        "pi-symphony",
+        "dry-run",
+        "set-euo-pipefail",
+        "bash-3.2",
+        "locks"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T20:26:34.961Z"
+    },
+    {
+      "id": "bug-114",
+      "timestamp": "2026-05-05T01:21:09.142Z",
+      "error_message": "Missing import: dart:math, package:flutter_svg/flutter_svg.dart",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "Module(s) not imported: dart:math, package:flutter_svg/flutter_svg.dart",
+      "fix": "Added import(s) for dart:math, package:flutter_svg/flutter_svg.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T01:21:09.142Z"
+    },
+    {
+      "id": "bug-115",
+      "timestamp": "2026-05-05T01:21:15.565Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "25 lines replaced/restructured",
+      "fix": "Rewrote 30\u21924 lines (25 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T01:21:15.565Z"
+    },
+    {
+      "id": "bug-116",
+      "timestamp": "2026-05-06T02:53:33.573Z",
+      "error_message": "Audio pie circle does not move when dragging outside the center grip after navigating past the first reader page",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Only the small center grip registered pan gestures; the circular pie body only registered taps, so drags starting on the wedges were ignored after page navigation.",
+      "fix": "Added shared pan handling to the full audio control circle while preserving wedge tap handling and the center grip semantics.",
+      "tags": [
+        "reader",
+        "audio-controls",
+        "gesture",
+        "drag",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-06T02:53:33.573Z"
+    },
+    {
+      "id": "bug-117",
+      "timestamp": "2026-05-06T02:53:33.573Z",
+      "error_message": "A GifPlayerController was used after being disposed when ReaderScreen unmounts in widget tests",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "ReaderScreen manually disposed its GifPlayerController while GifPlayer also auto-disposed the same controller by default.",
+      "fix": "Set GifPlayer.isAutoDisposeController to false so ReaderScreen remains the single owner of the controller lifecycle.",
+      "tags": [
+        "reader",
+        "gif-player",
+        "dispose",
+        "widget-test",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-06T02:53:33.573Z"
+    },
+    {
+      "id": "bug-118",
+      "timestamp": "2026-05-06T03:24:00.802Z",
+      "error_message": "Live browser: after scrolling to reader page 2, dragging the audio pie from wedge/body regions did not move it; only center grip moved",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "The full-circle GestureDetector did not explicitly participate in hit testing across the entire pie body, so non-grip regions were unreliable drag targets in Flutter web after page navigation.",
+      "fix": "Set the circle body GestureDetector behavior to HitTestBehavior.opaque and kept shared drag handlers on both body and grip; updated regression test to drag from a non-center wedge point after page navigation.",
+      "tags": [
+        "reader",
+        "audio-controls",
+        "flutter-web",
+        "hit-test",
+        "gesture",
+        "drag"
+      ],
+      "related_bugs": [
+        "bug-116"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-05-06T03:24:00.802Z"
+    },
+    {
+      "id": "bug-119",
+      "timestamp": "2026-05-06T03:46:56.921Z",
+      "error_message": "Wrong reference: debugPrint should be print",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Used \"debugPrint\" instead of \"print\"",
+      "fix": "Changed debugPrint \u2192 print",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-06T03:48:27.938Z"
+    },
+    {
+      "id": "bug-120",
+      "timestamp": "2026-05-06T03:48:41.927Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 11\u21928 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-06T03:48:41.927Z"
+    },
+    {
+      "id": "bug-121",
+      "timestamp": "2026-05-06T03:57:42.184Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 14\u219228 lines (3 removed) | Also: // ignore: avoid_print; print('PIE_PAN_START off=$_dragOffset isDragging=$ | Also: onPanStart: (_) {; // ignore: avoid_print",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-05-06T04:01:23.372Z"
+    },
+    {
+      "id": "bug-122",
+      "timestamp": "2026-05-06T04:10:24.728Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "19 lines replaced/restructured",
+      "fix": "Rewrote 39\u219213 lines (19 removed) | Also: child: Stack(; clipBehavior: Clip.none,",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-06T04:13:31.812Z"
+    },
+    {
+      "id": "bug-123",
+      "timestamp": "2026-05-06T11:33:19.226Z",
+      "error_message": "Wrong reference: _AudioControlsPill should be AudioControlsPill",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "Used \"_AudioControlsPill\" instead of \"AudioControlsPill\"",
+      "fix": "Changed _AudioControlsPill \u2192 AudioControlsPill",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-06T11:33:19.226Z"
+    },
+    {
+      "id": "bug-124",
+      "timestamp": "2026-05-06T11:34:59.908Z",
+      "error_message": "Significant refactor of ",
+      "file": "test/features/reader/audio_controls_pill_drag_test.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 5\u21929 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-06T11:34:59.908Z"
+    },
+    {
+      "id": "bug-125",
+      "timestamp": "2026-05-10T00:00:00.000Z",
+      "error_message": "Gooey drag handle appeared unchanged during reader audio control drag",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "The gooey trail blob was mounted behind the opaque 120px audio pill but capped at 32px offset with a 38px diameter; its far edge (32 + 19 = 51px) stayed inside the pill's 60px radius, so the effect was hidden under the pill.",
+      "fix": "Increased trail offset cap to 72px, trail delta gain to 12, trail blob diameter to 58px, added a subtle gooey border/color boost, and added a regression assertion that the trail protrudes beyond the pill radius during drag.",
+      "tags": [
+        "reader",
+        "gooey",
+        "audio-controls",
+        "visual-feedback",
+        "drag"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-10T00:00:00.000Z"
+    },
+    {
+      "id": "bug-126",
+      "timestamp": "2026-05-13T00:00:00.000Z",
+      "error_message": "Reader celebration GifPlayer disposed the shared GifPlayerController when the conditional GIF widget unmounted",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "ReaderScreen owned and later reused _gifPlayerController, but the conditional GifPlayer used the package default isAutoDisposeController=true, so hiding the celebration GIF disposed the shared controller before ReaderScreen did.",
+      "fix": "Passed isAutoDisposeController: false to GifPlayer and added a widget regression test that toggles the celebration GIF off and back on without disposing the screen-owned controller.",
+      "tags": [
+        "reader",
+        "gif-player",
+        "dispose",
+        "widget-test",
+        "dart"
+      ],
+      "related_bugs": [
+        "bug-117"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-05-13T00:00:00.000Z"
+    },
+    {
+      "id": "bug-127",
+      "timestamp": "2026-05-14T00:00:00.000Z",
+      "error_message": "Flutter web console reported missing asset assets/svgs/book.svg on the intro screen",
+      "file": "lib/src/features/auth/presentation/intro_screen.dart",
+      "root_cause": "IntroScreen cloud helpers referenced assets/svgs/book.svg, but the project only ships assets/svgs/cloud.svg for those drifting cloud decorations.",
+      "fix": "Changed the drifting cloud SvgPicture.asset references from assets/svgs/book.svg to assets/svgs/cloud.svg.",
+      "tags": [
+        "auth",
+        "intro",
+        "assets",
+        "flutter-web",
+        "svg",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-14T00:00:00.000Z"
+    },
+    {
+      "id": "bug-128",
+      "timestamp": "2026-05-15T16:50:12.450Z",
+      "error_message": "Significant refactor of ",
+      "file": "../../../../../var/folders/vh/2k15dtzx66l3r__n7mtz07f00000gq/T/handoff-XXXXXX.md.Ayaug0mYNJ",
+      "root_cause": "4 lines replaced/restructured",
+      "fix": "Rewrote 11\u219223 lines (4 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ayaug0mynj"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T16:50:12.450Z"
+    },
+    {
+      "id": "bug-129",
+      "timestamp": "2026-05-15T17:03:22.216Z",
+      "error_message": "Null/undefined access in ",
+      "file": "tools/tmx_to_json.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T17:03:22.216Z"
+    },
+    {
+      "id": "bug-130",
+      "timestamp": "2026-05-15T17:15:20.708Z",
+      "error_message": "Significant refactor of ",
+      "file": "test/features/library/map_segment_renderer_test.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 6\u21924 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T17:15:20.708Z"
+    },
+    {
+      "id": "bug-131",
+      "timestamp": "2026-05-15T17:24:43.555Z",
+      "error_message": "Missing import: package:flame/flame.dart",
+      "file": "lib/src/features/library/game/map_segment_component.dart",
+      "root_cause": "Module(s) not imported: package:flame/flame.dart",
+      "fix": "Added import(s) for package:flame/flame.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T17:24:43.555Z"
+    },
+    {
+      "id": "bug-132",
+      "timestamp": "2026-05-15T17:25:35.551Z",
+      "error_message": "Missing import: dart:ui, package:flame/flame.dart, map_segment_renderer.dart",
+      "file": "lib/src/features/library/game/isometric_ground_component.dart",
+      "root_cause": "Module(s) not imported: dart:ui, package:flame/flame.dart, map_segment_renderer.dart",
+      "fix": "Added import(s) for dart:ui, package:flame/flame.dart, map_segment_renderer.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T17:25:35.551Z"
+    },
+    {
+      "id": "bug-133",
+      "timestamp": "2026-05-15T17:25:50.841Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/game/isometric_ground_component.dart",
+      "root_cause": "4 lines replaced/restructured",
+      "fix": "Rewrote 24\u219247 lines (4 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T17:25:50.841Z"
+    },
+    {
+      "id": "bug-134",
+      "timestamp": "2026-05-15T17:40:00.000Z",
+      "error_message": "Tile map did not load (Brave, --dart-define=USE_JSON_MAP_RENDERER=true)",
+      "file": "lib/src/features/library/game/map_segment_component.dart",
+      "root_cause": "MapSegmentComponent's Images instance used prefix 'assets/tiles/' but tileset PNGs (GroundTileDiscreet_Dirt2.png etc.) actually live in 'assets/images/'. The .tsx files reference bare PNG names ('GroundTileDiscreet_Dirt2.png') and flame_tiled resolves them via the default Flame.images cache whose prefix is 'assets/images/'. New JSON renderer used wrong prefix so every tileset load 404'd, and the silent try/catch in IsometricGroundComponent.onLoad swallowed the errors.",
+      "fix": "Switched MapSegmentComponent default to Flame.images (shared global cache, assets/images/ prefix). Refactored IsometricGroundComponent._loadJsonRenderer to pre-load tilesets and pre-bake the ui.Image inside the try block so failures surface, and reused one ui.Image across all segment copies for efficiency.",
+      "tags": [
+        "asset-path",
+        "flame",
+        "library-map",
+        "json-renderer",
+        "silent-failure"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T17:40:00.000Z"
+    },
+    {
+      "id": "bug-135",
+      "timestamp": "2026-05-15T12:58:00.000Z",
+      "error_message": "New JSON biome segments did not display on the library game screen in normal app runs",
+      "file": "lib/src/features/library/core/library_renderer_flag.dart",
+      "root_cause": "LibraryRendererFlag defaulted USE_JSON_MAP_RENDERER to false, so normal runs stayed on the legacy flame_tiled renderer and never loaded the JSON segment catalog.",
+      "fix": "Changed the default renderer flag to true, kept dart-define override for legacy comparison, and updated flag tests to lock the JSON default.",
+      "tags": [
+        "library-map",
+        "json-renderer",
+        "feature-flag",
+        "flame"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T12:58:00.000Z"
+    },
+    {
+      "id": "bug-136",
+      "timestamp": "2026-05-15T17:53:25.942Z",
+      "error_message": "Wrong reference: false should be true",
+      "file": "lib/src/features/library/core/library_renderer_flag.dart",
+      "root_cause": "Used \"false\" instead of \"true\"",
+      "fix": "Changed false \u2192 true",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T17:53:25.942Z"
+    },
+    {
+      "id": "bug-137",
+      "timestamp": "2026-05-15T17:53:26.003Z",
+      "error_message": "Wrong reference: false should be true",
+      "file": "test/features/library/library_renderer_flag_test.dart",
+      "root_cause": "Used \"false\" instead of \"true\"",
+      "fix": "Changed false \u2192 true",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T17:53:26.003Z"
+    },
+    {
+      "id": "bug-138",
+      "timestamp": "2026-05-16T17:26:03.982Z",
+      "error_message": "Null/undefined access in ",
+      "file": "tools/tilemap_editor/lib/editor/widgets/iso_canvas.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: if (asset == null || asset.cachedImage != null) continue;",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-16T17:26:20.851Z"
+    },
+    {
+      "id": "bug-139",
+      "timestamp": "2026-05-16T17:26:28.344Z",
+      "error_message": "Significant refactor of ",
+      "file": "tools/tilemap_editor/lib/editor/widgets/iso_canvas.dart",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 6\u21923 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T17:26:28.344Z"
+    },
+    {
+      "id": "bug-140",
+      "timestamp": "2026-05-16T17:27:35.010Z",
+      "error_message": "Significant refactor of ",
+      "file": "tools/tilemap_editor/lib/editor/editor_state.dart",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 7\u21925 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T17:27:35.010Z"
+    },
+    {
+      "id": "bug-141",
+      "timestamp": "2026-05-16T17:27:49.264Z",
+      "error_message": "Incorrect value in code",
+      "file": "tools/tilemap_editor/lib/editor/widgets/iso_canvas.dart",
+      "root_cause": "Had 'dart:ui'",
+      "fix": "Changed to 'package:flutter/material.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T17:27:49.264Z"
+    },
+    {
+      "id": "bug-142",
+      "timestamp": "2026-05-16T19:42:25.868Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "tools/tilemap_editor/lib/main.dart",
+      "root_cause": "Code path had no error handling \u2014 exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T19:42:25.868Z"
+    },
+    {
+      "id": "bug-143",
+      "timestamp": "2026-05-16T19:43:01.365Z",
+      "error_message": "Null/undefined access in ",
+      "file": "tools/tilemap_editor/lib/editor/widgets/tile_palette.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T19:43:01.365Z"
+    },
+    {
+      "id": "bug-144",
+      "timestamp": "2026-05-26T22:02:42.801Z",
+      "error_message": "Null/undefined access in ",
+      "file": "test/features/reader/reader_screen_coordinator_test.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T22:02:42.801Z"
+    },
+    {
+      "id": "bug-145",
+      "timestamp": "2026-05-26T22:03:24.049Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "4 lines replaced/restructured",
+      "fix": "Rewrote 12\u219220 lines (4 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T22:03:24.049Z"
+    },
+    {
+      "id": "bug-146",
+      "timestamp": "2026-05-26T22:06:17.000Z",
+      "error_message": "Reader opens to a transparent/blank page showing the end of the book; user must swipe back to the beginning",
+      "file": "lib/src/features/reader/runtime/reader_session_impl.dart, lib/src/features/reader/reader_screen.dart",
+      "root_cause": "PageController physical position never synced to logical activePageIndex. readerSessionProvider is a non-autoDispose singleton; ReaderSessionImpl._state retained the last activePageIndex and ReaderEnd never reset it, while states getter replays _state to new subscribers. A fresh reader thus inherited the stale end-page index (logical), but the new PageController started at physical page 0. Virtualization renders pages outside activeIndex+-1 as SizedBox.shrink(), so the visible physical page 0 rendered as an empty transparent placeholder.",
+      "fix": "Product intent: books always open at the beginning (no resume). 1) reader_session_impl.dart: reset _state to ReaderViewState.initial() silently (no emit) on ReaderEnd via _resetState(), so the singleton readerSessionProvider does not replay a stale end page to a freshly-built controller; silent reset keeps the lifecycle pause->resume path working. 2) reader_screen.dart: the _initializedBookId init block now dispatches ReaderExperienceStart(book: book) with default initialPageIndex 0, so a fresh open always starts at page 0 and overwrites any page index retained by a surviving controller; physical PageView (starts at 0) and logical active page agree, eliminating the transparent virtualized placeholder.",
+      "tags": [
+        "reader",
+        "pageview",
+        "pagecontroller",
+        "state-retention",
+        "riverpod",
+        "virtualization",
+        "always-start-at-beginning",
+        "tdd"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T22:06:17.000Z"
+    },
+    {
+      "id": "bug-147",
+      "timestamp": "2026-05-26T22:16:59.727Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "No early return/throw for edge case: index == activePageIndex",
+      "fix": "Added guard clause: if (index == activePageIndex)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T22:16:59.727Z"
+    },
+    {
+      "id": "bug-148",
+      "timestamp": "2026-05-26T22:22:45.961Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/reader_screen.dart",
+      "root_cause": "11 lines replaced/restructured",
+      "fix": "Rewrote 14\u21923 lines (11 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T22:22:45.961Z"
+    },
+    {
+      "id": "bug-149",
+      "timestamp": "2026-05-26T23:17:29.363Z",
+      "error_message": "Significant refactor of ",
+      "file": "docs/superpowers/specs/2026-05-26-story-spark-takeover-design.md",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 4\u21925 lines (3 removed) | Also: - The chosen card for the active page (`readerGenU; - `spokenWordIndices` (read-aloud progress) and `i | Also: **Audio coordination:**; - On `live`: signal `ReaderExperienceController` t | Also: 2. `ReaderActivityTrigger` holds it `pending` and ; 3. Anchor crossed (highlight or scroll) \u2192 card goe | Also: - **Anchor beyond word count:** degrades to page-l; - **Narration toggled mid-page:** trigger re-evalu | Also: - Narration on \u2192 live when `spokenWordIndices` cro; - Narration off \u2192 live when anchor word scrolls pa",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 6,
+      "last_seen": "2026-05-26T23:18:38.627Z"
+    },
+    {
+      "id": "bug-150",
+      "timestamp": "2026-05-26T23:27:22.858Z",
+      "error_message": "Significant refactor of ",
+      "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 4\u219235 lines (2 removed) | Also: - Test: `test/features/reader/runtime/reader_sessi; - Test: `test/features/reader/application/reader_e",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-26T23:28:05.392Z"
+    },
+    {
+      "id": "bug-151",
+      "timestamp": "2026-05-26T23:35:18.347Z",
+      "error_message": "Significant refactor of ",
+      "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
+      "root_cause": "11 lines replaced/restructured",
+      "fix": "Rewrote 53\u2192115 lines (11 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T23:35:18.347Z"
+    },
+    {
+      "id": "bug-152",
+      "timestamp": "2026-05-26T23:35:44.356Z",
+      "error_message": "Missing await",
+      "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T23:35:44.356Z"
+    },
+    {
+      "id": "bug-153",
+      "timestamp": "2026-05-26T23:35:59.694Z",
+      "error_message": "Incorrect value in code",
+      "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
+      "root_cause": "Had `wasNarrationPlaying`",
+      "fix": "Changed to `activityNarrationPaused`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T23:35:59.694Z"
+    },
+    {
+      "id": "bug-154",
+      "timestamp": "2026-05-26T23:39:44.540Z",
+      "error_message": "Significant refactor of ",
+      "file": "docs/superpowers/specs/2026-05-26-story-spark-takeover-design.md",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 6\u219210 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T23:39:44.540Z"
+    },
+    {
+      "id": "bug-155",
+      "timestamp": "2026-05-26T23:40:18.445Z",
+      "error_message": "Missing import: ../../../core/theme/storia_motion.dart",
+      "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
+      "root_cause": "Module(s) not imported: ../../../core/theme/storia_motion.dart",
+      "fix": "Added import(s) for ../../../core/theme/storia_motion.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T23:40:18.445Z"
+    },
+    {
+      "id": "bug-156",
+      "timestamp": "2026-05-26T23:40:40.824Z",
+      "error_message": "Significant refactor of ",
+      "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 11\u219217 lines (2 removed) | Also: // Skip via the card's close button.; await tester.tap(find.byIcon(Icons.close_rounded)) | Also: Append the outcome to `.wolf/memory.md` and update; git add -A",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-05-26T23:41:32.766Z"
+    },
+    {
+      "id": "bug-157",
+      "timestamp": "2026-05-26T23:46:24.781Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/gen_ui/domain/gen_ui_card_schema.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-26T23:46:24.781Z"
+    },
+    {
+      "id": "bug-158",
+      "timestamp": "2026-05-27T01:27:44.640Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/gen_ui/presentation/reader_activity_card.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-27T01:27:44.640Z"
+    },
+    {
+      "id": "bug-159",
+      "timestamp": "2026-05-27T13:46:09.074Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/gen_ui/presentation/reader_activity_card.dart",
+      "root_cause": "No early return/throw for edge case: pageChanged && _shown",
+      "fix": "Added guard clause: if (pageChanged && _shown)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-27T13:46:09.074Z"
+    },
+    {
+      "id": "bug-160",
+      "timestamp": "2026-05-27T00:00:00.000Z",
+      "error_message": "Widget state not re-armed on page change: _shown stays true after first activity, blocking onActivityShown on subsequent pages and leaving narration paused if page turns while takeover is visible",
+      "file": "lib/src/features/gen_ui/presentation/reader_activity_card.dart",
+      "root_cause": "ReaderActivityPromptOverlay is reused across pages without a key; _shown latch was never reset in didUpdateWidget, so page 2+ activities never fired onActivityShown and un-answered dismissals on page navigation never fired onActivityDismissed",
+      "fix": "Added didUpdateWidget override that resets _shown=false and calls widget.onActivityDismissed() when pageIndex or bookId changes while _shown is true",
+      "tags": [
+        "correctness",
+        "state-management",
+        "dart"
+      ],
+      "related_bugs": [
+        "bug-159"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-05-27T00:00:00.000Z"
+    },
+    {
+      "id": "bug-161",
+      "timestamp": "2026-05-27T00:00:00.000Z",
+      "error_message": "Missing mounted guard in addPostFrameCallback \u2014 onActivityShown could be called after widget dispose",
+      "file": "lib/src/features/gen_ui/presentation/reader_activity_card.dart",
+      "root_cause": "WidgetsBinding.instance.addPostFrameCallback in _handleLive called widget.onActivityShown() without checking mounted, risking callback invocation after State disposal",
+      "fix": "Added if (!mounted) return; at top of the post-frame callback",
+      "tags": [
+        "correctness",
+        "async-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-27T00:00:00.000Z"
+    },
+    {
+      "id": "bug-162",
+      "timestamp": "2026-05-27T13:48:51.902Z",
+      "error_message": "Missing import: package:storia_kids/src/features/gen_ui/data/gen_ui_providers.dart, package:storia_kids/src/features/gen_ui/data/mock_gen_ui_cards.dart, package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart, package:storia_kids/src/features/gen_ui/presentation/reader_activity_card.dart",
+      "file": "test/features/reader/reader_screen_coordinator_test.dart",
+      "root_cause": "Module(s) not imported: package:storia_kids/src/features/gen_ui/data/gen_ui_providers.dart, package:storia_kids/src/features/gen_ui/data/mock_gen_ui_cards.dart, package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart, package:storia_kids/src/features/gen_ui/presentation/reader_activity_card.dart",
+      "fix": "Added import(s) for package:storia_kids/src/features/gen_ui/data/gen_ui_providers.dart, package:storia_kids/src/features/gen_ui/data/mock_gen_ui_cards.dart, package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart, package:storia_kids/src/features/gen_ui/presentation/reader_activity_card.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-27T13:48:51.902Z"
+    },
+    {
+      "id": "bug-163",
+      "timestamp": "2026-05-27T13:49:44.856Z",
+      "error_message": "Function not marked async",
+      "file": "test/features/reader/reader_screen_coordinator_test.dart",
+      "root_cause": "Function uses await but wasn't declared async",
+      "fix": "Added async modifier",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-27T13:49:44.856Z"
+    },
+    {
+      "id": "bug-164",
+      "timestamp": "2026-05-27T14:06:46.000Z",
+      "error_message": "Story Spark takeover never re-fires onActivityShown on page 2+; narration stays paused if child leaves page while takeover is up",
+      "file": "lib/src/features/gen_ui/presentation/reader_activity_card.dart",
+      "root_cause": "ReaderActivityPromptOverlay is mounted without a key and reused across pages, so the _shown latch stayed true after the first activity; no didUpdateWidget reset, so onActivityShown never re-fired and onActivityDismissed (narration resume) never fired when navigating away mid-takeover.",
+      "fix": "Added didUpdateWidget to _ReaderActivityPromptOverlayState: when bookId/pageIndex changes while _shown, reset _shown=false and call onActivityDismissed (resume narration). Also added an if(!mounted) return guard to the addPostFrameCallback that calls onActivityShown.",
+      "tags": [
+        "riverpod",
+        "flutter",
+        "stateful-widget",
+        "lifecycle",
+        "gen_ui",
+        "reader",
+        "caught-in-review"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-27T14:06:46.000Z"
+    },
+    {
+      "id": "bug-165",
+      "timestamp": "2026-05-27T14:09:47.349Z",
+      "error_message": "Null check operator used on a null value in LibraryScreen._buildGameView at _engineAdapter.game!",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "LibraryScreen cached a loaded session signature, but the singleton FlameLibraryMapEngineAdapter could be disposed while the screen state remained mounted, leaving _engineAdapter.game null. A rebuild with the same signature skipped reloading and force-unwrapped the null game.",
+      "fix": "Only skip _ensureSessionLoaded when both the signature matches and the adapter has a game; set _loadedSignature after successful load; defensively render loading state if no game is available. Added widget regression test for adapter disposal while mounted.",
+      "tags": [
+        "null-safety",
+        "flutter",
+        "library",
+        "flame",
+        "regression-test"
+      ],
+      "related_bugs": [
+        "bug-029",
+        "bug-033"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-05-27T14:09:47.349Z"
+    },
+    {
+      "id": "bug-166",
+      "timestamp": "2026-05-28T11:50:15.000Z",
+      "error_message": "Exception: Asset 'shaders/ink_sparkle.frag' manifest could not be decoded: INVALID_ARGUMENT: Unsupported runtime stages format version. Expected 2, got 1.",
+      "file": ".dart_tool / build generated shader artifacts",
+      "root_cause": "Flutter SDK 3.44 expects runtime stages format version 2, but stale shader artifacts generated by the previous SDK were still present after the SDK upgrade.",
+      "fix": "Ran flutter clean followed by flutter pub get to regenerate shader/build artifacts for Flutter 3.44.",
+      "tags": [
+        "flutter-3.44",
+        "shader",
+        "generated-artifacts",
+        "test-failure"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-28T11:50:15.000Z"
+    },
+    {
+      "id": "bug-167",
+      "timestamp": "2026-05-28T11:52:10.000Z",
+      "error_message": "ListTile background color or ink splashes may be invisible. The ListTile is wrapped in a DecoratedBox that has a background color.",
+      "file": "lib/src/features/child/presentation/add_child_screen.dart",
+      "root_cause": "Flutter 3.44 asserts when SwitchListTile/ListTile is wrapped in a DecoratedBox with a background color, because tile backgrounds and ink effects paint on the nearest Material ancestor and can be hidden by the DecoratedBox.",
+      "fix": "Replaced the DecoratedBox wrapper around SwitchListTile.adaptive with a Material using the same background color, rounded shape, and border.",
+      "tags": [
+        "flutter-3.44",
+        "listtile",
+        "material",
+        "test-failure"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-28T11:52:10.000Z"
+    },
+    {
+      "id": "bug-168",
+      "timestamp": "2026-05-28T19:16:00.000Z",
+      "error_message": "[AnalyticsRepository] Failed to track page_viewed: Bad state: network appeared in validation output",
+      "file": "test/data/analytics_repository_test.dart; test/features/reader/runtime/reader_session_analytics_test.dart",
+      "root_cause": "Negative-path analytics tests intentionally used a transport that throws StateError('network'); AnalyticsRepository logs non-fatal failures with debugPrint in assert mode, so the expected test scenario leaked noisy failure logs into flutter test output.",
+      "fix": "Wrapped the negative-path analytics calls in a test-only debugPrint suppression helper and cleared the fake transport error before reader session teardown.",
+      "tags": [
+        "flutter-test",
+        "analytics",
+        "debug-output",
+        "negative-path"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-28T19:16:00.000Z"
+    },
+    {
+      "id": "bug-169",
+      "timestamp": "2026-05-28T19:35:00.000Z",
+      "error_message": "Flutter test/pub get output included: The following plugins do not support Swift Package Manager for ios: flutter_web_auth_2, flutter_tts. This will become an error in a future version of Flutter.",
+      "file": "pubspec.yaml; pubspec.lock; analysis_options.yaml; third_party/flutter_tts/ios/flutter_tts/Package.swift; third_party/flutter_tts/macos/flutter_tts/Package.swift",
+      "root_cause": "flutter_web_auth_2 4.1.0 and hosted flutter_tts 4.2.5 were CocoaPods-only for iOS/macOS. better_auth_flutter constrained flutter_web_auth_2 to 4.x, and flutter_tts had no released SwiftPM manifest, so Flutter 3.44 emitted the future-error warning before tests.",
+      "fix": "Overrode flutter_web_auth_2 to 5.0.2, which includes SwiftPM manifests, and vendored flutter_tts 4.2.5 under third_party with equivalent iOS/macOS Package.swift manifests while keeping its CocoaPods podspecs. Excluded the vendored package from app analysis so hosted-package lint noise does not affect the app gate.",
+      "tags": [
+        "flutter-3.44",
+        "swift-package-manager",
+        "dependency-upgrade",
+        "ios"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-28T19:35:00.000Z"
+    },
+    {
+      "id": "bug-170",
+      "timestamp": "2026-05-29T00:00:00.000Z",
+      "error_message": "Returning to the app shows the library screen with only the Flutter background (sky, clouds, sun, hills) but no game character, no book nodes, and no ground. Switching to another child profile makes everything load back up.",
+      "file": "lib/src/features/library/adapters/flame_library_map_engine_adapter.dart; lib/src/features/library/library_screen.dart",
+      "root_cause": "The LibraryGame (FlameGame) lived in a process-wide singleton adapter (FlameLibraryMapEngineAdapter.instance) reused across LibraryScreen mounts. A FlameGame is single-attach: reusing the same instance on a freshly mounted GameWidget, or after the render surface was torn down on app background, re-attaches with an empty world. A cross-screen dispose race also let one screen's teardown dispose the game a newly mounted screen was rendering. The Flutter-drawn background kept painting in both cases, so only the Flame layer went blank. Switching child profile changed the book list signature, forcing loadBooks to build a fresh game, which masked the bug.",
+      "fix": "Gave each LibraryScreen its own adapter via new FlameLibraryMapEngineAdapter.create() (kept static .instance for tests/back-compat); dispose() now only clears the singleton slot when identical(_instance, this), so a per-screen adapter never nukes the shared one. LibraryScreen now uses .create() and mixes in WidgetsBindingObserver: on AppLifecycleState.resumed it clears _loadedSignature and setState, so _ensureSessionLoaded rebuilds a fresh game and GameWidget.didUpdateWidget re-attaches it. Added widget regression test 'rebuilds the game view after the app returns from the background'.",
+      "tags": [
+        "flame",
+        "library",
+        "lifecycle",
+        "gamewidget",
+        "singleton",
+        "app-resume",
+        "flutter"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-29T00:00:00.000Z"
+    },
+    {
+      "id": "bug-171",
+      "timestamp": "2026-06-03T00:00:00.000Z",
+      "error_message": "AAC music demo MusicMode.off suppressed onSend sentence speech",
+      "file": "lib/src/features/aac_music_demo/domain/sequencer.dart",
+      "root_cause": "UtteranceSequencer.onSend returned immediately when config.mode was MusicMode.off, so disabling music also skipped the speakSentenceOnSend path. This violated the AAC invariant that speech is the communication layer and must not be suppressed by music settings.",
+      "fix": "Moved the sentence-speaking block before the music-mode guard and only skipped _playProgression() when MusicMode.off. Added sequencer regression coverage that off mode speaks the built sentence while producing no music events.",
+      "tags": [
+        "aac",
+        "music-demo",
+        "tts",
+        "sequencer",
+        "music-mode",
+        "speech-first",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-03T00:00:00.000Z"
+    },
+    {
+      "id": "journey-auth-auto-advance-double-hop",
+      "timestamp": "2026-06-11T08:55:00Z",
+      "error_message": "After authentication, sign-in/sign-up screens hardcoded navigation to /library before the router redirected Supabase users without an active child profile to /profiles/select.",
+      "file": "lib/src/features/auth/presentation/sign_in_screen.dart; lib/src/features/auth/presentation/sign_up_screen.dart; lib/src/routing/app_router.dart",
+      "root_cause": "Post-auth advancement was implemented twice: screen-side ref.listen blocks guessed /library while the router redirect owned the actual journey guard. The screen guess skipped the backend profile-selection gate, causing a visible double hop.",
+      "fix": "Deleted the screen-side auth listeners and deepened the journey policy into JourneyPolicy.redirect. Added auth_auto_advance_regression_test to prove auth flips advance through the router backstop to /profiles/select or /library based on the snapshot.",
+      "tags": [
+        "routing",
+        "go_router",
+        "journey",
+        "auth",
+        "double-hop",
+        "riverpod"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-11T08:55:00Z"
+    },
+    {
+      "id": "journey-review-onboarding-library-double-hop",
+      "timestamp": "2026-06-11T08:55:00Z",
+      "error_message": "Completing review onboarding hardcoded /library, letting authenticated users without an active child profile briefly navigate to library before the redirect corrected to /profiles/select.",
+      "file": "lib/src/features/onboarding/presentation/review_onboarding_screen.dart; lib/src/routing/journey/journey_actions.dart",
+      "root_cause": "The review onboarding screen privately guessed the terminal route instead of asking the shared journey policy for the current user's next waypoint. The screen and redirect could disagree for dual-track states.",
+      "fix": "Replaced the hardcoded /library success-forward navigation with continueJourney(ref, context), which reads the current JourneySnapshot and delegates destination selection to JourneyPolicy.nextLocation.",
+      "tags": [
+        "routing",
+        "go_router",
+        "journey",
+        "onboarding",
+        "double-hop",
+        "profile-selection"
+      ],
+      "related_bugs": [
+        "journey-auth-auto-advance-double-hop"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-06-11T08:55:00Z"
+    }
+  ]
+}
