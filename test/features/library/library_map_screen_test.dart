@@ -32,13 +32,13 @@ Book _makeBook({
 
 // ── Router factory ─────────────────────────────────────────────────────────
 
-GoRouter _testRouter({void Function(String)? onNavigate}) {
+GoRouter _testRouter({void Function(String)? onNavigate, DateTime? skyNow}) {
   return GoRouter(
     initialLocation: '/library',
     routes: [
       GoRoute(
         path: '/library',
-        builder: (context, state) => const LibraryScreen(),
+        builder: (context, state) => LibraryScreen(skyNow: skyNow),
       ),
       GoRoute(
         path: '/reader/:bookId',
@@ -222,9 +222,14 @@ void main() {
       expect(find.text('Longer Reads'), findsOneWidget);
     });
 
-    testWidgets('AAC music demo button navigates to the demo route', (
+    testWidgets('sky toggle swaps between day and night controls', (
       tester,
     ) async {
+      router = _testRouter(
+        onNavigate: (id) => navigatedToBookId = id,
+        skyNow: DateTime(2026, 1, 1, 12),
+      );
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [_twoBooksOverride()],
@@ -234,10 +239,38 @@ void main() {
 
       await _pumpLoadedLibrary(tester);
 
-      await tester.tap(find.byTooltip('Open AAC music demo'));
+      expect(find.byTooltip('Open AAC music demo'), findsNothing);
+      expect(find.byTooltip('Switch sky to night'), findsOneWidget);
+      expect(find.byIcon(Icons.nightlight_round), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('library-sky-toggle')));
       await _pumpNavigation(tester);
 
-      expect(find.text('AAC Music Demo'), findsOneWidget);
+      expect(find.byTooltip('Switch sky to day'), findsOneWidget);
+      expect(find.byIcon(Icons.wb_sunny_outlined), findsOneWidget);
+    });
+
+    testWidgets('sky toggle starts in night mode for a night clock', (
+      tester,
+    ) async {
+      router = _testRouter(
+        onNavigate: (id) => navigatedToBookId = id,
+        skyNow: DateTime(2026, 1, 1, 22),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [_twoBooksOverride()],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await _pumpLoadedLibrary(tester);
+
+      expect(find.byTooltip('Switch sky to day'), findsOneWidget);
+      expect(find.byIcon(Icons.wb_sunny_outlined), findsOneWidget);
+      expect(find.byTooltip('Switch sky to night'), findsNothing);
+      expect(find.byIcon(Icons.nightlight_round), findsNothing);
     });
 
     // ── Search debounce ───────────────────────────────────────────────

@@ -2834,6 +2834,23 @@
       ],
       "occurrences": 1,
       "last_seen": "2026-06-11T08:55:00Z"
+    },
+    {
+      "id": "bug-174",
+      "timestamp": "2026-06-11T15:48:45.361400Z",
+      "error_message": "flutter test hangs indefinitely",
+      "file": "test/features/library/*_test.dart",
+      "root_cause": "Widget test called dart:ui Scene.toImage().toByteData() for offscreen raster; headless flutter test runner has no GPU so the call deadlocks",
+      "fix": "Never use offscreen toImage in widget tests. Assert on CustomPaint.painter props, or use matchesGoldenFile / designqc for visual checks",
+      "tags": [
+        "flutter",
+        "test-hang",
+        "toImage",
+        "widget-test"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-11T15:48:45.361568Z"
     }
   ]
 }
