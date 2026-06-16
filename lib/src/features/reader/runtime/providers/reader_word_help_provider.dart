@@ -33,7 +33,7 @@ class ReaderWordHelpController
 
   @override
   WordHelpSnapshot build(String bookId) {
-    final audioEngine = ref.watch(audioEngineProvider);
+    final pronunciationAudio = ref.watch(pronunciationPlayerProvider);
     final session = ref.watch(readerSessionProvider);
     final audioGuard = ReaderSessionAudioGuardPort(session);
     _audioGuardPort = audioGuard;
@@ -42,7 +42,7 @@ class ReaderWordHelpController
       manifestPort: PronunciationRepositoryManifestPort(
         ref.watch(pronunciationRepositoryProvider),
       ),
-      pronunciationAudio: AudioEnginePronunciationPort(audioEngine),
+      pronunciationAudio: pronunciationAudio,
       fallbackSpeech: FlutterTtsFallbackSpeechPort(
         ref.watch(wordTtsServiceProvider),
       ),

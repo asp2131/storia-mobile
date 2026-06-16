@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:storia_kids/src/audio/page_audio.dart';
 import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/reader/runtime/ports/audio_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/ports/scheduler_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/ports/speech_practice_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/reader_session.dart';
@@ -17,70 +17,64 @@ final _book = Book(
 
 void main() {
   test('ReaderPauseNarration / ReaderResumeNarration are state-guarded', () async {
-    final audio = _CountingAudioPort();
+    final audio = _CountingPageAudio();
     final session = ReaderSessionImpl(
-      audioPort: audio,
+      pageAudio: audio,
       speechPort: _FakeSpeechPracticePort(),
       scheduler: _FakeSchedulerPort(),
     );
 
     await session.dispatch(ReaderStart(book: _book));
-    // Turn narration on (toggle from initial false).
     await session.dispatch(const ReaderToggleNarration());
     expect(audio.toggleNarrationCalls, 1);
 
     await session.dispatch(const ReaderPauseNarration());
-    expect(audio.toggleNarrationCalls, 2); // was playing -> paused
+    expect(audio.toggleNarrationCalls, 2);
     expect((await session.states.first).isNarrationPlaying, isFalse);
 
     await session.dispatch(const ReaderPauseNarration());
-    expect(audio.toggleNarrationCalls, 2); // already paused -> no-op
+    expect(audio.toggleNarrationCalls, 2);
 
     await session.dispatch(const ReaderResumeNarration());
-    expect(audio.toggleNarrationCalls, 3); // was paused -> resumed
+    expect(audio.toggleNarrationCalls, 3);
     expect((await session.states.first).isNarrationPlaying, isTrue);
 
     await session.dispatch(const ReaderResumeNarration());
-    expect(audio.toggleNarrationCalls, 3); // already playing -> no-op
+    expect(audio.toggleNarrationCalls, 3);
 
     await session.dispose();
   });
 }
 
-class _CountingAudioPort implements AudioPort {
-  final _narrationPosition = StreamController<Duration>.broadcast();
-  final _narrationPlaying = StreamController<bool>.broadcast();
-  final _soundscapePlaying = StreamController<bool>.broadcast();
+class _CountingPageAudio implements PageAudio {
+  final _statesController = StreamController<AudioSnapshot>.broadcast();
   int toggleNarrationCalls = 0;
 
   @override
-  Stream<Duration> get narrationPosition => _narrationPosition.stream;
-  @override
-  Stream<bool> get narrationPlaying => _narrationPlaying.stream;
-  @override
-  Stream<bool> get soundscapePlaying => _soundscapePlaying.stream;
-  @override
-  Future<void> ensureInitialized() async {}
+  Stream<AudioSnapshot> get states => _statesController.stream;
+
   @override
   Future<void> loadPage(PageData page) async {}
-  @override
-  Future<void> transitionToPage(PageData page) async {}
+
   @override
   Future<void> toggleNarration() async {
     toggleNarrationCalls++;
   }
+
   @override
   Future<void> toggleSoundscape() async {}
+
   @override
   Future<void> setNarrationVolume(double volume) async {}
+
   @override
   Future<void> setSoundscapeVolume(double volume) async {}
+
   @override
-  Future<void> dispose() async {
-    await _narrationPosition.close();
-    await _narrationPlaying.close();
-    await _soundscapePlaying.close();
-  }
+  Future<void> duckForPractice() async {}
+
+  @override
+  Future<void> restoreFromPractice() async {}
 }
 
 class _FakeSpeechPracticePort implements SpeechPracticePort {

@@ -1,3 +1,4 @@
+import '../../../../audio/pronunciation_player.dart';
 import '../../../../data/pronunciation_models.dart';
 import '../../pronunciation_highlight.dart';
 
@@ -106,11 +107,7 @@ abstract interface class PronunciationManifestPort {
   Future<BookPronunciationManifest?> getManifest(String bookId);
 }
 
-abstract interface class PronunciationAudioPort {
-  Stream<Duration> get position;
-  Future<void> playSequence(List<String> urls);
-  Future<void> stop();
-}
+typedef PronunciationAudioPort = PronunciationPlayer;
 
 abstract interface class FallbackSpeechPort {
   Future<void> speakWord(String word);
