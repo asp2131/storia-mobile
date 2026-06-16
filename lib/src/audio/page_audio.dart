@@ -13,15 +13,23 @@ class AudioSnapshot {
   final bool isSoundscapePlaying;
   final Duration narrationPosition;
 
+  static const Object _sentinel = Object();
+
   AudioSnapshot copyWith({
-    bool? isNarrationPlaying,
-    bool? isSoundscapePlaying,
-    Duration? narrationPosition,
+    Object? isNarrationPlaying = _sentinel,
+    Object? isSoundscapePlaying = _sentinel,
+    Object? narrationPosition = _sentinel,
   }) {
     return AudioSnapshot(
-      isNarrationPlaying: isNarrationPlaying ?? this.isNarrationPlaying,
-      isSoundscapePlaying: isSoundscapePlaying ?? this.isSoundscapePlaying,
-      narrationPosition: narrationPosition ?? this.narrationPosition,
+      isNarrationPlaying: identical(isNarrationPlaying, _sentinel)
+          ? this.isNarrationPlaying
+          : isNarrationPlaying as bool,
+      isSoundscapePlaying: identical(isSoundscapePlaying, _sentinel)
+          ? this.isSoundscapePlaying
+          : isSoundscapePlaying as bool,
+      narrationPosition: identical(narrationPosition, _sentinel)
+          ? this.narrationPosition
+          : narrationPosition as Duration,
     );
   }
 }

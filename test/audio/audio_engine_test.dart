@@ -199,6 +199,19 @@ void main() {
 
         expect(snapshots.any((s) => s.narrationPosition.inSeconds == 5), true);
       });
+
+      test('states stream emits isNarrationPlaying false when narration stops',
+          () async {
+        await engine.toggleNarration();
+        final snapshots = <AudioSnapshot>[];
+        final sub = engine.states.listen(snapshots.add);
+
+        await engine.toggleNarration();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(snapshots.any((s) => !s.isNarrationPlaying), true);
+        await sub.cancel();
+      });
     });
 
     group('play (pronunciation)', () {
