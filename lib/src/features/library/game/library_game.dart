@@ -9,6 +9,7 @@ import 'package:flutter/scheduler.dart';
 import '../../../core/resilient_cache_manager.dart';
 import '../../../data/models.dart';
 import 'ambient_particles.dart';
+import 'character/character_types.dart';
 import 'isometric_ground_component.dart';
 import 'map_book_node_component.dart';
 import 'map_route_component.dart';
@@ -602,6 +603,7 @@ class LibraryGame extends FlameGame with TapCallbacks {
     if (_pendingBookTargetX == null) return;
 
     if (_player.hasArrived) {
+      _player.playOneShot(CharacterAnimation.interact);
       final arrivedIndex = _nodePositions.indexWhere(
         (pos) => (pos.x - _pendingBookTargetX!).abs() < 50,
       );
