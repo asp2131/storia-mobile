@@ -8,6 +8,7 @@ import '../features/auth/presentation/auth_gate.dart';
 import '../features/auth/presentation/intro_screen.dart';
 import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/sign_up_screen.dart';
+import '../features/character/presentation/character_editor_screen.dart';
 import '../features/child/data/child_profile_providers.dart';
 import '../features/child/presentation/add_child_screen.dart';
 import '../features/child/presentation/profile_picker_screen.dart';
@@ -95,6 +96,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final bookId = state.pathParameters['bookId'] ?? '';
           return ReaderScreen(bookId: bookId);
         },
+      ),
+      GoRoute(
+        path: JourneyRoutes.character,
+        builder: (context, state) => const CharacterEditorScreen(),
       ),
       GoRoute(
         path: JourneyRoutes.settings,

@@ -242,6 +242,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             },
             isNightSky: skyPalette.isNight,
             onSkyToggle: _toggleSkyMode,
+            onCustomizeTap: () => context.push('/character'),
             onSettingsTap: () async {
               final passed = await ParentalGate.verify(context);
               if (!context.mounted || !passed) return;
@@ -672,6 +673,7 @@ class _FloatingControls extends StatelessWidget {
     required this.onFilterChanged,
     required this.isNightSky,
     required this.onSkyToggle,
+    required this.onCustomizeTap,
     required this.onSettingsTap,
   });
 
@@ -681,6 +683,7 @@ class _FloatingControls extends StatelessWidget {
   final ValueChanged<_ShelfFilter> onFilterChanged;
   final bool isNightSky;
   final VoidCallback onSkyToggle;
+  final VoidCallback onCustomizeTap;
   final VoidCallback onSettingsTap;
 
   @override
@@ -720,6 +723,13 @@ class _FloatingControls extends StatelessWidget {
                 tooltip: isNightSky
                     ? 'Switch sky to day'
                     : 'Switch sky to night',
+              ),
+              const SizedBox(width: StoriaSpacing.sm),
+              SketchIconButton(
+                key: const ValueKey('library-customize-character'),
+                icon: Icons.face_retouching_natural_outlined,
+                onPressed: onCustomizeTap,
+                tooltip: 'Customize character',
               ),
               const SizedBox(width: StoriaSpacing.sm),
               SketchIconButton(
