@@ -100,9 +100,17 @@ flutter:
     - assets/gifs/
     - assets/svgs/
     - assets/images/
+    - assets/images/characters/default/idle/
+    - assets/images/characters/default/walk/
+    - assets/images/characters/default/run/
+    - assets/images/characters/default/interact/
+    - assets/images/characters/default/sit/
+    - assets/images/characters/default/getup/
     - assets/tiles/
     - assets/aac/
     - assets/aac/soundfonts/
+  shaders:
+    - shaders/page_loading.frag
 
 flutter_launcher_icons:
   android: true

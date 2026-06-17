@@ -1,70 +1,60 @@
 import 'dart:async';
 
 import 'package:flame/components.dart';
-import 'package:flame/sprite.dart';
+import 'package:flutter/foundation.dart';
 
+import 'character/character_image_loader.dart';
+import 'character/character_selection.dart';
+import 'character/character_types.dart';
+import 'character/layer_sprite_set.dart';
 import 'library_game.dart';
 
-/// Movement speed in pixels per second.
 const double _kMoveSpeed = 150.0;
-
-/// Distance (in pixels) at which the player is considered "arrived".
 const double _kArrivalThreshold = 4.0;
-
-/// Desired player height on screen.
 const double _kPlayerHeight = 72.0;
 
-/// Animation states for the player character.
-enum PlayerState {
-  idleLeft,
-  idleFront,
-  idleRight,
-  runTransition,
-  running,
-  stopping,
-}
+const Map<CharacterAnimation, ({double step, bool loop})> _kAnimSpec = {
+  CharacterAnimation.idle: (step: 0.12, loop: true),
+  CharacterAnimation.walk: (step: 0.09, loop: true),
+  CharacterAnimation.run: (step: 0.06, loop: true),
+  CharacterAnimation.interact: (step: 0.08, loop: false),
+  CharacterAnimation.sit: (step: 0.08, loop: false),
+  CharacterAnimation.getUp: (step: 0.08, loop: false),
+};
 
-/// The player character component.
-///
-/// Uses two spritesheets:
-/// - `idle.png` -- 1 row x 3 columns
-/// - `running.png` -- 5 rows x 5 columns (25 frames total)
-class PlayerComponent extends SpriteAnimationGroupComponent<PlayerState>
+/// Layered, customizable player. A container that keeps one [SpriteComponent]
+/// per equipped layer in lockstep via a single parent-owned frame clock.
+class PlayerComponent extends PositionComponent
     with HasGameReference<LibraryGame> {
-  PlayerComponent({required Vector2 startPosition})
-    : _startPosition = startPosition,
-      super(current: PlayerState.idleFront, anchor: Anchor.bottomCenter);
+  PlayerComponent({
+    required Vector2 startPosition,
+    CharacterSelection? selection,
+    CharacterImageLoader? loader,
+  })  : _startPosition = startPosition,
+        _selection = selection ?? CharacterSelection.defaults(),
+        _loader = loader,
+        super(anchor: Anchor.bottomCenter);
 
   final Vector2 _startPosition;
+  final CharacterSelection _selection;
+  CharacterImageLoader? _loader;
 
-  /// Tracks the last horizontal movement direction for idle frame selection.
-  /// -1 = left, 0 = none (front), 1 = right.
-  int _lastDirection = 0;
-
-  /// Current horizontal movement direction while traveling.
-  int get horizontalDirection => _lastDirection;
-
-  /// Waypoint queue for 2D route-following movement.
+  // ── Movement state (ported from the old component) ──
   List<Vector2> _waypoints = [];
   int _currentWaypointIndex = 0;
-
   bool _arrived = true;
+  int _lastDirection = 0;
 
-  /// Whether the player has arrived at the final waypoint.
   bool get hasArrived => _arrived;
-
   bool get isMoving => _waypoints.isNotEmpty && !_arrived;
+  int get horizontalDirection => _lastDirection;
 
-  /// Set a list of waypoints for the player to follow sequentially.
-  /// Each waypoint is a world-space position the player walks to in order.
   void setWaypoints(List<Vector2> waypoints) {
     _waypoints = waypoints;
     _currentWaypointIndex = 0;
     _arrived = false;
   }
 
-  /// For backwards compat: setting targetX clears waypoints and walks
-  /// straight to (targetX, current Y).
   set targetX(double? value) {
     if (value == null) {
       _waypoints = [];
@@ -75,208 +65,166 @@ class PlayerComponent extends SpriteAnimationGroupComponent<PlayerState>
     setWaypoints([Vector2(value, position.y)]);
   }
 
-  double _idleAspectRatio = 1;
-  double _runningAspectRatio = 1;
-
-  void _applySizeForState(PlayerState? state) {
-    final aspectRatio = switch (state) {
-      PlayerState.idleLeft ||
-      PlayerState.idleFront ||
-      PlayerState.idleRight => _idleAspectRatio,
-      PlayerState.runTransition ||
-      PlayerState.running ||
-      PlayerState.stopping => _runningAspectRatio,
-      null => _idleAspectRatio,
-    };
-
-    size = Vector2(_kPlayerHeight * aspectRatio, _kPlayerHeight);
-  }
-
-  // ── Loading ──────────────────────────────────────────────────────────
+  // ── Animation state ──
+  // sprites[anim][layer] -> LayerSpriteSet
+  final Map<CharacterAnimation, Map<CharacterLayer, LayerSpriteSet>> _sets = {};
+  final Map<CharacterLayer, SpriteComponent> _children = {};
+  CharacterAnimation _anim = CharacterAnimation.idle;
+  FacingResult _facing = const FacingResult(Facing.front, false);
+  double _frameTimer = 0;
+  int _frameIndex = 0;
+  CharacterAnimation? _oneShotReturn; // set while a one-shot plays
 
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
+    _loader ??= bundledLoader(game.images);
+    size = Vector2.all(_kPlayerHeight);
 
-    // ---- Idle spritesheet (1 row x 3 columns) ----
-    // Frames: [0] 3/4 left, [1] front, [2] 3/4 right — each a still frame.
-    final idleImage = await game.images.load('idle.png');
-    final idleFrameW = idleImage.width / 3;
-    final idleFrameH = idleImage.height.toDouble();
-    final idleSheet = SpriteSheet(
-      image: idleImage,
-      srcSize: Vector2(idleFrameW, idleFrameH),
-    );
-    SpriteAnimation singleFrame(int col) => SpriteAnimation.spriteList([
-      idleSheet.getSprite(0, col),
-    ], stepTime: double.infinity);
-    final idleLeftAnim = singleFrame(0);
-    final idleFrontAnim = singleFrame(1);
-    final idleRightAnim = singleFrame(2);
-
-    // ---- Running spritesheet (5 rows x 5 columns = 25 frames) ----
-    final runImage = await game.images.load('running.png');
-    final runFrameW = runImage.width / 5;
-    final runFrameH = runImage.height / 5;
-    final runSheet = SpriteSheet(
-      image: runImage,
-      srcSize: Vector2(runFrameW, runFrameH),
-    );
-
-    // Helper to get a sprite at a linear frame index (0..24).
-    Sprite spriteAt(int index) {
-      final row = index ~/ 5;
-      final col = index % 5;
-      return runSheet.getSprite(row, col);
+    // Load every equipped layer for every animation.
+    for (final anim in CharacterAnimation.values) {
+      final byLayer = <CharacterLayer, LayerSpriteSet>{};
+      for (final entry in _selection.equipped) {
+        try {
+          final img = await _loader!(anim, entry.value!);
+          byLayer[entry.key] = LayerSpriteSet.fromImage(img);
+        } catch (e) {
+          // Missing sheet for this layer/anim: skip it, keep the rest.
+          debugPrint('character: missing ${entry.value} for $anim ($e)');
+        }
+      }
+      _sets[anim] = byLayer;
     }
 
-    // runTransition: frames 10 -> 0 (one-shot, played when starting to run)
-    final runTransitionAnim = SpriteAnimation(
-      List.generate(11, (i) => SpriteAnimationFrame(spriteAt(10 - i), 0.04)),
-    )..loop = false;
+    // Create one child SpriteComponent per equipped layer, in z-order.
+    for (final entry in _selection.equipped) {
+      final child = SpriteComponent(
+        size: Vector2.all(_kPlayerHeight),
+        anchor: Anchor.topLeft,
+      )..priority = entry.key.index;
+      _children[entry.key] = child;
+      await add(child);
+    }
 
-    // running: frames 0-9 (looped)
-    final runningAnim = SpriteAnimation(
-      List.generate(10, (i) => SpriteAnimationFrame(spriteAt(i), 0.06)),
-    );
-
-    // stopping: frames 0 -> 10 (one-shot, reverse of transition)
-    final stoppingAnim = SpriteAnimation(
-      List.generate(11, (i) => SpriteAnimationFrame(spriteAt(i), 0.04)),
-    )..loop = false;
-
-    // ---- Configure the animation group ----
-    animations = {
-      PlayerState.idleLeft: idleLeftAnim,
-      PlayerState.idleFront: idleFrontAnim,
-      PlayerState.idleRight: idleRightAnim,
-      PlayerState.runTransition: runTransitionAnim,
-      PlayerState.running: runningAnim,
-      PlayerState.stopping: stoppingAnim,
-    };
-
-    // ---- Sizing ----
-    _idleAspectRatio = idleFrameW / idleFrameH;
-    _runningAspectRatio = runFrameW / runFrameH;
-    _applySizeForState(PlayerState.idleFront);
-
-    // ---- Start position ----
     position = _startPosition.clone();
-    current = PlayerState.idleFront;
+    _applyFrame(); // seed sprites
   }
 
-  // ── Update ───────────────────────────────────────────────────────────
-
+  // ── Update loop ──
   @override
   void update(double dt) {
     super.update(dt);
-
-    _handleMovement(dt);
-    _handleAnimationTransitions();
+    stepMovement(dt);
+    _advanceAnimation(dt);
   }
 
-  void _handleMovement(double dt) {
+  @visibleForTesting
+  void stepMovement(double dt) {
+    // Pick the active anim from movement (one-shots take priority).
+    if (_oneShotReturn == null) {
+      _setAnim(isMoving ? CharacterAnimation.walk : CharacterAnimation.idle);
+    }
+
     if (_waypoints.isEmpty || _arrived) return;
     if (_currentWaypointIndex >= _waypoints.length) {
       _arrived = true;
       return;
     }
-
     final target = _waypoints[_currentWaypointIndex];
     final delta = target - position;
     final distance = delta.length;
-
     if (distance < _kArrivalThreshold) {
       position.setFrom(target);
       _currentWaypointIndex++;
-      if (_currentWaypointIndex >= _waypoints.length) {
-        _arrived = true;
-      }
+      if (_currentWaypointIndex >= _waypoints.length) _arrived = true;
       return;
     }
+    final dir = delta.normalized();
+    final step = _kMoveSpeed * dt;
+    // Clamp to the remaining distance so a large dt can't overshoot and
+    // oscillate around the target forever.
+    if (step >= distance) {
+      position.setFrom(target);
+      _currentWaypointIndex++;
+      if (_currentWaypointIndex >= _waypoints.length) _arrived = true;
+    } else {
+      position.add(dir * step);
+    }
 
-    final direction = delta.normalized();
-    position.add(direction * _kMoveSpeed * dt);
-
-    // Flip based on horizontal direction.
     final hDir = delta.x.sign.toInt();
     if (hDir != 0) _lastDirection = hDir;
+    _setFacing(facingFromVelocity(delta, _facing));
+  }
 
-    // Flip sprite: sprites face left by default.
-    // Moving right -> flip (scale.x = -1), moving left -> normal (scale.x = 1).
-    if (hDir > 0) {
-      if (scale.x != -1) scale.x = -1;
-    } else if (hDir < 0) {
-      if (scale.x != 1) scale.x = 1;
+  /// Play a non-looping anim once, then return to idle.
+  void playOneShot(CharacterAnimation anim) {
+    final spec = _kAnimSpec[anim]!;
+    if (spec.loop) return;
+    _oneShotReturn = CharacterAnimation.idle;
+    _setAnim(anim, force: true);
+  }
+
+  // ── Internal animation helpers ──
+  void _setAnim(CharacterAnimation anim, {bool force = false}) {
+    if (!force && anim == _anim) return;
+    _anim = anim;
+    _frameTimer = 0;
+    _frameIndex = 0;
+    _applyFrame();
+  }
+
+  void _setFacing(FacingResult facing) {
+    if (facing == _facing) return;
+    _facing = facing;
+    scale.x = facing.mirrored ? -1 : 1;
+    _applyFrame();
+  }
+
+  void _advanceAnimation(double dt) {
+    final spec = _kAnimSpec[_anim]!;
+    final frames = _frameCountForCurrent();
+    if (frames <= 1) return;
+    _frameTimer += dt;
+    while (_frameTimer >= spec.step) {
+      _frameTimer -= spec.step;
+      _frameIndex++;
+      if (_frameIndex >= frames) {
+        if (spec.loop) {
+          _frameIndex = 0;
+        } else {
+          _frameIndex = frames - 1;
+          // One-shot finished -> drop back to idle.
+          if (_oneShotReturn != null) {
+            final back = _oneShotReturn!;
+            _oneShotReturn = null;
+            _setAnim(back, force: true);
+            return;
+          }
+        }
+      }
+      _applyFrame();
     }
   }
 
-  /// Access the ticker for a given animation state.
-  SpriteAnimationTicker? _tickerFor(PlayerState state) {
-    return animationTickers?[state];
+  int _frameCountForCurrent() {
+    final byLayer = _sets[_anim];
+    if (byLayer == null || byLayer.isEmpty) return 0;
+    // All layers of one anim share the same column count; read any.
+    return byLayer.values.first.framesFor(_facing.facing).length;
   }
 
-  /// Returns the correct idle state based on last movement direction.
-  PlayerState get _idleForDirection => switch (_lastDirection) {
-    -1 => PlayerState.idleLeft,
-    1 => PlayerState.idleRight,
-    _ => PlayerState.idleFront,
-  };
-
-  void _transitionToIdle() {
-    // Reset flip — idle frames already have directional variants.
-    scale.x = 1;
-    current = _idleForDirection;
-    _applySizeForState(current);
-  }
-
-  void _handleAnimationTransitions() {
-    final isMoving = this.isMoving;
-
-    switch (current) {
-      case PlayerState.idleLeft:
-      case PlayerState.idleFront:
-      case PlayerState.idleRight:
-        if (isMoving) {
-          current = PlayerState.runTransition;
-          _applySizeForState(current);
-          _tickerFor(PlayerState.runTransition)?.reset();
-        }
-        break;
-
-      case PlayerState.runTransition:
-        if (!isMoving) {
-          // Interrupted before finishing transition -- go straight to stopping.
-          current = PlayerState.stopping;
-          _applySizeForState(current);
-          _tickerFor(PlayerState.stopping)?.reset();
-        } else if (_tickerFor(PlayerState.runTransition)?.done() ?? false) {
-          current = PlayerState.running;
-          _applySizeForState(current);
-        }
-        break;
-
-      case PlayerState.running:
-        if (!isMoving) {
-          current = PlayerState.stopping;
-          _applySizeForState(current);
-          _tickerFor(PlayerState.stopping)?.reset();
-        }
-        break;
-
-      case PlayerState.stopping:
-        if (isMoving) {
-          // Player tapped again while stopping -- restart run.
-          current = PlayerState.runTransition;
-          _applySizeForState(current);
-          _tickerFor(PlayerState.runTransition)?.reset();
-        } else if (_tickerFor(PlayerState.stopping)?.done() ?? false) {
-          _transitionToIdle();
-        }
-        break;
-
-      case null:
-        break;
+  void _applyFrame() {
+    final byLayer = _sets[_anim];
+    if (byLayer == null) return;
+    for (final entry in _children.entries) {
+      final set = byLayer[entry.key];
+      if (set == null) {
+        entry.value.sprite = null;
+        continue;
+      }
+      final frames = set.framesFor(_facing.facing);
+      if (frames.isEmpty) continue;
+      entry.value.sprite = frames[_frameIndex.clamp(0, frames.length - 1)];
     }
   }
 }
