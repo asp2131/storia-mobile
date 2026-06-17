@@ -31,7 +31,9 @@ class LayerSpriteSet {
   List<Sprite> framesFor(Facing facing) {
     return _cache.putIfAbsent(facing, () {
       final rows = _image.height ~/ kFrameCell.toInt();
-      final row = facing.index.clamp(0, rows - 1);
+      // Guard against degenerate sheets: in release mode, asserts don't run.
+      // If rows <= 0, clamp would throw (Invalid argument(s)), so default to row 0.
+      final row = rows <= 0 ? 0 : facing.index.clamp(0, rows - 1);
       return List.generate(
         columns,
         (col) => Sprite(
