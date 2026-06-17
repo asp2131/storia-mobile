@@ -317,6 +317,47 @@ void main() {
         expect(narration.seekCalls, [Duration.zero]);
       });
     });
+
+    test('loadPage does not stop soundscape when URL is the same', () async {
+      await engine.loadPage(
+        const PageData(
+          id: 'p1',
+          pageNumber: 1,
+          textContent: 'hello',
+          soundscapeUrl: 'https://cdn/ambient.mp3',
+        ),
+      );
+      final stopsAfterFirst = soundscape.stopCount;
+
+      await engine.loadPage(
+        const PageData(
+          id: 'p2',
+          pageNumber: 2,
+          textContent: 'world',
+          narrationUrl: 'https://cdn/narr.mp3',
+          soundscapeUrl: 'https://cdn/ambient.mp3',
+        ),
+      );
+
+      expect(soundscape.stopCount, stopsAfterFirst);
+    });
+
+    test('duckForPractice does not pause narration when not playing',
+        () async {
+      await engine.duckForPractice();
+
+      expect(narration.pauseCount, 0);
+      expect(soundscape.volumeCalls.last, 0.3);
+    });
+
+    test(
+        'restoreFromPractice does not resume narration if not playing before',
+        () async {
+      await engine.duckForPractice();
+      await engine.restoreFromPractice();
+
+      expect(narration.playCount, 0);
+    });
   });
 }
 
