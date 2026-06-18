@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
@@ -7,7 +8,6 @@ import 'character/character_image_loader.dart';
 import 'character/character_selection.dart';
 import 'character/character_types.dart';
 import 'character/layer_sprite_set.dart';
-import 'library_game.dart';
 
 const double _kMoveSpeed = 150.0;
 const double _kArrivalThreshold = 4.0;
@@ -24,16 +24,27 @@ const Map<CharacterAnimation, ({double step, bool loop})> _kAnimSpec = {
 
 /// Layered, customizable player. A container that keeps one [SpriteComponent]
 /// per equipped layer in lockstep via a single parent-owned frame clock.
-class PlayerComponent extends PositionComponent
-    with HasGameReference<LibraryGame> {
+class PlayerComponent extends PositionComponent with HasGameReference {
   PlayerComponent({
     required Vector2 startPosition,
     CharacterSelection? selection,
     CharacterImageLoader? loader,
+    this.loadAllAnimations = true,
   })  : _startPosition = startPosition,
-        _selection = selection ?? CharacterSelection.defaults(),
+        _selection = selection ?? activeSelection ?? CharacterSelection.defaults(),
         _loader = loader,
         super(anchor: Anchor.bottomCenter);
+
+  /// When false, only the idle animation is loaded (e.g. the editor preview,
+  /// which never moves). Saves loading the other 5 animation sheets.
+  final bool loadAllAnimations;
+
+  /// The latest persisted look, set by the selection store. Used as the
+  /// fallback when no explicit [selection] is passed, so the library map
+  /// picks up the player's saved character on (re)build.
+  /// ponytail: a static, single-avatar shortcut — avoids threading selection
+  /// through the engine port. Revisit if multiple distinct characters appear.
+  static CharacterSelection? activeSelection;
 
   final Vector2 _startPosition;
   final CharacterSelection _selection;
@@ -78,23 +89,12 @@ class PlayerComponent extends PositionComponent
   @override
   FutureOr<void> onLoad() async {
     await super.onLoad();
-    _loader ??= bundledLoader(game.images);
+    _loader ??= supabaseLoader();
     size = Vector2.all(_kPlayerHeight);
 
-    // Load every equipped layer for every animation.
-    for (final anim in CharacterAnimation.values) {
-      final byLayer = <CharacterLayer, LayerSpriteSet>{};
-      for (final entry in _selection.equipped) {
-        try {
-          final img = await _loader!(anim, entry.value!);
-          byLayer[entry.key] = LayerSpriteSet.fromImage(img);
-        } catch (e) {
-          // Missing sheet for this layer/anim: skip it, keep the rest.
-          debugPrint('character: missing ${entry.value} for $anim ($e)');
-        }
-      }
-      _sets[anim] = byLayer;
-    }
+    // Load idle first (the initial visible anim) so the character appears
+    // without waiting on the other sheets.
+    await _loadAnim(CharacterAnimation.idle);
 
     // Create one child SpriteComponent per equipped layer, in z-order.
     for (final entry in _selection.equipped) {
@@ -108,6 +108,42 @@ class PlayerComponent extends PositionComponent
 
     position = _startPosition.clone();
     _applyFrame(); // seed sprites
+
+    // Stream the remaining animations in the background — not blocking display.
+    if (loadAllAnimations) unawaited(_loadRemainingAnims());
+  }
+
+  /// Fetch every equipped layer for one animation concurrently, then slice.
+  Future<void> _loadAnim(CharacterAnimation anim) async {
+    if (_sets.containsKey(anim)) return;
+    final entries = _selection.equipped.toList();
+    final imgs = await Future.wait(
+      entries.map(
+        (e) => _loader!(anim, e.value!).then<ui.Image?>(
+          (img) => img,
+          onError: (Object err) {
+            // Missing sheet for this layer/anim: skip it, keep the rest.
+            debugPrint('character: missing ${e.value} for $anim ($err)');
+            return null;
+          },
+        ),
+      ),
+    );
+    final byLayer = <CharacterLayer, LayerSpriteSet>{};
+    for (var i = 0; i < entries.length; i++) {
+      final img = imgs[i];
+      if (img != null) byLayer[entries[i].key] = LayerSpriteSet.fromImage(img);
+    }
+    _sets[anim] = byLayer;
+    // If the active anim just finished loading, paint it now.
+    if (anim == _anim) _applyFrame();
+  }
+
+  Future<void> _loadRemainingAnims() async {
+    for (final anim in CharacterAnimation.values) {
+      if (anim == CharacterAnimation.idle) continue;
+      await _loadAnim(anim);
+    }
   }
 
   // ── Update loop ──
@@ -206,15 +242,24 @@ class PlayerComponent extends PositionComponent
     }
   }
 
-  int _frameCountForCurrent() {
+  /// The sprite set to actually render: the current anim if it loaded with
+  /// frames, otherwise fall back to idle so the character never blanks while
+  /// an anim is still streaming in or its sheets are missing remotely.
+  Map<CharacterLayer, LayerSpriteSet>? _renderSet() {
     final byLayer = _sets[_anim];
+    if (byLayer != null && byLayer.isNotEmpty) return byLayer;
+    return _sets[CharacterAnimation.idle];
+  }
+
+  int _frameCountForCurrent() {
+    final byLayer = _renderSet();
     if (byLayer == null || byLayer.isEmpty) return 0;
     // All layers of one anim share the same column count; read any.
     return byLayer.values.first.framesFor(_facing.facing).length;
   }
 
   void _applyFrame() {
-    final byLayer = _sets[_anim];
+    final byLayer = _renderSet();
     if (byLayer == null) return;
     for (final entry in _children.entries) {
       final set = byLayer[entry.key];

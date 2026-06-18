@@ -7,10 +7,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/resilient_cache_manager.dart';
+import '../../core/theme/storia_colors.dart';
 import '../../data/models.dart';
 import 'overlay/overlay_layout_engine.dart';
 import 'overlay/overlay_text_layer.dart';
 import 'overlay/text_overlay_utils.dart';
+import 'page_loading_shader.dart';
 import 'pronunciation_highlight.dart';
 
 // Parallax multipliers for depth-layer illusion (Feature 1).
@@ -117,6 +119,13 @@ class _PageRendererState extends State<PageRenderer> {
   double _localOffsetFor(double scrollOffset) =>
       scrollOffset - widget.pageIndex;
 
+  /// Placeholder fill behind a still-loading / missing illustration. Tracks the
+  /// (system) brightness so a dark-mode reader doesn't flash a light panel.
+  Color _placeholderColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+      ? StoriaColors.readerBackground
+      : const Color(0xFFDDDDD4);
+
   @override
   Widget build(BuildContext context) => _buildStandardPage();
 
@@ -147,7 +156,7 @@ class _PageRendererState extends State<PageRenderer> {
         final Widget imageLayer =
             page.imageUrl != null && page.imageUrl!.isNotEmpty
             ? _buildPageImage()
-            : const ColoredBox(color: Color(0xFFDDDDD4));
+            : ColoredBox(color: _placeholderColor(context));
 
         // Overlay text is sized/positioned against the *contained* image rect,
         // which needs the resolved source-image dimensions. Until those arrive,
@@ -325,6 +334,38 @@ class _PageRendererState extends State<PageRenderer> {
       fit: BoxFit.contain,
       width: double.infinity,
       height: double.infinity,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+        if (wasSynchronouslyLoaded) return child;
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            // Neutral fill + spinner until the first frame paints. Matches the
+            // no-image placeholder color so there's no flash on swap.
+            if (frame == null)
+              Stack(
+                fit: StackFit.expand,
+                children: [
+                  PageLoadingShader(
+                    dark: Theme.of(context).brightness == Brightness.dark,
+                  ),
+                  const Center(
+                    child: SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: CircularProgressIndicator(strokeWidth: 3),
+                    ),
+                  ),
+                ],
+              ),
+            AnimatedOpacity(
+              opacity: frame == null ? 0 : 1,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+              child: child,
+            ),
+          ],
+        );
+      },
     );
 
     final heroTag = widget.heroTag;

@@ -16,9 +16,24 @@ class CharacterSelection {
         CharacterLayer.head: 'Layer11_ShortHair_Color1',
       });
 
+  /// Restore from a `{layerName: variantKey}` map (the [toJson] shape).
+  factory CharacterSelection.fromJson(Map<String, dynamic> json) {
+    final layers = <CharacterLayer, String?>{};
+    for (final layer in CharacterLayer.values) {
+      final value = json[layer.name];
+      if (value is String) layers[layer] = value;
+    }
+    return CharacterSelection.from(layers);
+  }
+
   final Map<CharacterLayer, String?> _layers;
 
   String? operator [](CharacterLayer layer) => _layers[layer];
+
+  /// Serialize equipped (non-null) slots as `{layerName: variantKey}`.
+  Map<String, String> toJson() => {
+        for (final e in equipped) e.key.name: e.value!,
+      };
 
   CharacterSelection copyWith(CharacterLayer layer, String? value) {
     final next = {..._layers};

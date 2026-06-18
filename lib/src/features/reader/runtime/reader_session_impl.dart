@@ -9,16 +9,25 @@ import 'ports/speech_practice_port.dart';
 import 'reader_analytics_tracker.dart';
 import 'reader_session.dart';
 
+/// Resolves when the page illustration at [url] has painted (or failed). Used
+/// to hold narration/soundscape until the picture is on screen. Null/empty url
+/// resolves immediately. Injected so the real impl (Flutter image stream) stays
+/// out of this pure-logic class.
+typedef ImageReadyProbe = Future<void> Function(String? url);
+
 class ReaderSessionImpl implements ReaderSession {
   ReaderSessionImpl({
     required PageAudio pageAudio,
     required SpeechPracticePort speechPort,
     required SchedulerPort scheduler,
     ReaderAnalyticsTracker? analyticsTracker,
+    ImageReadyProbe? imageReadyProbe,
   }) : _pageAudio = pageAudio,
        _speechPort = speechPort,
        _scheduler = scheduler,
-       _analyticsTracker = analyticsTracker {
+       _analyticsTracker = analyticsTracker,
+       // ponytail: no-op default keeps gating off for tests/headless callers.
+       _imageReadyProbe = imageReadyProbe ?? ((_) async {}) {
     _audioSnapshotSub = _pageAudio.states.listen((snapshot) {
       _emit(
         _state.copyWith(
@@ -34,6 +43,7 @@ class ReaderSessionImpl implements ReaderSession {
   final SpeechPracticePort _speechPort;
   final SchedulerPort _scheduler;
   final ReaderAnalyticsTracker? _analyticsTracker;
+  final ImageReadyProbe _imageReadyProbe;
 
   final StreamController<ReaderViewState> _controller =
       StreamController<ReaderViewState>.broadcast();
@@ -179,6 +189,10 @@ class ReaderSessionImpl implements ReaderSession {
     _wordToIndices = buildWordToIndices(pages[initialIndex]);
 
     final requestId = ++_pageRequestId;
+    await _imageReadyProbe(pages[initialIndex].imageUrl);
+    if (requestId != _pageRequestId) {
+      return;
+    }
     await _pageAudio.loadPage(pages[initialIndex]);
     if (requestId != _pageRequestId) {
       return;
@@ -216,6 +230,10 @@ class ReaderSessionImpl implements ReaderSession {
     }
 
     final requestId = ++_pageRequestId;
+    await _imageReadyProbe(nextPage.imageUrl);
+    if (requestId != _pageRequestId) {
+      return;
+    }
     await _pageAudio.loadPage(nextPage);
     if (requestId != _pageRequestId) {
       return;

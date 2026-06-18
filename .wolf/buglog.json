@@ -2,6 +2,25 @@
   "version": 1,
   "bugs": [
     {
+      "id": "bug-character-interact-disappear",
+      "timestamp": "2026-06-17T00:00:00.000Z",
+      "error_message": "Character disappears when tapping a book (interact one-shot animation)",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "playOneShot(interact) sets _anim=interact. If _sets[interact] is a non-empty-keyed but layer-missing OR empty map (interact sheets failed to load / not yet streamed in from Supabase), _applyFrame hits 'set == null' per layer and sets every child sprite to null -> character blanks. _frameCountForCurrent returns 0 so the one-shot never reverts to idle, leaving it gone permanently.",
+      "fix": "Added _renderSet() fallback: when the active anim has no loaded frames, render the idle set instead so the character never blanks. Used in _applyFrame and _frameCountForCurrent. Data caveat: interact may genuinely be missing remotely under CustomaizableCharacter/Interact/*.png (kRemoteAnimDir[interact]='Interact') — watch debugPrint 'character: missing ... for CharacterAnimation.interact'.",
+      "tags": [
+        "flame",
+        "character",
+        "animation",
+        "null-sprite",
+        "supabase-assets",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T00:00:00.000Z"
+    },
+    {
       "id": "bug-001",
       "timestamp": "2026-03-25T19:23:39.102Z",
       "error_message": "Wrong reference: 0xFF4A5BE7 should be 0xFF2C3358",
@@ -2931,6 +2950,356 @@
         "filter",
         "null-safety"
       ]
+    },
+    {
+      "id": "bug-180",
+      "timestamp": "2026-06-17T21:12:43.244Z",
+      "error_message": "Incorrect value in code",
+      "file": "test/features/reader/runtime/reader_session_image_gate_test.dart",
+      "root_cause": "Had 'package:storia_kids/src/features/reader/runtime/r",
+      "fix": "Changed to 'package:storia_kids/src/features/reader/runtime/r",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T21:12:43.244Z"
+    },
+    {
+      "id": "bug-181",
+      "timestamp": "2026-06-17T21:12:54.393Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/reader/runtime/reader_session_impl.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T21:12:54.393Z"
+    },
+    {
+      "id": "bug-182",
+      "timestamp": "2026-06-17T21:13:34.881Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/reader/runtime/providers/reader_session_provider.dart",
+      "root_cause": "No early return/throw for edge case: url == null || url.isEmpty",
+      "fix": "Added guard clause: if (url == null || url.isEmpty)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T21:13:34.881Z"
+    },
+    {
+      "id": "bug-183",
+      "timestamp": "2026-06-17T21:13:48.006Z",
+      "error_message": "Missing guard clause",
+      "file": "lib/src/features/reader/page_renderer.dart",
+      "root_cause": "No early return/throw for edge case: wasSynchronouslyLoaded",
+      "fix": "Added guard clause: if (wasSynchronouslyLoaded)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T21:13:48.006Z"
+    },
+    {
+      "id": "bug-184",
+      "timestamp": "2026-06-17T21:19:20.850Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/reader/page_renderer.dart",
+      "root_cause": "Had '../../data/models.dart'",
+      "fix": "Changed to '../../core/theme/storia_colors.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-06-17T21:23:49.680Z"
+    },
+    {
+      "id": "bug-185",
+      "timestamp": "2026-06-17T21:23:44.804Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/reader/page_renderer.dart",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 11→16 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T21:23:44.804Z"
+    },
+    {
+      "id": "bug-186",
+      "timestamp": "2026-06-17T21:24:21.496Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "lib/src/features/reader/page_loading_shader.dart",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T21:24:21.496Z"
+    },
+    {
+      "id": "bug-187",
+      "timestamp": "2026-06-17T21:49:27.530Z",
+      "error_message": "Incorrect value in code",
+      "file": "docs/superpowers/specs/2026-06-17-customizable-character-design.md",
+      "root_cause": "Had `characters/<Animation>/<LayerFile>.png`",
+      "fix": "Changed to `character assets`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T21:49:27.530Z"
+    },
+    {
+      "id": "bug-188",
+      "timestamp": "2026-06-17T22:21:58.031Z",
+      "error_message": "Wrong operator: == should be <=",
+      "file": "test/features/library/game/character/layer_sprite_set_test.dart",
+      "root_cause": "Used \"==\" instead of \"<=\"",
+      "fix": "Changed operator == → <=",
+      "tags": [
+        "auto-detected",
+        "operator-fix",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T22:21:58.031Z"
+    },
+    {
+      "id": "bug-189",
+      "timestamp": "2026-06-17T22:38:43.384Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "Had 'package:flame/sprite.dart'",
+      "fix": "Changed to 'package:flutter/foundation.dart'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T22:38:43.384Z"
+    },
+    {
+      "id": "bug-190",
+      "timestamp": "2026-06-17T22:51:48.029Z",
+      "error_message": "Missing import: character/character_types.dart",
+      "file": "lib/src/features/library/game/library_game.dart",
+      "root_cause": "Module(s) not imported: character/character_types.dart",
+      "fix": "Added import(s) for character/character_types.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T22:51:48.029Z"
+    },
+    {
+      "id": "bug-191",
+      "timestamp": "2026-06-17T23:08:46.665Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/routing/journey/journey_policy.dart",
+      "root_cause": "Had '/settings'",
+      "fix": "Changed to '/character'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T23:08:46.665Z"
+    },
+    {
+      "id": "bug-192",
+      "timestamp": "2026-06-17T23:09:21.384Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/routing/app_router.dart",
+      "root_cause": "Had '../features/child/data/child_profile_providers.da",
+      "fix": "Changed to '../features/character/presentation/character_edit",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T23:09:21.384Z"
+    },
+    {
+      "id": "bug-193",
+      "timestamp": "2026-06-17T23:10:12.886Z",
+      "error_message": "Wrong reference: JourneyRoutes should be character",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "Used \"JourneyRoutes\" instead of \"character\"",
+      "fix": "Changed JourneyRoutes → character",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T23:10:12.886Z"
+    },
+    {
+      "id": "bug-194",
+      "timestamp": "2026-06-17T23:37:04.363Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 10→16 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T23:37:04.363Z"
+    },
+    {
+      "id": "bug-195",
+      "timestamp": "2026-06-17T23:37:22.393Z",
+      "error_message": "Wrong reference: default should be pack",
+      "file": "lib/src/features/library/game/character/character_image_loader.dart",
+      "root_cause": "Used \"default\" instead of \"pack\"",
+      "fix": "Changed default → pack",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T23:37:22.393Z"
+    },
+    {
+      "id": "bug-196",
+      "timestamp": "2026-06-17T23:37:27.552Z",
+      "error_message": "Incorrect value in code",
+      "file": "lib/src/features/library/game/character/character_image_loader.dart",
+      "root_cause": "Had 'characters/default/${kAnimDir[anim]}/$layerFile.p",
+      "fix": "Changed to 'characters/pack/${kAnimDir[anim]}/$layerFile.png'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T23:37:27.552Z"
+    },
+    {
+      "id": "bug-197",
+      "timestamp": "2026-06-17T23:39:50.999Z",
+      "error_message": "Missing import: ../../library/game/character/character_selection.dart",
+      "file": "lib/src/features/character/presentation/character_editor_screen.dart",
+      "root_cause": "Module(s) not imported: ../../library/game/character/character_selection.dart",
+      "fix": "Added import(s) for ../../library/game/character/character_selection.dart",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T23:39:50.999Z"
+    },
+    {
+      "id": "bug-198",
+      "timestamp": "2026-06-17T23:40:01.862Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/character/presentation/character_editor_screen.dart",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 21→26 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-17T23:40:01.862Z"
+    },
+    {
+      "id": "bug-199",
+      "timestamp": "2026-06-18T00:00:07.874332+00:00",
+      "error_message": "Edited character selection did not appear on the library map player",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "LibraryScreen never watched characterSelectionNotifierProvider, so the persisted selection store could remain uninitialized and the Flame session signature did not change when the character changed.",
+      "fix": "Watch characterSelectionNotifierProvider in LibraryScreen and include the selection hash in the Flame session reload signature so PlayerComponent rebuilds with the active selection.",
+      "tags": [
+        "character",
+        "library",
+        "riverpod",
+        "flame"
+      ]
+    },
+    {
+      "id": "bug-200",
+      "timestamp": "2026-06-18T01:50:02.803Z",
+      "error_message": "Missing import: dart:ui",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "Module(s) not imported: dart:ui",
+      "fix": "Added import(s) for dart:ui",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-18T01:50:02.803Z"
+    },
+    {
+      "id": "bug-201",
+      "timestamp": "2026-06-18T01:50:29.637Z",
+      "error_message": "Null/undefined access in ",
+      "file": "lib/src/features/library/game/player_component.dart",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: /// The sprite set to actually render: the current anim if i; /// frames, otherwise fall back to idle so the character nev",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-06-18T01:52:52.098Z"
     }
   ]
 }
