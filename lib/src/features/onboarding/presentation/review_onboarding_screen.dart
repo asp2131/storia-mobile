@@ -42,7 +42,7 @@ class _ReviewOnboardingScreenState
     return AuthScreenShell(
       title: 'A Quick Family Setup',
       subtitle:
-          'Now add the child details and what the parent hopes Storia will help with.',
+          'Now add the child details and what the parent hopes Loratone will help with.',
       onBack: _startOver,
       child: Builder(
         builder: (context) {
@@ -97,7 +97,7 @@ class _ReviewOnboardingScreenState
               ),
               const SizedBox(height: 20),
               Text(
-                'What are they hoping to get from Storia?',
+                'What are they hoping to get from Loratone?',
                 style: textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                   fontStyle: FontStyle.italic,

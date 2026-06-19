@@ -74,7 +74,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.gavel_outlined),
             title: const Text('Terms of Service'),
-            subtitle: const Text('View terms used in Storia'),
+            subtitle: const Text('View terms used in Loratone'),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => const TermsOfServiceScreen(),
@@ -192,7 +192,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             child: ListView(
               children: [
                 Text(
-                  'By using Storia, you agree to use the app for personal, non-commercial reading and learning.',
+                  'By using Loratone, you agree to use the app for personal, non-commercial reading and learning.',
                   style: bodyStyle,
                 ),
                 const SizedBox(height: 12),
@@ -202,12 +202,12 @@ class TermsOfServiceScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Storia content and branding are protected by applicable intellectual property laws.',
+                  'Loratone content and branding are protected by applicable intellectual property laws.',
                   style: bodyStyle,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'For legal questions, contact support through official Storia channels.',
+                  'For legal questions, contact support through official Loratone channels.',
                   style: bodyStyle,
                 ),
               ],

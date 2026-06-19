@@ -1,6 +1,6 @@
-# Storia Mobile
+# Loratone Mobile
 
-Flutter mobile app for Storia Kids.
+Flutter mobile app for Loratone.
 
 ## Setup
 
@@ -102,7 +102,7 @@ Successful output lands in:
 
 ## Agent Harness (Pi Coding Agent)
 
-Storia-mobile includes a three-tier agent harness in `.pi/` built for use with Pi Coding Agent. It follows the Orchestrator → Team Leads → Workers architecture with a self-improvement loop.
+This repo includes a three-tier agent harness in `.pi/` built for use with Pi Coding Agent. It follows the Orchestrator → Team Leads → Workers architecture with a self-improvement loop.
 
 ### Architecture
 

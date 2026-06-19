@@ -111,7 +111,7 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
                                     ),
                                     const SizedBox(height: StoriaSpacing.sm),
                                     Text(
-                                      'Create a reading profile so Storia can save progress and analytics for the right child.',
+                                      'Create a reading profile so Loratone can save progress and analytics for the right child.',
                                       style: textTheme.bodyLarge?.copyWith(
                                         color: StoriaColors.inkMuted,
                                         height: 1.45,
@@ -265,7 +265,7 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
                                         ),
                                       ),
                                       subtitle: Text(
-                                        'Storia opens the library with this reader selected first.',
+                                        'Loratone opens the library with this reader selected first.',
                                         style: textTheme.bodyMedium?.copyWith(
                                           color: StoriaColors.inkMuted,
                                           height: 1.35,

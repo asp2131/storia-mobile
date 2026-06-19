@@ -248,7 +248,7 @@ class _IntroScreenState extends State<IntroScreen>
                           Column(
                             children: [
                               Text(
-                                'Storia Kids',
+                                'Loratone',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.baloo2(
                                   color: primary,

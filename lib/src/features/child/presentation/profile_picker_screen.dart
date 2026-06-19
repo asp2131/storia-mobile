@@ -115,7 +115,7 @@ class _ProfilePickerContent extends StatelessWidget {
                     ),
                     const SizedBox(height: StoriaSpacing.sm),
                     Text(
-                      'Pick a child profile so Storia can save reading progress and analytics to the right reader.',
+                      'Pick a child profile so Loratone can save reading progress and analytics to the right reader.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: StoriaColors.inkMuted,

@@ -104,7 +104,6 @@ abstract final class JourneyRoutes {
   static const profilePicker = '/profiles/select';
   static const addProfile = '/profiles/new';
   static const library = '/library';
-  static const character = '/character';
   static const settings = '/settings';
   static const aacMusicDemo = '/aac-music-demo';
 

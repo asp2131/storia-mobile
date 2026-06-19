@@ -21,7 +21,6 @@ import '../../core/widgets/sketch_card.dart';
 import '../../core/widgets/sketch_icon_button.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
-import '../character/data/character_selection_store.dart';
 import 'adapters/flame_library_map_engine_adapter.dart';
 import 'game/book_preview_overlay.dart';
 import 'ports/library_map_event.dart';
@@ -199,13 +198,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
 
   Widget _buildGameView(BuildContext context, List<Book> books) {
     final screenSize = MediaQuery.sizeOf(context);
-    final characterSelection =
-        ref.watch(characterSelectionNotifierProvider).selection;
     _ensureSessionLoaded(
       books,
       screenWidth: screenSize.width,
       screenHeight: screenSize.height,
-      characterSelectionHash: characterSelection.hashCode,
     );
 
     final game = _engineAdapter.game;
@@ -246,7 +242,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
             },
             isNightSky: skyPalette.isNight,
             onSkyToggle: _toggleSkyMode,
-            onCustomizeTap: () => context.push('/character'),
             onSettingsTap: () async {
               final passed = await ParentalGate.verify(context);
               if (!context.mounted || !passed) return;
@@ -300,12 +295,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
     List<Book> books, {
     required double screenWidth,
     required double screenHeight,
-    required int characterSelectionHash,
   }) {
     final signature = Object.hash(
       screenWidth,
       screenHeight,
-      characterSelectionHash,
       Object.hashAll(books.map((book) => book.id)),
     ).toString();
     if (_loadedSignature == signature && _engineAdapter.game != null) return;
@@ -679,7 +672,6 @@ class _FloatingControls extends StatelessWidget {
     required this.onFilterChanged,
     required this.isNightSky,
     required this.onSkyToggle,
-    required this.onCustomizeTap,
     required this.onSettingsTap,
   });
 
@@ -689,7 +681,6 @@ class _FloatingControls extends StatelessWidget {
   final ValueChanged<_ShelfFilter> onFilterChanged;
   final bool isNightSky;
   final VoidCallback onSkyToggle;
-  final VoidCallback onCustomizeTap;
   final VoidCallback onSettingsTap;
 
   @override
@@ -729,13 +720,6 @@ class _FloatingControls extends StatelessWidget {
                 tooltip: isNightSky
                     ? 'Switch sky to day'
                     : 'Switch sky to night',
-              ),
-              const SizedBox(width: StoriaSpacing.sm),
-              SketchIconButton(
-                key: const ValueKey('library-customize-character'),
-                icon: Icons.face_retouching_natural_outlined,
-                onPressed: onCustomizeTap,
-                tooltip: 'Customize character',
               ),
               const SizedBox(width: StoriaSpacing.sm),
               SketchIconButton(

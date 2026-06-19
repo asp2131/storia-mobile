@@ -66,7 +66,7 @@ class AuthScreenShell extends StatelessWidget {
                               const SizedBox(width: 46),
                             const Spacer(),
                             Text(
-                              'Storia Kids',
+                              'Loratone',
                               style: textTheme.titleMedium?.copyWith(
                                 fontStyle: FontStyle.italic,
                               ),

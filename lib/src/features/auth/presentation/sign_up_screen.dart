@@ -41,7 +41,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     return AuthScreenShell(
       title: 'Join the Library',
       subtitle:
-          'Create a Storia parent account with a magic link. No password to remember, no reset flow to babysit.',
+          'Create a Loratone parent account with a magic link. No password to remember, no reset flow to babysit.',
       onBack: () => backOutOfJourneyStep(context),
       footer: Center(
         child: Wrap(

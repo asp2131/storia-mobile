@@ -58,7 +58,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     return AuthScreenShell(
       title: 'Welcome Back',
       subtitle:
-          'Skip the password. Enter your email and we will send a magic link to open Storia securely.',
+          'Skip the password. Enter your email and we will send a magic link to open Loratone securely.',
       onBack: () => backOutOfJourneyStep(context),
       footer: Center(
         child: Wrap(
@@ -94,7 +94,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'We will email a secure sign-in link. Open it on this device and Storia will bring you straight into the library.',
+            'We will email a secure sign-in link. Open it on this device and Loratone will bring you straight into the library.',
             style: textTheme.bodyMedium?.copyWith(
               color: StoriaColors.ink.withValues(alpha: 0.84),
             ),
