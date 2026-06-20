@@ -12,6 +12,16 @@ Defines which models power each agent tier and how to handle failures.
 | 3 | Workers (validators) | haiku | Quick checks, cost-efficient |
 | Meta | Self-improver | opus | Needs reasoning to analyze patterns |
 
+## Pi / OpenAI Codex Subscription Model List
+
+Patched into Pi's active model list on 2026-06-19 because child-agent workflows
+use the Codex subscription provider directly.
+
+| Use | Model | Notes |
+|-----|-------|-------|
+| Default child agent | `openai-codex/gpt-5.5` | Active default in `extensions/piModels.ts` |
+| Older Codex fallback | `openai-codex/gpt-5.3-codex` | Keep for regression fallback |
+
 ## OpenCode Go Model List
 
 Refreshed with `opencode models opencode-go --refresh --verbose` on 2026-06-12.

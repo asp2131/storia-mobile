@@ -21,6 +21,7 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { applyExtensionDefaults } from "./themeMap.ts";
+import { modelForChild } from "./piModels.ts";
 
 interface SubState {
 	id: number;
@@ -134,9 +135,7 @@ export default function (pi: ExtensionAPI) {
 		prompt: string,
 		ctx: any,
 	): Promise<void> {
-		const model = ctx.model
-			? `${ctx.model.provider}/${ctx.model.id}`
-			: "openrouter/google/gemini-3-flash-preview";
+		const model = modelForChild(ctx);
 
 		return new Promise<void>((resolve) => {
 			const proc = spawn("pi", [
@@ -151,6 +150,7 @@ export default function (pi: ExtensionAPI) {
 			], {
 				stdio: ["ignore", "pipe", "pipe"],
 				env: { ...process.env },
+				cwd: ctx.cwd,
 			});
 
 			state.proc = proc;

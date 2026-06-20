@@ -28,6 +28,7 @@ import { spawn } from "child_process";
 import { readFileSync, existsSync, readdirSync, mkdirSync, unlinkSync } from "fs";
 import { join, resolve } from "path";
 import { applyExtensionDefaults } from "./themeMap.ts";
+import { modelForChild } from "./piModels.ts";
 
 // ── Types ────────────────────────────────────────
 
@@ -160,28 +161,32 @@ function parseAgentFile(filePath: string): AgentDef | null {
 }
 
 function scanAgentDirs(cwd: string): Map<string, AgentDef> {
-	const dirs = [
+	const roots = [
 		join(cwd, "agents"),
 		join(cwd, ".claude", "agents"),
 		join(cwd, ".pi", "agents"),
 	];
 
 	const agents = new Map<string, AgentDef>();
-
-	for (const dir of dirs) {
-		if (!existsSync(dir)) continue;
+	const visit = (dir: string, depth = 0) => {
+		if (!existsSync(dir) || depth > 2) return;
 		try {
-			for (const file of readdirSync(dir)) {
-				if (!file.endsWith(".md")) continue;
-				const fullPath = resolve(dir, file);
+			for (const file of readdirSync(dir, { withFileTypes: true })) {
+				const fullPath = resolve(dir, file.name);
+				if (file.isDirectory()) {
+					visit(fullPath, depth + 1);
+					continue;
+				}
+				if (!file.name.endsWith(".md")) continue;
 				const def = parseAgentFile(fullPath);
 				if (def && !agents.has(def.name.toLowerCase())) {
 					agents.set(def.name.toLowerCase(), def);
 				}
 			}
 		} catch {}
-	}
+	};
 
+	for (const root of roots) visit(root);
 	return agents;
 }
 
@@ -334,9 +339,7 @@ export default function (pi: ExtensionAPI) {
 		stepIndex: number,
 		ctx: any,
 	): Promise<{ output: string; exitCode: number; elapsed: number }> {
-		const model = ctx.model
-			? `${ctx.model.provider}/${ctx.model.id}`
-			: "openrouter/google/gemini-3-flash-preview";
+		const model = modelForChild(ctx);
 
 		const agentKey = agentDef.name.toLowerCase().replace(/\s+/g, "-");
 		const agentSessionFile = join(sessionDir, `chain-${agentKey}.json`);
@@ -367,7 +370,10 @@ export default function (pi: ExtensionAPI) {
 			const proc = spawn("pi", args, {
 				stdio: ["ignore", "pipe", "pipe"],
 				env: { ...process.env },
+				cwd: ctx.cwd,
 			});
+
+			let stderr = "";
 
 			const timer = setInterval(() => {
 				state.elapsed = Date.now() - startTime;
@@ -400,7 +406,9 @@ export default function (pi: ExtensionAPI) {
 			});
 
 			proc.stderr!.setEncoding("utf-8");
-			proc.stderr!.on("data", () => {});
+			proc.stderr!.on("data", (chunk: string) => {
+				stderr += chunk;
+			});
 
 			proc.on("close", (code) => {
 				if (buffer.trim()) {
@@ -416,7 +424,7 @@ export default function (pi: ExtensionAPI) {
 				clearInterval(timer);
 				const elapsed = Date.now() - startTime;
 				state.elapsed = elapsed;
-				const output = textChunks.join("");
+				const output = textChunks.join("") || (code === 0 ? "" : stderr.trim());
 				state.lastWork = output.split("\n").filter((l: string) => l.trim()).pop() || "";
 
 				if (code === 0) {

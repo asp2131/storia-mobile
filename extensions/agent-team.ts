@@ -29,6 +29,7 @@ import { spawn } from "child_process";
 import { readdirSync, readFileSync, existsSync, mkdirSync, unlinkSync, writeFileSync } from "fs";
 import { join, resolve } from "path";
 import { applyExtensionDefaults } from "./themeMap.ts";
+import { modelForTier } from "./piModels.ts";
 
 // ── Types ────────────────────────────────────────
 
@@ -629,8 +630,8 @@ export default function (pi: ExtensionAPI) {
 			updateWidget();
 		}, 1000);
 
-		// Build model string — use agent's own model, not parent's
-		const model = `openrouter/anthropic/claude-3.5-${effectiveModel}`;
+		// Map harness tiers (opus/sonnet/haiku) to real Pi model IDs.
+		const model = modelForTier(effectiveModel);
 
 		// Session file for this agent
 		const agentKey = state.def.name.toLowerCase().replace(/\s+/g, "-");
@@ -668,7 +669,10 @@ export default function (pi: ExtensionAPI) {
 			const proc = spawn("pi", args, {
 				stdio: ["ignore", "pipe", "pipe"],
 				env: { ...process.env },
+				cwd,
 			});
+
+			let stderr = "";
 
 			let buffer = "";
 
@@ -712,7 +716,18 @@ export default function (pi: ExtensionAPI) {
 			});
 
 			proc.stderr!.setEncoding("utf-8");
-			proc.stderr!.on("data", () => {});
+			proc.stderr!.on("data", (chunk: string) => {
+				stderr += chunk;
+			});
+
+			proc.on("error", (err) => {
+				clearInterval(state.timer);
+				state.elapsed = Date.now() - startTime;
+				state.status = "error";
+				state.lastWork = `spawn failed: ${err.message}`;
+				updateWidget();
+				resolve({ output: state.lastWork, exitCode: 1, elapsed: state.elapsed });
+			});
 
 			proc.on("close", (code) => {
 				if (buffer.trim()) {
@@ -734,7 +749,7 @@ export default function (pi: ExtensionAPI) {
 					state.sessionFile = agentSessionFile;
 				}
 
-				const full = textChunks.join("");
+				const full = textChunks.join("") || (code === 0 ? "" : stderr.trim());
 				state.lastWork = full.split("\n").filter((l: string) => l.trim()).pop() || "";
 				updateWidget();
 

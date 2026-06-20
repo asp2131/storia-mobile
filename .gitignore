@@ -12,6 +12,7 @@
 .swiftpm/
 migrate_working_dir/
 .claude/
+.expo/
 
 # IntelliJ related
 *.iml
