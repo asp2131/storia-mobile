@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
+import 'package:flutter/foundation.dart';
 
 import 'library_game.dart';
 
@@ -171,11 +172,12 @@ class PlayerComponent extends SpriteAnimationGroupComponent<PlayerState>
   void update(double dt) {
     super.update(dt);
 
-    _handleMovement(dt);
+    stepMovement(dt);
     _handleAnimationTransitions();
   }
 
-  void _handleMovement(double dt) {
+  @visibleForTesting
+  void stepMovement(double dt) {
     if (_waypoints.isEmpty || _arrived) return;
     if (_currentWaypointIndex >= _waypoints.length) {
       _arrived = true;
@@ -196,7 +198,18 @@ class PlayerComponent extends SpriteAnimationGroupComponent<PlayerState>
     }
 
     final direction = delta.normalized();
-    position.add(direction * _kMoveSpeed * dt);
+    final step = _kMoveSpeed * dt;
+    // Clamp to the remaining distance so a large dt can't overshoot and
+    // oscillate around the target forever.
+    if (step >= distance) {
+      position.setFrom(target);
+      _currentWaypointIndex++;
+      if (_currentWaypointIndex >= _waypoints.length) {
+        _arrived = true;
+      }
+    } else {
+      position.add(direction * step);
+    }
 
     // Flip based on horizontal direction.
     final hDir = delta.x.sign.toInt();

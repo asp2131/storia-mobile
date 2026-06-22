@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import '../../../../audio/audio_engine.dart';
 import '../../../../data/pronunciation_models.dart';
 import '../../../../data/pronunciation_repository.dart';
 import '../reader_analytics_tracker.dart';
@@ -16,22 +15,6 @@ class PronunciationRepositoryManifestPort implements PronunciationManifestPort {
   @override
   Future<BookPronunciationManifest?> getManifest(String bookId) =>
       _repository.getManifestForBook(bookId);
-}
-
-class AudioEnginePronunciationPort implements PronunciationAudioPort {
-  const AudioEnginePronunciationPort(this._engine);
-
-  final AudioEngine _engine;
-
-  @override
-  Stream<Duration> get position => _engine.pronunciationPosition;
-
-  @override
-  Future<void> playSequence(List<String> urls) =>
-      _engine.playPronunciationSequence(urls);
-
-  @override
-  Future<void> stop() => _engine.stopPronunciation();
 }
 
 class FlutterTtsFallbackSpeechPort implements FallbackSpeechPort {

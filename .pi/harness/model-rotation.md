@@ -12,6 +12,38 @@ Defines which models power each agent tier and how to handle failures.
 | 3 | Workers (validators) | haiku | Quick checks, cost-efficient |
 | Meta | Self-improver | opus | Needs reasoning to analyze patterns |
 
+## Pi / OpenAI Codex Subscription Model List
+
+Patched into Pi's active model list on 2026-06-19 because child-agent workflows
+use the Codex subscription provider directly.
+
+| Use | Model | Notes |
+|-----|-------|-------|
+| Default child agent | `openai-codex/gpt-5.5` | Active default in `extensions/piModels.ts` |
+| Older Codex fallback | `openai-codex/gpt-5.3-codex` | Keep for regression fallback |
+
+## OpenCode Go Model List
+
+Refreshed with `opencode models opencode-go --refresh --verbose` on 2026-06-12.
+`bin/opencode-symphony.sh --list-models` prints the same curated list.
+
+| Use | Model | Notes |
+|-----|-------|-------|
+| Default fast/cheap | `opencode-go/qwen3.7-plus` | Latest low-cost default; 1M context, tools, reasoning |
+| Cheap long-context worker | `opencode-go/minimax-m3` | Very low cost; 512K context, 131K output |
+| Premium reasoning | `opencode-go/qwen3.7-max` | Stronger Qwen tier; use for escalations |
+| Cheap DeepSeek reasoning | `opencode-go/deepseek-v4-flash` | 1M context, 384K output, low/medium/high/max variants |
+| Premium DeepSeek reasoning | `opencode-go/deepseek-v4-pro` | Same limits as flash, higher quality/cost tier |
+| Cheap fallback | `opencode-go/mimo-v2.5` | 1M context, 128K output, low/medium/high variants |
+| Premium fallback | `opencode-go/mimo-v2.5-pro` | 1,048,576 context, 128K output |
+| Stable fallback/current legacy | `opencode-go/kimi-k2.6` | Prior opencode-symphony default |
+| GLM fallback | `opencode-go/glm-5.1` | Newer GLM tier |
+| Older fallback | `opencode-go/qwen3.6-plus` | Keep for regression fallback |
+| Older fallback | `opencode-go/minimax-m2.7` | Keep for regression fallback |
+| Older fallback | `opencode-go/minimax-m2.5` | Keep for regression fallback |
+| Older fallback | `opencode-go/glm-5` | Keep for regression fallback |
+| Older fallback | `opencode-go/kimi-k2.5` | Keep for regression fallback |
+
 ## Rotation Rules
 
 ### On Worker Failure

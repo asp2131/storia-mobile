@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/theme/storia_spacing.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/watercolor_scaffold.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../data/child_profile_providers.dart';
 import '../domain/child_profile.dart';
 
@@ -60,7 +60,7 @@ class ProfilePickerScreen extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      context.go('/library');
+      continueJourney(ref, context);
     } catch (_) {
       if (!context.mounted) {
         return;
@@ -115,7 +115,7 @@ class _ProfilePickerContent extends StatelessWidget {
                     ),
                     const SizedBox(height: StoriaSpacing.sm),
                     Text(
-                      'Pick a child profile so Storia can save reading progress and analytics to the right reader.',
+                      'Pick a child profile so Loratone can save reading progress and analytics to the right reader.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: StoriaColors.inkMuted,
@@ -146,7 +146,7 @@ class _ProfilePickerContent extends StatelessWidget {
                         tone: SketchButtonTone.secondary,
                         onPressed: isSaving
                             ? null
-                            : () => context.push('/profiles/new'),
+                            : () => pushAddProfile(context),
                       ),
                     ],
                   ],
@@ -321,7 +321,7 @@ class _NoProfilesCard extends StatelessWidget {
           SketchButton(
             label: 'Add child profile',
             leading: const Icon(Icons.add_rounded),
-            onPressed: () => context.push('/profiles/new'),
+            onPressed: () => pushAddProfile(context),
           ),
         ],
       ),

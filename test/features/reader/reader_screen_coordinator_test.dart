@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gif_player/gif_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:storia_kids/src/data/models.dart';
 import 'package:storia_kids/src/data/providers.dart';
+import 'package:storia_kids/src/features/gen_ui/data/gen_ui_preferences_provider.dart';
+import 'package:storia_kids/src/features/gen_ui/data/gen_ui_providers.dart';
+import 'package:storia_kids/src/features/gen_ui/data/mock_gen_ui_cards.dart';
+import 'package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart';
+import 'package:storia_kids/src/features/gen_ui/presentation/reader_activity_card.dart';
 import 'package:storia_kids/src/features/reader/application/reader_experience_controller.dart';
 import 'package:storia_kids/src/features/reader/application/reader_experience_effects.dart';
 import 'package:storia_kids/src/features/reader/reader_screen.dart';
@@ -13,7 +19,22 @@ import 'package:storia_kids/src/features/reader/runtime/providers/reader_session
 import 'package:storia_kids/src/features/reader/runtime/reader_session.dart';
 import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_help.dart';
 
+class _EmptyGenUiRepo implements MockGenUiCardRepository {
+  const _EmptyGenUiRepo();
+  @override
+  List<GenUiCardSchema> readerCardsForPage({
+    required String bookId,
+    required int pageIndex,
+  }) => const [];
+}
+
 void main() {
+  setUp(() {
+    // The gen-UI preferences notifier reads SharedPreferences on construction;
+    // provide an in-memory store so reader tests don't hit the platform plugin.
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+  });
+
   testWidgets('ReaderScreen routes start and controls through coordinator', (
     tester,
   ) async {
@@ -40,6 +61,9 @@ void main() {
           ),
           readerExperienceEffectsProvider.overrideWith(
             (ref) => const NoopReaderExperienceEffects(),
+          ),
+          mockGenUiCardRepositoryProvider.overrideWithValue(
+            const _EmptyGenUiRepo(),
           ),
         ],
         child: const MaterialApp(home: ReaderScreen(bookId: 'book-1')),
@@ -95,6 +119,9 @@ void main() {
           ),
           readerExperienceEffectsProvider.overrideWith(
             (ref) => const NoopReaderExperienceEffects(),
+          ),
+          mockGenUiCardRepositoryProvider.overrideWithValue(
+            const _EmptyGenUiRepo(),
           ),
         ],
         child: const MaterialApp(home: ReaderScreen(bookId: 'book-multi')),
@@ -166,6 +193,9 @@ void main() {
           readerExperienceEffectsProvider.overrideWith(
             (ref) => const NoopReaderExperienceEffects(),
           ),
+          mockGenUiCardRepositoryProvider.overrideWithValue(
+            const _EmptyGenUiRepo(),
+          ),
         ],
         child: const MaterialApp(home: ReaderScreen(bookId: 'book-1')),
       ),
@@ -184,6 +214,108 @@ void main() {
     coordinatorLog.controller!.setShowCelebrationGif(true);
     await tester.pump();
     expect(find.byType(GifPlayer), findsOneWidget);
+  });
+
+  testWidgets('Story Spark takeover dispatches activity shown/dismissed', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final coordinatorLog = _CoordinatorLog();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentBookProvider('book-1').overrideWith((ref) async => _book),
+          bookManifestProvider('book-1').overrideWith((ref) async => null),
+          readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
+          readerExperienceControllerProvider.overrideWith(
+            () => _FakeReaderExperienceControllerNotifier._(
+              coordinatorLog,
+              'book-1',
+            ),
+          ),
+          readerExperienceEffectsProvider.overrideWith(
+            (ref) => const NoopReaderExperienceEffects(),
+          ),
+          // Story Sparks are off by default; force them on for this takeover
+          // test so the activity overlay renders.
+          storySparksEnabledProvider.overrideWithValue(true),
+          // NOTE: no mockGenUiCardRepositoryProvider override here — page 0
+          // yields the null-anchor reflection card, which is live on load.
+        ],
+        child: const MaterialApp(home: ReaderScreen(bookId: 'book-1')),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(); // let the post-frame onActivityShown fire
+
+    expect(
+      coordinatorLog.actions.whereType<ReaderExperienceActivityShown>(),
+      hasLength(1),
+    );
+
+    // Skip via the card's close button. Scope the finder to the activity card
+    // so it can't match any other close icon in the chrome.
+    final closeButton = find.descendant(
+      of: find.byType(ReaderActivityCard),
+      matching: find.byIcon(Icons.close_rounded),
+    );
+    expect(closeButton, findsOneWidget);
+    await tester.tap(closeButton);
+    await tester.pump();
+
+    expect(
+      coordinatorLog.actions.whereType<ReaderExperienceActivityDismissed>(),
+      hasLength(1),
+    );
+  });
+
+  testWidgets('Story Spark overlay is hidden by default', (tester) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final coordinatorLog = _CoordinatorLog();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentBookProvider('book-1').overrideWith((ref) async => _book),
+          bookManifestProvider('book-1').overrideWith((ref) async => null),
+          readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
+          readerExperienceControllerProvider.overrideWith(
+            () => _FakeReaderExperienceControllerNotifier._(
+              coordinatorLog,
+              'book-1',
+            ),
+          ),
+          readerExperienceEffectsProvider.overrideWith(
+            (ref) => const NoopReaderExperienceEffects(),
+          ),
+          // No storySparksEnabledProvider override: rely on the default (off).
+        ],
+        child: const MaterialApp(home: ReaderScreen(bookId: 'book-1')),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    // With Story Sparks disabled by default, the activity overlay must not
+    // mount and no activity-shown action should be dispatched.
+    expect(find.byType(ReaderActivityCard), findsNothing);
+    expect(
+      coordinatorLog.actions.whereType<ReaderExperienceActivityShown>(),
+      isEmpty,
+    );
   });
 }
 
@@ -248,6 +380,7 @@ class _FakeReaderExperienceControllerNotifier
       wordHelpSnapshot: const WordHelpSnapshot.idle(),
       showCelebrationGif: false,
       endedForLifecycle: false,
+      activityNarrationPaused: false,
     );
   }
 

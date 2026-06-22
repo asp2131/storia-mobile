@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/theme/storia_spacing.dart';
@@ -10,6 +9,7 @@ import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/sketch_icon_button.dart';
 import '../../../core/widgets/sketch_text_field.dart';
 import '../../../core/widgets/watercolor_scaffold.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../data/child_profile_providers.dart';
 import '../data/child_profile_repository.dart';
 import '../domain/child_profile.dart';
@@ -68,7 +68,7 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
                           icon: Icons.arrow_back_ios_new_rounded,
                           onPressed: _isSubmitting
                               ? null
-                              : () => context.go('/profiles/select'),
+                              : () => backOutOfJourneyStep(context),
                           tooltip: 'Back to reader chooser',
                         ),
                         const SizedBox(height: StoriaSpacing.xl),
@@ -111,7 +111,7 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
                                     ),
                                     const SizedBox(height: StoriaSpacing.sm),
                                     Text(
-                                      'Create a reading profile so Storia can save progress and analytics for the right child.',
+                                      'Create a reading profile so Loratone can save progress and analytics for the right child.',
                                       style: textTheme.bodyLarge?.copyWith(
                                         color: StoriaColors.inkMuted,
                                         height: 1.45,
@@ -233,15 +233,16 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
                                 const SizedBox(height: 18),
                                 Semantics(
                                   container: true,
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: StoriaColors.paperAlt,
+                                  child: Material(
+                                    color: StoriaColors.paperAlt,
+                                    shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(
+                                      side: const BorderSide(
                                         color: StoriaColors.line,
                                         width: 1.2,
                                       ),
                                     ),
+                                    clipBehavior: Clip.antiAlias,
                                     child: SwitchListTile.adaptive(
                                       value: _isDefault,
                                       onChanged: _isSubmitting
@@ -264,7 +265,7 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
                                         ),
                                       ),
                                       subtitle: Text(
-                                        'Storia opens the library with this reader selected first.',
+                                        'Loratone opens the library with this reader selected first.',
                                         style: textTheme.bodyMedium?.copyWith(
                                           color: StoriaColors.inkMuted,
                                           height: 1.35,
@@ -394,7 +395,7 @@ class _AddChildScreenState extends ConsumerState<AddChildScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/library');
+      continueJourney(ref, context);
     } catch (error, stackTrace) {
       debugPrint('[AddChildScreen] create child failed: $error');
       debugPrintStack(stackTrace: stackTrace);

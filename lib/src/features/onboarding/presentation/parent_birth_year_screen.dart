@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/parental_gate.dart';
@@ -12,6 +11,7 @@ import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/sketch_icon_button.dart';
 import '../../../core/widgets/watercolor_scaffold.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../data/app_review_flow_providers.dart';
 
 class ParentBirthYearScreen extends ConsumerStatefulWidget {
@@ -444,7 +444,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/onboarding');
+      continueJourney(ref, context);
     } catch (_) {
       if (!mounted) {
         return;
@@ -459,13 +459,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
     }
   }
 
-  Future<void> _startOver() async {
-    await ref.read(appReviewFlowNotifierProvider).clearReviewFlow();
-    if (!mounted) {
-      return;
-    }
-    context.go('/sign-in');
-  }
+  Future<void> _startOver() => restartJourney(ref, context);
 }
 
 class _ParentsOnlyArt extends StatelessWidget {

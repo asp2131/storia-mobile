@@ -12,9 +12,10 @@
 #                 don't grab tickets a human is driving manually
 #
 # Usage:
-#   ./bin/opencode-symphony.sh             # foreground loop
-#   ./bin/opencode-symphony.sh --once      # process current Todo tickets, exit
-#   ./bin/opencode-symphony.sh --dry-run   # show what would dispatch, don't act
+#   ./bin/opencode-symphony.sh               # foreground loop
+#   ./bin/opencode-symphony.sh --once        # process current Todo tickets, exit
+#   ./bin/opencode-symphony.sh --dry-run     # show what would dispatch, don't act
+#   ./bin/opencode-symphony.sh --list-models # print curated OpenCode Go models
 #
 # Required env:
 #   LINEAR_API_KEY         personal API key (Linear → Settings → Security & Access)
@@ -26,7 +27,8 @@
 #   MAX_PARALLEL           default: 2
 #   GIT_REMOTE             default: origin
 #   GIT_BASE               default: main
-#   OPENCODE_MODEL         default: opencode-go/kimi-k2.6
+#   OPENCODE_MODEL         default: opencode-go/qwen3.7-plus
+#   OPENCODE_GO_MODELS     curated fallback list printed by --list-models
 #   PLAYWRIGHT_PROOF_MODE  default: auto (auto|always|off)
 #   PLAYWRIGHT_PROOF_CAPTURE_CMD optional fallback command to create recordings/<ticket>-*.webm
 #   PLAYWRIGHT_PROOF_REQUIRE_UPLOAD default: 1 (set 0 to allow local paths)
@@ -39,12 +41,12 @@
 set -euo pipefail
 
 # ---------- config ----------
-: "${LINEAR_API_KEY:?Set LINEAR_API_KEY in ~/.zshrc (Linear → Settings → Security & Access).}"
+OPENCODE_GO_MODELS="${OPENCODE_GO_MODELS:-opencode-go/qwen3.7-plus opencode-go/minimax-m3 opencode-go/qwen3.7-max opencode-go/deepseek-v4-flash opencode-go/deepseek-v4-pro opencode-go/mimo-v2.5 opencode-go/mimo-v2.5-pro opencode-go/kimi-k2.6 opencode-go/glm-5.1 opencode-go/qwen3.6-plus opencode-go/minimax-m2.7 opencode-go/minimax-m2.5 opencode-go/glm-5 opencode-go/kimi-k2.5}"
 PROJECT_SLUG="${PROJECT_SLUG:-storia-web-b2f648c17c65}"
 WORKSPACES="${WORKSPACES:-$HOME/code/storia-mobile-symphony-workspaces}"
 POLL_S="${POLL_S:-15}"
 MAX_PARALLEL="${MAX_PARALLEL:-2}"
-OPENCODE_MODEL="${OPENCODE_MODEL:-opencode-go/kimi-k2.6}"
+OPENCODE_MODEL="${OPENCODE_MODEL:-opencode-go/qwen3.7-plus}"
 GIT_REMOTE="${GIT_REMOTE:-origin}"
 GIT_BASE="${GIT_BASE:-main}"
 STATE_TODO="${STATE_TODO:-Todo}"
@@ -59,14 +61,23 @@ state_cache="$WORKSPACES/.state-ids.json"
 
 DRY_RUN=0
 ONCE=0
+LIST_MODELS=0
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=1 ;;
     --once)    ONCE=1 ;;
-    -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
+    --list-models) LIST_MODELS=1 ;;
+    -h|--help) sed -n '2,31p' "$0"; exit 0 ;;
     *) echo "unknown arg: $arg" >&2; exit 2 ;;
   esac
 done
+
+if [ "$LIST_MODELS" = "1" ]; then
+  printf '%s\n' $OPENCODE_GO_MODELS
+  exit 0
+fi
+
+: "${LINEAR_API_KEY:?Set LINEAR_API_KEY in ~/.zshrc (Linear → Settings → Security & Access).}"
 
 # ---------- deps ----------
 for bin in jq curl gh git opencode; do

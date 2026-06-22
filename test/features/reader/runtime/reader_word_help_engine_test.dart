@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:storia_kids/src/audio/pronunciation_player.dart';
 import 'package:storia_kids/src/data/pronunciation_models.dart';
 import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_help.dart';
 import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_help_engine.dart';
@@ -8,7 +9,7 @@ import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_he
 void main() {
   group('ReaderWordHelpEngine', () {
     late _FakeManifestPort manifest;
-    late _FakePronunciationAudioPort pronunciationAudio;
+    late _FakePronunciationPlayer pronunciationAudio;
     late _FakeFallbackSpeechPort fallbackSpeech;
     late _FakeReaderAudioGuardPort audioGuard;
     late _FakeAnalyticsPort analytics;
@@ -17,7 +18,7 @@ void main() {
 
     setUp(() {
       manifest = _FakeManifestPort();
-      pronunciationAudio = _FakePronunciationAudioPort();
+      pronunciationAudio = _FakePronunciationPlayer();
       fallbackSpeech = _FakeFallbackSpeechPort();
       audioGuard = _FakeReaderAudioGuardPort();
       analytics = _FakeAnalyticsPort();
@@ -248,7 +249,7 @@ void main() {
         await pumpEventQueue();
 
         await engine.cancel(reason: WordHelpCancelReason.user);
-        playbackCompleter.complete();
+        if (!playbackCompleter.isCompleted) playbackCompleter.complete();
         final result = await future;
 
         expect(result.outcome, WordHelpOutcome.cancelled);
@@ -285,7 +286,7 @@ void main() {
 
       audioGuard.emitPageChange(1);
       await pumpEventQueue();
-      playbackCompleter.complete();
+      if (!playbackCompleter.isCompleted) playbackCompleter.complete();
       final result = await future;
 
       expect(result.outcome, WordHelpOutcome.cancelled);
@@ -335,8 +336,9 @@ class _FakeManifestPort implements PronunciationManifestPort {
   }
 }
 
-class _FakePronunciationAudioPort implements PronunciationAudioPort {
+class _FakePronunciationPlayer implements PronunciationPlayer {
   final _positionController = StreamController<Duration>.broadcast();
+  final _playingController = StreamController<bool>.broadcast();
   final playedSequences = <List<String>>[];
   var stopCount = 0;
   Object? playError;
@@ -345,10 +347,13 @@ class _FakePronunciationAudioPort implements PronunciationAudioPort {
   @override
   Stream<Duration> get position => _positionController.stream;
 
+  @override
+  Stream<bool> get playing => _playingController.stream;
+
   void emitPosition(Duration position) => _positionController.add(position);
 
   @override
-  Future<void> playSequence(List<String> urls) async {
+  Future<void> play(List<String> urls) async {
     final error = playError;
     if (error != null) {
       throw error;
@@ -363,9 +368,16 @@ class _FakePronunciationAudioPort implements PronunciationAudioPort {
   @override
   Future<void> stop() async {
     stopCount++;
+    final completer = playCompleter;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete();
+    }
   }
 
-  Future<void> dispose() => _positionController.close();
+  Future<void> dispose() async {
+    await _positionController.close();
+    await _playingController.close();
+  }
 }
 
 class _FakeFallbackSpeechPort implements FallbackSpeechPort {

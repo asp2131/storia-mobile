@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:storia_kids/src/audio/page_audio.dart';
 import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/reader/runtime/ports/audio_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/ports/scheduler_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/ports/speech_practice_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/reader_session.dart';
@@ -15,7 +15,7 @@ void main() {
 
     setUp(() {
       session = ReaderSessionImpl(
-        audioPort: _FakeAudioPort(),
+        pageAudio: _FakePageAudio(),
         speechPort: _FakeSpeechPracticePort(),
         scheduler: _FakeSchedulerPort(),
       );
@@ -34,8 +34,6 @@ void main() {
       await session.dispatch(const ReaderEnd(reason: 'screen_dispose'));
       await pumpEventQueue();
 
-      // A freshly subscribed reader (e.g. re-entering the book) must not
-      // inherit the stale end page from the prior session.
       expect((await session.states.first).activePageIndex, 0);
     });
   });
@@ -52,28 +50,14 @@ final _book = Book(
   ],
 );
 
-class _FakeAudioPort implements AudioPort {
-  final _narrationPosition = StreamController<Duration>.broadcast();
-  final _narrationPlaying = StreamController<bool>.broadcast();
-  final _soundscapePlaying = StreamController<bool>.broadcast();
+class _FakePageAudio implements PageAudio {
+  final _statesController = StreamController<AudioSnapshot>.broadcast();
 
   @override
-  Stream<Duration> get narrationPosition => _narrationPosition.stream;
-
-  @override
-  Stream<bool> get narrationPlaying => _narrationPlaying.stream;
-
-  @override
-  Stream<bool> get soundscapePlaying => _soundscapePlaying.stream;
-
-  @override
-  Future<void> ensureInitialized() async {}
+  Stream<AudioSnapshot> get states => _statesController.stream;
 
   @override
   Future<void> loadPage(PageData page) async {}
-
-  @override
-  Future<void> transitionToPage(PageData page) async {}
 
   @override
   Future<void> toggleNarration() async {}
@@ -88,11 +72,10 @@ class _FakeAudioPort implements AudioPort {
   Future<void> setSoundscapeVolume(double volume) async {}
 
   @override
-  Future<void> dispose() async {
-    await _narrationPosition.close();
-    await _narrationPlaying.close();
-    await _soundscapePlaying.close();
-  }
+  Future<void> duckForPractice() async {}
+
+  @override
+  Future<void> restoreFromPractice() async {}
 }
 
 class _FakeSpeechPracticePort implements SpeechPracticePort {

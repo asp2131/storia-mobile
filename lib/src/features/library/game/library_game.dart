@@ -205,7 +205,7 @@ class LibraryGame extends FlameGame with TapCallbacks {
       _world.add(comp);
     }
 
-    _routeComponent?.setHighlightToNodeIndex(_currentNodeIndex);
+    _setRouteHighlightForNodeIndex(_currentNodeIndex);
 
     // Fire-and-forget parallel cover image loading.
     _loadCoverImages(books);
@@ -243,14 +243,94 @@ class LibraryGame extends FlameGame with TapCallbacks {
     }
   }
 
-  /// Update dimmed state on book components based on filtered IDs.
+  /// Update map-node visibility based on the active filter.
   void applyFilter(Set<String> visibleBookIds) {
     _visibleBookIds
       ..clear()
       ..addAll(visibleBookIds);
+
     for (final entry in _bookComponents.entries) {
-      entry.value.isDimmed = !visibleBookIds.contains(entry.key);
+      entry.value.isVisible = visibleBookIds.contains(entry.key);
     }
+
+    _routeComponent?.setVisibleNodePositions(_visibleNodePositions());
+    _setRouteHighlightForNodeIndex(_currentNodeIndex);
+  }
+
+  List<int> _visibleNodeIndexes() {
+    final indexes = <int>[];
+    for (var i = 0; i < _books.length; i++) {
+      if (_visibleBookIds.contains(_books[i].id)) {
+        indexes.add(i);
+      }
+    }
+    return indexes;
+  }
+
+  List<Vector2> _visibleNodePositions() => _visibleNodeIndexes()
+      .map((index) => _nodePositions[index].clone())
+      .toList(growable: false);
+
+  bool _isNodeIndexVisible(int index) {
+    if (index < 0 || index >= _books.length) return false;
+    return _visibleBookIds.contains(_books[index].id);
+  }
+
+  int? _visibleRouteIndexForNodeIndex(int? nodeIndex) {
+    if (nodeIndex == null || !_isNodeIndexVisible(nodeIndex)) return null;
+    final visibleIndexes = _visibleNodeIndexes();
+    final routeIndex = visibleIndexes.indexOf(nodeIndex);
+    return routeIndex < 0 ? null : routeIndex;
+  }
+
+  void _setRouteHighlightForNodeIndex(int? nodeIndex) {
+    _routeComponent?.setHighlightToNodeIndex(
+      _visibleRouteIndexForNodeIndex(nodeIndex),
+    );
+  }
+
+  @visibleForTesting
+  Map<String, bool> get debugNodeVisibilityByBookId => {
+    for (final entry in _bookComponents.entries)
+      entry.key: entry.value.isVisible,
+  };
+
+  @visibleForTesting
+  List<String> get debugVisibleRouteBookIds => _visibleNodeIndexes()
+      .map((index) => _books[index].id)
+      .toList(growable: false);
+
+  @visibleForTesting
+  List<Vector2> get debugVisibleRouteNodePositions =>
+      _routeComponent?.visibleNodePositions ?? const <Vector2>[];
+
+  @visibleForTesting
+  List<String> debugRouteWaypointBookIdsForTap({
+    required double worldX,
+    required Vector2 fromPosition,
+  }) {
+    if (_nodePositions.isEmpty) return const [];
+
+    final visibleIndexes = _visibleNodeIndexes();
+    if (visibleIndexes.isEmpty) return const [];
+
+    final targetIndex = _findNearestNodeIndexByX(
+      worldX.clamp(0.0, worldWidth),
+      candidateIndexes: visibleIndexes,
+    );
+    return _buildRouteWaypoints(
+      targetIndex,
+      fromPosition: fromPosition,
+    ).map(_bookIdForNodePosition).whereType<String>().toList(growable: false);
+  }
+
+  String? _bookIdForNodePosition(Vector2 position) {
+    for (var i = 0; i < _nodePositions.length; i++) {
+      if (_nodePositions[i].distanceTo(position) < 0.001) {
+        return _books[i].id;
+      }
+    }
+    return null;
   }
 
   Book? bookById(String bookId) {
@@ -311,33 +391,71 @@ class LibraryGame extends FlameGame with TapCallbacks {
   // ── Tap handling ─────────────────────────────────────────────────────
 
   /// Find the index of the route node nearest to a given position.
-  int _findNearestNodeIndex(Vector2 pos) {
+  int _findNearestNodeIndex(Vector2 pos, {List<int>? candidateIndexes}) {
     if (_nodePositions.isEmpty) return 0;
-    int nearest = 0;
+    final candidates =
+        candidateIndexes ??
+        List<int>.generate(_nodePositions.length, (index) => index);
+    if (candidates.isEmpty) return 0;
+
+    var nearest = candidates.first;
     double bestDist = double.infinity;
-    for (int i = 0; i < _nodePositions.length; i++) {
-      final dist = _nodePositions[i].distanceTo(pos);
+    for (final index in candidates) {
+      final dist = _nodePositions[index].distanceTo(pos);
       if (dist < bestDist) {
         bestDist = dist;
-        nearest = i;
+        nearest = index;
       }
     }
     return nearest;
   }
 
-  /// Build a waypoint list from the player's current position through
-  /// intermediate route nodes to the target node index.
-  List<Vector2> _buildRouteWaypoints(int targetIndex) {
-    final waypoints = <Vector2>[];
-    final nearestIndex = _findNearestNodeIndex(_player.position);
+  /// Find the index of the route node nearest to a world-space X coordinate.
+  int _findNearestNodeIndexByX(double worldX, {List<int>? candidateIndexes}) {
+    if (_nodePositions.isEmpty) return 0;
+    final candidates =
+        candidateIndexes ??
+        List<int>.generate(_nodePositions.length, (index) => index);
+    if (candidates.isEmpty) return 0;
 
-    if (nearestIndex <= targetIndex) {
-      for (int i = nearestIndex; i <= targetIndex; i++) {
-        waypoints.add(_nodePositions[i].clone());
+    var nearest = candidates.first;
+    double bestDist = double.infinity;
+    for (final index in candidates) {
+      final dist = (_nodePositions[index].x - worldX).abs();
+      if (dist < bestDist) {
+        bestDist = dist;
+        nearest = index;
+      }
+    }
+    return nearest;
+  }
+
+  /// Build a waypoint list from the player's current position through the
+  /// visible route nodes to the target node index. If the target is hidden
+  /// (possible only through programmatic navigation), fall back to the full
+  /// route so existing non-filter entry points still work.
+  List<Vector2> _buildRouteWaypoints(int targetIndex, {Vector2? fromPosition}) {
+    final candidates = _isNodeIndexVisible(targetIndex)
+        ? _visibleNodeIndexes()
+        : List<int>.generate(_nodePositions.length, (index) => index);
+    if (candidates.isEmpty) return const [];
+
+    final nearestIndex = _findNearestNodeIndex(
+      fromPosition ?? _player.position,
+      candidateIndexes: candidates,
+    );
+    final nearestRouteIndex = candidates.indexOf(nearestIndex);
+    final targetRouteIndex = candidates.indexOf(targetIndex);
+    if (nearestRouteIndex < 0 || targetRouteIndex < 0) return const [];
+
+    final waypoints = <Vector2>[];
+    if (nearestRouteIndex <= targetRouteIndex) {
+      for (var i = nearestRouteIndex; i <= targetRouteIndex; i++) {
+        waypoints.add(_nodePositions[candidates[i]].clone());
       }
     } else {
-      for (int i = nearestIndex; i >= targetIndex; i--) {
-        waypoints.add(_nodePositions[i].clone());
+      for (var i = nearestRouteIndex; i >= targetRouteIndex; i--) {
+        waypoints.add(_nodePositions[candidates[i]].clone());
       }
     }
     return waypoints;
@@ -361,16 +479,19 @@ class LibraryGame extends FlameGame with TapCallbacks {
       return;
     }
 
-    // Find nearest route node to the tapped X and walk there along the route.
-    int targetIndex = 0;
-    double bestDist = double.infinity;
-    for (int i = 0; i < _nodePositions.length; i++) {
-      final dist = (_nodePositions[i].x - clampedX).abs();
-      if (dist < bestDist) {
-        bestDist = dist;
-        targetIndex = i;
-      }
+    // Find the nearest visible route node to the tapped X and walk there along
+    // the filtered route. Hidden nodes are visually gone and should not act as
+    // invisible destinations.
+    final visibleIndexes = _visibleNodeIndexes();
+    if (visibleIndexes.isEmpty) {
+      _setRouteHighlightForNodeIndex(null);
+      return;
     }
+
+    final targetIndex = _findNearestNodeIndexByX(
+      clampedX,
+      candidateIndexes: visibleIndexes,
+    );
 
     final waypoints = _buildRouteWaypoints(targetIndex);
     if (waypoints.isNotEmpty) {
@@ -407,7 +528,7 @@ class LibraryGame extends FlameGame with TapCallbacks {
     }
 
     _destinationNodeIndex = targetIndex;
-    _routeComponent?.setHighlightToNodeIndex(targetIndex);
+    _setRouteHighlightForNodeIndex(targetIndex);
 
     final waypoints = _buildRouteWaypoints(targetIndex);
     if (waypoints.isNotEmpty) {
@@ -492,7 +613,7 @@ class LibraryGame extends FlameGame with TapCallbacks {
         }
         final currentBook = _books[arrivedIndex];
         _bookComponents[currentBook.id]?.triggerArrivalFocus();
-        _routeComponent?.setHighlightToNodeIndex(arrivedIndex);
+        _setRouteHighlightForNodeIndex(arrivedIndex);
       }
 
       if (_pendingBook != null) {
@@ -502,13 +623,17 @@ class LibraryGame extends FlameGame with TapCallbacks {
       _pendingBookTargetX = null;
     } else if (_destinationNodeIndex != null) {
       final destination = _destinationNodeIndex!;
-      final progressNode = _findNearestNodeIndex(_player.position);
-      final highlightedIndex = _currentNodeIndex == null
-          ? progressNode
-          : (_currentNodeIndex! <= destination
-                ? progressNode.clamp(_currentNodeIndex!, destination)
-                : progressNode.clamp(destination, _currentNodeIndex!));
-      _routeComponent?.setHighlightToNodeIndex(highlightedIndex);
+      if (!_isNodeIndexVisible(destination)) {
+        _setRouteHighlightForNodeIndex(null);
+        return;
+      }
+
+      final visibleIndexes = _visibleNodeIndexes();
+      final progressNode = _findNearestNodeIndex(
+        _player.position,
+        candidateIndexes: visibleIndexes.isEmpty ? null : visibleIndexes,
+      );
+      _setRouteHighlightForNodeIndex(progressNode);
     }
   }
 }

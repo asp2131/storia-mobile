@@ -1,39 +1,49 @@
 import 'dart:async';
 
+import '../../../audio/page_audio.dart';
 import '../../../data/models.dart';
 import 'internal/page_words_indexer.dart';
 import 'internal/word_matcher.dart';
-import 'ports/audio_port.dart';
 import 'ports/scheduler_port.dart';
 import 'ports/speech_practice_port.dart';
 import 'reader_analytics_tracker.dart';
 import 'reader_session.dart';
 
+/// Resolves when the page illustration at [url] has painted (or failed). Used
+/// to hold narration/soundscape until the picture is on screen. Null/empty url
+/// resolves immediately. Injected so the real impl (Flutter image stream) stays
+/// out of this pure-logic class.
+typedef ImageReadyProbe = Future<void> Function(String? url);
+
 class ReaderSessionImpl implements ReaderSession {
   ReaderSessionImpl({
-    required AudioPort audioPort,
+    required PageAudio pageAudio,
     required SpeechPracticePort speechPort,
     required SchedulerPort scheduler,
     ReaderAnalyticsTracker? analyticsTracker,
-  }) : _audioPort = audioPort,
+    ImageReadyProbe? imageReadyProbe,
+  }) : _pageAudio = pageAudio,
        _speechPort = speechPort,
        _scheduler = scheduler,
-       _analyticsTracker = analyticsTracker {
-    _narrationPositionSub = _audioPort.narrationPosition.listen((position) {
-      _emit(_state.copyWith(narrationPosition: position));
-    });
-    _narrationPlayingSub = _audioPort.narrationPlaying.listen((playing) {
-      _emit(_state.copyWith(isNarrationPlaying: playing));
-    });
-    _soundscapePlayingSub = _audioPort.soundscapePlaying.listen((playing) {
-      _emit(_state.copyWith(isSoundscapePlaying: playing));
+       _analyticsTracker = analyticsTracker,
+       // ponytail: no-op default keeps gating off for tests/headless callers.
+       _imageReadyProbe = imageReadyProbe ?? ((_) async {}) {
+    _audioSnapshotSub = _pageAudio.states.listen((snapshot) {
+      _emit(
+        _state.copyWith(
+          isNarrationPlaying: snapshot.isNarrationPlaying,
+          isSoundscapePlaying: snapshot.isSoundscapePlaying,
+          narrationPosition: snapshot.narrationPosition,
+        ),
+      );
     });
   }
 
-  final AudioPort _audioPort;
+  final PageAudio _pageAudio;
   final SpeechPracticePort _speechPort;
   final SchedulerPort _scheduler;
   final ReaderAnalyticsTracker? _analyticsTracker;
+  final ImageReadyProbe _imageReadyProbe;
 
   final StreamController<ReaderViewState> _controller =
       StreamController<ReaderViewState>.broadcast();
@@ -41,9 +51,7 @@ class ReaderSessionImpl implements ReaderSession {
       StreamController<int>.broadcast();
   ReaderViewState _state = const ReaderViewState.initial();
 
-  StreamSubscription<Duration>? _narrationPositionSub;
-  StreamSubscription<bool>? _narrationPlayingSub;
-  StreamSubscription<bool>? _soundscapePlayingSub;
+  StreamSubscription<AudioSnapshot>? _audioSnapshotSub;
 
   Book? _book;
   int _pageRequestId = 0;
@@ -51,7 +59,6 @@ class ReaderSessionImpl implements ReaderSession {
   bool _speechAvailable = false;
   Map<String, List<int>> _wordToIndices = const {};
   CancelableTask? _celebrationTask;
-  bool _wasNarrationPlayingBeforePractice = false;
   double _soundscapeVolumeBeforePractice = 0.6;
   String? _activeSpeechAttemptId;
   bool _activeSpeechAttemptHadSpeech = false;
@@ -79,9 +86,7 @@ class ReaderSessionImpl implements ReaderSession {
       final willPlay = !_state.isNarrationPlaying;
       final shouldTrackPlay =
           intent.source == ReaderIntentSource.user && willPlay;
-      await _audioPort.toggleNarration();
-      // Optimistically mirror the requested state so rapid sequential toggles
-      // do not classify a stop as another play while the audio stream catches up.
+      await _pageAudio.toggleNarration();
       _emit(_state.copyWith(isNarrationPlaying: willPlay));
       if (shouldTrackPlay) {
         _analyticsTracker?.recordNarrationPlayed(
@@ -94,9 +99,7 @@ class ReaderSessionImpl implements ReaderSession {
       final willPlay = !_state.isSoundscapePlaying;
       final shouldTrackPlay =
           intent.source == ReaderIntentSource.user && willPlay;
-      await _audioPort.toggleSoundscape();
-      // Optimistically mirror the requested state so rapid sequential toggles
-      // do not classify a stop as another play while the audio stream catches up.
+      await _pageAudio.toggleSoundscape();
       _emit(_state.copyWith(isSoundscapePlaying: willPlay));
       if (shouldTrackPlay) {
         _analyticsTracker?.recordSoundscapePlayed(
@@ -106,12 +109,12 @@ class ReaderSessionImpl implements ReaderSession {
       return;
     }
     if (intent is ReaderSetNarrationVolume) {
-      await _audioPort.setNarrationVolume(intent.volume);
+      await _pageAudio.setNarrationVolume(intent.volume);
       _emit(_state.copyWith(narrationVolume: intent.volume));
       return;
     }
     if (intent is ReaderSetSoundscapeVolume) {
-      await _audioPort.setSoundscapeVolume(intent.volume);
+      await _pageAudio.setSoundscapeVolume(intent.volume);
       _emit(_state.copyWith(soundscapeVolume: intent.volume));
       return;
     }
@@ -125,6 +128,20 @@ class ReaderSessionImpl implements ReaderSession {
       await _startListening();
       return;
     }
+    if (intent is ReaderPauseNarration) {
+      if (_state.isNarrationPlaying) {
+        await _pageAudio.toggleNarration();
+        _emit(_state.copyWith(isNarrationPlaying: false));
+      }
+      return;
+    }
+    if (intent is ReaderResumeNarration) {
+      if (!_state.isNarrationPlaying) {
+        await _pageAudio.toggleNarration();
+        _emit(_state.copyWith(isNarrationPlaying: true));
+      }
+      return;
+    }
     if (intent is ReaderPracticePrimaryAction) {
       await _handlePracticePrimaryAction();
       return;
@@ -136,10 +153,6 @@ class ReaderSessionImpl implements ReaderSession {
     if (intent is ReaderEnd) {
       _completeSpeechAttempt(reason: intent.reason);
       _analyticsTracker?.endSession(reason: intent.reason);
-      // Clear in-memory state so a future subscriber (e.g. re-entering the
-      // book) does not inherit the stale end page. Reset silently — no emit —
-      // so the app-lifecycle pause→resume path keeps the controller's retained
-      // page index for its ReaderStart re-seed.
       _resetState();
     }
   }
@@ -176,8 +189,11 @@ class ReaderSessionImpl implements ReaderSession {
     _wordToIndices = buildWordToIndices(pages[initialIndex]);
 
     final requestId = ++_pageRequestId;
-    await _audioPort.ensureInitialized();
-    await _audioPort.loadPage(pages[initialIndex]);
+    await _imageReadyProbe(pages[initialIndex].imageUrl);
+    if (requestId != _pageRequestId) {
+      return;
+    }
+    await _pageAudio.loadPage(pages[initialIndex]);
     if (requestId != _pageRequestId) {
       return;
     }
@@ -214,7 +230,11 @@ class ReaderSessionImpl implements ReaderSession {
     }
 
     final requestId = ++_pageRequestId;
-    await _audioPort.transitionToPage(nextPage);
+    await _imageReadyProbe(nextPage.imageUrl);
+    if (requestId != _pageRequestId) {
+      return;
+    }
+    await _pageAudio.loadPage(nextPage);
     if (requestId != _pageRequestId) {
       return;
     }
@@ -222,22 +242,13 @@ class ReaderSessionImpl implements ReaderSession {
 
   Future<void> _handlePracticePrimaryAction() async {
     if (!_state.isListening) {
-      // Start practice: save state, duck audio, begin listening.
       await _ensureSpeechInitialized();
       if (!_speechAvailable) {
         return;
       }
 
-      _wasNarrationPlayingBeforePractice = _state.isNarrationPlaying;
       _soundscapeVolumeBeforePractice = _state.soundscapeVolume;
-
-      // Pause narration if currently playing.
-      if (_state.isNarrationPlaying) {
-        await _audioPort.toggleNarration();
-      }
-
-      // Duck soundscape volume.
-      await _audioPort.setSoundscapeVolume(0.3);
+      await _pageAudio.duckForPractice();
 
       _emit(
         _state.copyWith(
@@ -252,26 +263,19 @@ class ReaderSessionImpl implements ReaderSession {
       return;
     }
 
-    // Stop practice: stop listening, restore audio state.
     await _speechPort.stopListening();
     await _restorePracticeAudioState();
     _onListeningDone();
   }
 
   Future<void> _restorePracticeAudioState() async {
-    // Restore soundscape volume.
-    await _audioPort.setSoundscapeVolume(_soundscapeVolumeBeforePractice);
+    await _pageAudio.restoreFromPractice();
     _emit(
       _state.copyWith(
         soundscapeVolume: _soundscapeVolumeBeforePractice,
         isPracticeMode: false,
       ),
     );
-
-    // Resume narration if it was playing before practice started.
-    if (_wasNarrationPlayingBeforePractice && !_state.isNarrationPlaying) {
-      await _audioPort.toggleNarration();
-    }
   }
 
   Future<void> _ensureSpeechInitialized() async {
@@ -352,7 +356,6 @@ class ReaderSessionImpl implements ReaderSession {
       _scheduleCelebrationClear();
     }
 
-    // Restore audio state when listening ends naturally.
     if (_state.isPracticeMode) {
       await _restorePracticeAudioState();
     }
@@ -402,11 +405,8 @@ class ReaderSessionImpl implements ReaderSession {
     _completeSpeechAttempt(reason: 'dispose');
     _analyticsTracker?.endSession(reason: 'provider_dispose');
     _celebrationTask?.cancel();
-    await _narrationPositionSub?.cancel();
-    await _narrationPlayingSub?.cancel();
-    await _soundscapePlayingSub?.cancel();
+    await _audioSnapshotSub?.cancel();
     await _speechPort.dispose();
-    await _audioPort.dispose();
     await _controller.close();
     await _pageChangeController.close();
   }

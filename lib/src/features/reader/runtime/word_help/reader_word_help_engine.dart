@@ -88,7 +88,7 @@ class ReaderWordHelpEngine implements ReaderWordHelp {
         _emit(_snapshot.copyWith(phase: WordHelpPhase.playingPronunciation));
         _startHighlightTracking(request.wordIndex, pronunciation);
         try {
-          await _pronunciationAudio.playSequence(urls);
+          await _pronunciationAudio.play(urls);
           if (!_isCurrent(requestId)) {
             return const WordHelpResult(outcome: WordHelpOutcome.cancelled);
           }

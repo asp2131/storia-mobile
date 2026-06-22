@@ -1,16 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_text_field.dart';
+import '../../../routing/journey/journey_actions.dart';
 import 'widgets/auth_screen_shell.dart';
 import '../data/auth_providers.dart';
 import '../data/auth_repository.dart';
-import '../domain/auth_state.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -49,25 +48,18 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthViewState>(authViewStateProvider, (previous, next) {
-      if (!mounted || !next.isAuthenticated) {
-        return;
-      }
-      final location = GoRouterState.of(context).matchedLocation;
-      if (location == '/sign-in' ||
-          location == '/sign-up' ||
-          location == '/intro') {
-        context.go('/library');
-      }
-    });
-
+    // Post-auth advancement is owned by the router redirect backstop:
+    // authStateNotifierProvider is in the router's refreshListenable, so
+    // JourneyPolicy moves the user off this screen the moment auth flips.
+    // (A screen-side listener here used to hardcode the library route, skipping
+    // the profile-picker gate and causing a visible double hop.)
     final textTheme = Theme.of(context).textTheme;
 
     return AuthScreenShell(
       title: 'Welcome Back',
       subtitle:
-          'Skip the password. Enter your email and we will send a magic link to open Storia securely.',
-      onBack: () => context.go('/intro'),
+          'Skip the password. Enter your email and we will send a magic link to open Loratone securely.',
+      onBack: () => backOutOfJourneyStep(context),
       footer: Center(
         child: Wrap(
           alignment: WrapAlignment.center,
@@ -81,7 +73,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => context.go('/sign-up'),
+              onPressed: () => enterAuth(context, AuthEntry.signUp),
               style: TextButton.styleFrom(foregroundColor: StoriaColors.ink),
               child: const Text('Create account'),
             ),
@@ -102,7 +94,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'We will email a secure sign-in link. Open it on this device and Storia will bring you straight into the library.',
+            'We will email a secure sign-in link. Open it on this device and Loratone will bring you straight into the library.',
             style: textTheme.bodyMedium?.copyWith(
               color: StoriaColors.ink.withValues(alpha: 0.84),
             ),

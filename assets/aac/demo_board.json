@@ -1,0 +1,18 @@
+{
+  "palette": { "root": "c", "scale": "majorPentatonic", "baseOctave": 4 },
+  "tagDefaults": {
+    "pronoun": { "kind": "note", "degree": 0 },
+    "request": { "kind": "note", "degree": 3 },
+    "quantity": { "kind": "note", "degree": 4 }
+  },
+  "words": [
+    { "id": "i", "label": "I", "row": 0, "col": 0, "tags": ["pronoun"] },
+    { "id": "want", "label": "want", "row": 0, "col": 1, "tags": ["request"] },
+    { "id": "more", "label": "more", "row": 0, "col": 2, "tags": ["quantity"] },
+    { "id": "help", "label": "help", "row": 0, "col": 3, "musicalRole": { "kind": "note", "degree": 2 } },
+    { "id": "yes", "label": "yes", "row": 1, "col": 0, "musicalRole": { "kind": "note", "degree": 1 } },
+    { "id": "no", "label": "no", "row": 1, "col": 1 },
+    { "id": "go", "label": "go", "row": 1, "col": 2 },
+    { "id": "stop", "label": "stop", "row": 1, "col": 3 }
+  ]
+}

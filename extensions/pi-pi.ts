@@ -22,6 +22,7 @@ import { spawn } from "child_process";
 import { readdirSync, readFileSync, existsSync, mkdirSync } from "fs";
 import { join, resolve } from "path";
 import { applyExtensionDefaults } from "./themeMap.ts";
+import { modelForChild } from "./piModels.ts";
 
 // ── Types ────────────────────────────────────────
 
@@ -272,9 +273,7 @@ export default function (pi: ExtensionAPI) {
 			updateWidget();
 		}, 1000);
 
-		const model = ctx.model
-			? `${ctx.model.provider}/${ctx.model.id}`
-			: "openrouter/google/gemini-3-flash-preview";
+		const model = modelForChild(ctx);
 
 		const args = [
 			"--mode", "json",
@@ -294,7 +293,10 @@ export default function (pi: ExtensionAPI) {
 			const proc = spawn("pi", args, {
 				stdio: ["ignore", "pipe", "pipe"],
 				env: { ...process.env },
+				cwd: ctx.cwd,
 			});
+
+			let stderr = "";
 
 			let buffer = "";
 
@@ -322,7 +324,9 @@ export default function (pi: ExtensionAPI) {
 			});
 
 			proc.stderr!.setEncoding("utf-8");
-			proc.stderr!.on("data", () => {});
+			proc.stderr!.on("data", (chunk: string) => {
+				stderr += chunk;
+			});
 
 			proc.on("close", (code) => {
 				if (buffer.trim()) {
@@ -339,7 +343,7 @@ export default function (pi: ExtensionAPI) {
 				state.elapsed = Date.now() - startTime;
 				state.status = code === 0 ? "done" : "error";
 
-				const full = textChunks.join("");
+				const full = textChunks.join("") || (code === 0 ? "" : stderr.trim());
 				state.lastLine = full.split("\n").filter((l: string) => l.trim()).pop() || "";
 				updateWidget();
 

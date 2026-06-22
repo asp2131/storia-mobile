@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/resilient_cache_manager.dart';
 import '../../core/theme/storia_colors.dart';
 import '../../core/theme/storia_motion.dart';
+import '../../core/theme/storia_spacing.dart';
 import '../../core/widgets/parental_gate.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../core/widgets/sketch_card.dart';
@@ -35,18 +36,23 @@ const double _kNodeWidth = 80;
 // ── Main screen ─────────────────────────────────────────────────────────
 
 class LibraryScreen extends ConsumerStatefulWidget {
-  const LibraryScreen({super.key});
+  const LibraryScreen({super.key, @visibleForTesting this.skyNow});
+
+  @visibleForTesting
+  final DateTime? skyNow;
 
   @override
   ConsumerState<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends ConsumerState<LibraryScreen> {
+class _LibraryScreenState extends ConsumerState<LibraryScreen>
+    with WidgetsBindingObserver {
   static const _searchDebounceDuration = Duration(milliseconds: 220);
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
   String _searchQuery = '';
   _ShelfFilter _activeFilter = _ShelfFilter.all;
+  bool? _nightSkyOverride;
 
   late final FlameLibraryMapEngineAdapter _engineAdapter;
   late final LibraryMapSessionImpl _session;
@@ -56,9 +62,26 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   @override
   void initState() {
     super.initState();
-    _engineAdapter = FlameLibraryMapEngineAdapter.instance;
+    // Own a per-screen Flame adapter so the game lifecycle is scoped to this
+    // screen mount. Sharing a process-wide game left the Flame layer blank
+    // (no character/book nodes) after returning to the app.
+    _engineAdapter = FlameLibraryMapEngineAdapter.create();
     _session = LibraryMapSessionImpl(enginePort: _engineAdapter)
       ..setEventCallback(_handleSessionEvent);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // A FlameGame's render surface can be torn down while the app is
+    // backgrounded; reusing the same game on resume re-attaches with an empty
+    // world (sky/clouds still paint, but no ground/character/book nodes).
+    // Force a fresh game on resume so the map is always rebuilt correctly.
+    if (state == AppLifecycleState.resumed && mounted) {
+      _loadedSignature = null;
+      setState(() {});
+    }
   }
 
   void _handleSessionEvent(LibraryMapEvent event) {
@@ -107,6 +130,24 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     _engineAdapter.game?.arrivedAtBook.value = null;
   }
 
+  DateTime get _skyClock => widget.skyNow ?? DateTime.now();
+
+  _SkyPalette get _skyPalette {
+    final override = _nightSkyOverride;
+    final clock = override == null ? _skyClock : _clockForSkyMode(override);
+    return _SkyPalette.fromDateTime(clock);
+  }
+
+  DateTime _clockForSkyMode(bool night) {
+    final now = _skyClock;
+    return DateTime(now.year, now.month, now.day, night ? 22 : 12);
+  }
+
+  void _toggleSkyMode() {
+    final currentlyNight = _skyPalette.isNight;
+    setState(() => _nightSkyOverride = !currentlyNight);
+  }
+
   void _onBrowsePanelBookTap(Book book) {
     final mapBook = _mapBookFor(book);
     if (mapBook == null) return;
@@ -131,6 +172,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchDebounce?.cancel();
     _searchController.dispose();
     _session.dispose();
@@ -162,8 +204,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       screenHeight: screenSize.height,
     );
 
-    final game = _engineAdapter.game!;
+    final game = _engineAdapter.game;
+    if (game == null) {
+      return const _LoadingState();
+    }
+
     final worldWidth = _session.viewport.worldWidth;
+    final skyPalette = _skyPalette;
 
     return Stack(
       children: [
@@ -171,10 +218,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         _RoomBackground(
           worldWidth: worldWidth,
           cameraNotifier: _engineAdapter.cameraXNotifier,
+          palette: skyPalette,
         ),
 
-        // Layer 1.5: Sun + drifting clouds in dead sky space.
-        const Positioned.fill(child: _SkyDecorations()),
+        // Layer 1.5: Celestial body + drifting clouds in dead sky space.
+        Positioned.fill(child: _SkyDecorations(palette: skyPalette)),
 
         // Layer 2: Flame game (transparent, character + book tap targets).
         Positioned.fill(child: GameWidget(game: game)),
@@ -192,6 +240,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               setState(() => _activeFilter = filter);
               _applyFilter();
             },
+            isNightSky: skyPalette.isNight,
+            onSkyToggle: _toggleSkyMode,
             onSettingsTap: () async {
               final passed = await ParentalGate.verify(context);
               if (!context.mounted || !passed) return;
@@ -251,9 +301,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       screenHeight,
       Object.hashAll(books.map((book) => book.id)),
     ).toString();
-    if (_loadedSignature == signature) return;
+    if (_loadedSignature == signature && _engineAdapter.game != null) return;
 
-    _loadedSignature = signature;
     _isLoadingSession = true;
     try {
       _session.loadBooks(
@@ -261,6 +310,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         screenWidth: screenWidth,
         screenHeight: screenHeight,
       );
+      _loadedSignature = signature;
       _applyFilter();
     } finally {
       _isLoadingSession = false;
@@ -288,16 +338,197 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 }
 
+// ── Living sky palette ─────────────────────────────────────────────────
+
+class _SkyPalette {
+  const _SkyPalette({
+    required this.skyTop,
+    required this.skyHorizon,
+    required this.hillBack,
+    required this.hillFront,
+    required this.sunColor,
+    required this.moonColor,
+    required this.moonShadow,
+    required this.cloudOpacity,
+    required this.starOpacity,
+    required this.isNight,
+  });
+
+  final Color skyTop;
+  final Color skyHorizon;
+  final Color hillBack;
+  final Color hillFront;
+  final Color sunColor;
+  final Color moonColor;
+  final Color moonShadow;
+  final double cloudOpacity;
+  final double starOpacity;
+  final bool isNight;
+
+  static const _night = _SkyPalette(
+    skyTop: Color(0xFF101633),
+    skyHorizon: Color(0xFF263455),
+    hillBack: Color(0xFF34415B),
+    hillFront: Color(0xFF3F4D66),
+    sunColor: StoriaColors.mustard,
+    moonColor: Color(0xFFFFF2C8),
+    moonShadow: Color(0xFF17203E),
+    cloudOpacity: 0.24,
+    starOpacity: 1,
+    isNight: true,
+  );
+
+  static const _sunrise = _SkyPalette(
+    skyTop: Color(0xFF91C9E8),
+    skyHorizon: Color(0xFFFFC58F),
+    hillBack: Color(0xFF8FBE86),
+    hillFront: Color(0xFFB4D79A),
+    sunColor: Color(0xFFFFC857),
+    moonColor: Color(0xFFFFF2C8),
+    moonShadow: Color(0xFF91C9E8),
+    cloudOpacity: 0.7,
+    starOpacity: 0,
+    isNight: false,
+  );
+
+  static const _day = _SkyPalette(
+    skyTop: Color(0xFFB3E5FC),
+    skyHorizon: Color(0xFFFFE0B2),
+    hillBack: Color(0xFFA5D6A7),
+    hillFront: Color(0xFFC8E6C9),
+    sunColor: StoriaColors.mustard,
+    moonColor: Color(0xFFFFF2C8),
+    moonShadow: Color(0xFFB3E5FC),
+    cloudOpacity: 0.82,
+    starOpacity: 0,
+    isNight: false,
+  );
+
+  static const _golden = _SkyPalette(
+    skyTop: Color(0xFF77B7E5),
+    skyHorizon: Color(0xFFFFAE69),
+    hillBack: Color(0xFF91B875),
+    hillFront: Color(0xFFC8C681),
+    sunColor: Color(0xFFFFB347),
+    moonColor: Color(0xFFFFF2C8),
+    moonShadow: Color(0xFF77B7E5),
+    cloudOpacity: 0.78,
+    starOpacity: 0,
+    isNight: false,
+  );
+
+  static _SkyPalette fromDateTime(DateTime time) {
+    final minute = time.hour * 60 + time.minute + time.second / 60;
+    const stops = <_SkyStop>[
+      _SkyStop(0, _night),
+      _SkyStop(300, _night),
+      _SkyStop(420, _sunrise),
+      _SkyStop(540, _day),
+      _SkyStop(990, _day),
+      _SkyStop(1110, _golden),
+      _SkyStop(1200, _night),
+      _SkyStop(1440, _night),
+    ];
+
+    for (var i = 0; i < stops.length - 1; i++) {
+      final a = stops[i];
+      final b = stops[i + 1];
+      if (minute >= a.minute && minute <= b.minute) {
+        final span = b.minute - a.minute;
+        final t = span == 0 ? 0.0 : (minute - a.minute) / span;
+        return _lerp(
+          a.palette,
+          b.palette,
+          _smoothstep(t),
+        )._copyWith(isNight: minute >= 1200 || minute < 300);
+      }
+    }
+    return _night;
+  }
+
+  static double _smoothstep(double t) => t * t * (3 - 2 * t);
+
+  static _SkyPalette _lerp(_SkyPalette a, _SkyPalette b, double t) {
+    return _SkyPalette(
+      skyTop: Color.lerp(a.skyTop, b.skyTop, t)!,
+      skyHorizon: Color.lerp(a.skyHorizon, b.skyHorizon, t)!,
+      hillBack: Color.lerp(a.hillBack, b.hillBack, t)!,
+      hillFront: Color.lerp(a.hillFront, b.hillFront, t)!,
+      sunColor: Color.lerp(a.sunColor, b.sunColor, t)!,
+      moonColor: Color.lerp(a.moonColor, b.moonColor, t)!,
+      moonShadow: Color.lerp(a.moonShadow, b.moonShadow, t)!,
+      cloudOpacity: _doubleLerp(a.cloudOpacity, b.cloudOpacity, t),
+      starOpacity: _doubleLerp(a.starOpacity, b.starOpacity, t),
+      isNight: t < 0.5 ? a.isNight : b.isNight,
+    );
+  }
+
+  _SkyPalette _copyWith({bool? isNight}) {
+    return _SkyPalette(
+      skyTop: skyTop,
+      skyHorizon: skyHorizon,
+      hillBack: hillBack,
+      hillFront: hillFront,
+      sunColor: sunColor,
+      moonColor: moonColor,
+      moonShadow: moonShadow,
+      cloudOpacity: cloudOpacity,
+      starOpacity: starOpacity,
+      isNight: isNight ?? this.isNight,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is _SkyPalette &&
+        other.skyTop == skyTop &&
+        other.skyHorizon == skyHorizon &&
+        other.hillBack == hillBack &&
+        other.hillFront == hillFront &&
+        other.sunColor == sunColor &&
+        other.moonColor == moonColor &&
+        other.moonShadow == moonShadow &&
+        other.cloudOpacity == cloudOpacity &&
+        other.starOpacity == starOpacity &&
+        other.isNight == isNight;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    skyTop,
+    skyHorizon,
+    hillBack,
+    hillFront,
+    sunColor,
+    moonColor,
+    moonShadow,
+    cloudOpacity,
+    starOpacity,
+    isNight,
+  );
+}
+
+class _SkyStop {
+  const _SkyStop(this.minute, this.palette);
+
+  final double minute;
+  final _SkyPalette palette;
+}
+
+double _doubleLerp(double a, double b, double t) => a + (b - a) * t;
+
 // ── Room background ─────────────────────────────────────────────────────
 
 class _RoomBackground extends StatelessWidget {
   const _RoomBackground({
     required this.worldWidth,
     required this.cameraNotifier,
+    required this.palette,
   });
 
   final double worldWidth;
   final ValueListenable<double> cameraNotifier;
+  final _SkyPalette palette;
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +538,11 @@ class _RoomBackground extends StatelessWidget {
         return RepaintBoundary(
           child: CustomPaint(
             size: Size.infinite,
-            painter: _SkyHillsPainter(worldWidth: worldWidth, cameraX: cameraX),
+            painter: _SkyHillsPainter(
+              worldWidth: worldWidth,
+              cameraX: cameraX,
+              palette: palette,
+            ),
           ),
         );
       },
@@ -318,15 +553,15 @@ class _RoomBackground extends StatelessWidget {
 /// [CustomPainter] that draws sky (0.2x parallax) and hills (0.5x parallax).
 /// Ground rendering is handled by the isometric TMX map inside the Flame world.
 class _SkyHillsPainter extends CustomPainter {
-  _SkyHillsPainter({required this.worldWidth, required this.cameraX});
+  _SkyHillsPainter({
+    required this.worldWidth,
+    required this.cameraX,
+    required this.palette,
+  });
 
   final double worldWidth;
   final double cameraX;
-
-  static const _skyTop = Color(0xFFB3E5FC);
-  static const _skyHorizon = Color(0xFFFFE0B2);
-  static const _hillBack = Color(0xFFA5D6A7);
-  static const _hillFront = Color(0xFFC8E6C9);
+  final _SkyPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -343,10 +578,10 @@ class _SkyHillsPainter extends CustomPainter {
 
     final skyRect = Rect.fromLTWH(0, 0, size.width - skyOffset, horizonY);
     final skyPaint = Paint()
-      ..shader = const LinearGradient(
+      ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [_skyTop, _skyHorizon],
+        colors: [palette.skyTop, palette.skyHorizon],
       ).createShader(Rect.fromLTWH(0, 0, size.width, horizonY));
     canvas.drawRect(skyRect, skyPaint);
 
@@ -386,7 +621,7 @@ class _SkyHillsPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       backPath,
-      Paint()..color = _hillBack.withValues(alpha: 0.6),
+      Paint()..color = palette.hillBack.withValues(alpha: 0.6),
     );
 
     final frontPath = Path()
@@ -414,7 +649,7 @@ class _SkyHillsPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       frontPath,
-      Paint()..color = _hillFront.withValues(alpha: 0.8),
+      Paint()..color = palette.hillFront.withValues(alpha: 0.8),
     );
 
     canvas.restore();
@@ -422,7 +657,9 @@ class _SkyHillsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SkyHillsPainter oldDelegate) =>
-      worldWidth != oldDelegate.worldWidth || cameraX != oldDelegate.cameraX;
+      worldWidth != oldDelegate.worldWidth ||
+      cameraX != oldDelegate.cameraX ||
+      palette != oldDelegate.palette;
 }
 
 // ── Floating controls ───────────────────────────────────────────────────
@@ -433,6 +670,8 @@ class _FloatingControls extends StatelessWidget {
     required this.activeFilter,
     required this.onSearchChanged,
     required this.onFilterChanged,
+    required this.isNightSky,
+    required this.onSkyToggle,
     required this.onSettingsTap,
   });
 
@@ -440,6 +679,8 @@ class _FloatingControls extends StatelessWidget {
   final _ShelfFilter activeFilter;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<_ShelfFilter> onFilterChanged;
+  final bool isNightSky;
+  final VoidCallback onSkyToggle;
   final VoidCallback onSettingsTap;
 
   @override
@@ -469,7 +710,18 @@ class _FloatingControls extends StatelessWidget {
                   onChanged: onSearchChanged,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: StoriaSpacing.sm),
+              SketchIconButton(
+                key: const ValueKey('library-sky-toggle'),
+                icon: isNightSky
+                    ? Icons.wb_sunny_outlined
+                    : Icons.nightlight_round,
+                onPressed: onSkyToggle,
+                tooltip: isNightSky
+                    ? 'Switch sky to day'
+                    : 'Switch sky to night',
+              ),
+              const SizedBox(width: StoriaSpacing.sm),
               SketchIconButton(
                 icon: Icons.settings_outlined,
                 onPressed: onSettingsTap,
@@ -1071,10 +1323,12 @@ class _BrowseCoverPlaceholder extends StatelessWidget {
   }
 }
 
-// ── Sky decorations: sun + drifting clouds ──────────────────────────────
+// ── Sky decorations: sun/moon + drifting clouds ─────────────────────────
 
 class _SkyDecorations extends StatefulWidget {
-  const _SkyDecorations();
+  const _SkyDecorations({required this.palette});
+
+  final _SkyPalette palette;
 
   @override
   State<_SkyDecorations> createState() => _SkyDecorationsState();
@@ -1114,7 +1368,12 @@ class _SkyDecorationsState extends State<_SkyDecorations>
         builder: (context, _) {
           final t = _t.value;
           return Stack(
-            children: [_sun(t), for (final spec in _clouds) _cloud(spec, t)],
+            children: [
+              if (widget.palette.starOpacity > 0.01)
+                _StarField(t: t, opacity: widget.palette.starOpacity),
+              widget.palette.isNight ? _moon(t) : _sun(t),
+              for (final spec in _clouds) _cloud(spec, t),
+            ],
           );
         },
       ),
@@ -1138,7 +1397,10 @@ class _SkyDecorationsState extends State<_SkyDecorations>
     return Positioned(
       top: spec.top + dy,
       left: left,
-      child: Opacity(opacity: spec.opacity, child: cloud),
+      child: Opacity(
+        opacity: spec.opacity * widget.palette.cloudOpacity,
+        child: cloud,
+      ),
     );
   }
 
@@ -1159,8 +1421,8 @@ class _SkyDecorationsState extends State<_SkyDecorations>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  const Color(0xFFFFD644).withValues(alpha: glowOpacity),
-                  const Color(0xFFFFD644).withValues(alpha: 0),
+                  widget.palette.sunColor.withValues(alpha: glowOpacity),
+                  widget.palette.sunColor.withValues(alpha: 0),
                 ],
                 stops: const [0.2, 1.0],
               ),
@@ -1175,6 +1437,123 @@ class _SkyDecorationsState extends State<_SkyDecorations>
       ),
     );
   }
+
+  Widget _moon(double t) {
+    final glowOpacity = 0.18 + 0.08 * math.sin(t * math.pi * 2);
+    final bob = math.sin((t + 0.15) * math.pi * 2) * 3;
+    const moonSize = 58.0;
+    const boxSize = moonSize + 38;
+    return Positioned(
+      top: 164 + bob,
+      right: 26,
+      width: boxSize,
+      height: boxSize,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  widget.palette.moonColor.withValues(alpha: glowOpacity),
+                  widget.palette.moonColor.withValues(alpha: 0),
+                ],
+                stops: const [0.12, 1.0],
+              ),
+            ),
+          ),
+          CustomPaint(
+            size: const Size.square(moonSize),
+            painter: _MoonPainter(
+              color: widget.palette.moonColor,
+              shadowColor: widget.palette.moonShadow,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StarField extends StatelessWidget {
+  const _StarField({required this.t, required this.opacity});
+
+  final double t;
+  final double opacity;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: CustomPaint(
+        painter: _StarsPainter(t: t, opacity: opacity),
+      ),
+    );
+  }
+}
+
+class _StarsPainter extends CustomPainter {
+  const _StarsPainter({required this.t, required this.opacity});
+
+  final double t;
+  final double opacity;
+
+  static const _stars = <Offset>[
+    Offset(0.08, 0.20),
+    Offset(0.16, 0.34),
+    Offset(0.24, 0.16),
+    Offset(0.34, 0.30),
+    Offset(0.45, 0.18),
+    Offset(0.56, 0.36),
+    Offset(0.66, 0.22),
+    Offset(0.78, 0.32),
+    Offset(0.88, 0.18),
+    Offset(0.93, 0.42),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final skyHeight = size.height * 0.56;
+    final paint = Paint()..style = PaintingStyle.fill;
+    for (var i = 0; i < _stars.length; i++) {
+      final star = _stars[i];
+      final twinkle = 0.58 + 0.42 * math.sin(t * math.pi * 2 + i * 1.7);
+      paint.color = Colors.white.withValues(alpha: opacity * twinkle * 0.82);
+      final radius = i.isEven ? 1.8 : 1.25;
+      canvas.drawCircle(
+        Offset(star.dx * size.width, star.dy * skyHeight + 24),
+        radius,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StarsPainter oldDelegate) =>
+      t != oldDelegate.t || opacity != oldDelegate.opacity;
+}
+
+class _MoonPainter extends CustomPainter {
+  const _MoonPainter({required this.color, required this.shadowColor});
+
+  final Color color;
+  final Color shadowColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) / 2;
+    canvas.drawCircle(center, radius, Paint()..color = color);
+    canvas.drawCircle(
+      center.translate(radius * 0.34, -radius * 0.10),
+      radius * 0.92,
+      Paint()..color = shadowColor,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MoonPainter oldDelegate) =>
+      color != oldDelegate.color || shadowColor != oldDelegate.shadowColor;
 }
 
 class _CloudSpec {

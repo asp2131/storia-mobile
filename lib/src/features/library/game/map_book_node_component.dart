@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
+import 'package:flutter/foundation.dart';
+
 import '../../../data/models.dart';
 
 /// A Flame [PositionComponent] that renders a book as a pedestal-style
@@ -15,17 +17,40 @@ import '../../../data/models.dart';
 class MapBookNodeComponent extends PositionComponent with TapCallbacks {
   MapBookNodeComponent({
     required this.book,
-    this.isDimmed = false,
+    bool isVisible = true,
     this.onBookTapped,
     this.accentColor = const Color(0xFFFFB74D),
     super.position,
-  }) : super(size: Vector2(80, 110));
+  }) : _isVisible = isVisible,
+       _visibility = isVisible ? 1.0 : 0.0,
+       super(size: Vector2(80, 110));
 
   static const double nodeWidth = 80;
   static const double nodeHeight = 110;
 
+  /// Speed of the visibility fade/shrink, in units/second. 4.0 ≈ 250ms.
+  static const double _visibilitySpeed = 4.0;
+
+  /// Minimum scale a hidden node shrinks to (visible nodes render at 1.0).
+  static const double _hiddenScale = 0.85;
+
   final Book book;
-  bool isDimmed;
+
+  /// Whether the node passes the active filter. Drives the fade/shrink toward
+  /// fully shown (`true`) or fully hidden (`false`).
+  ///
+  /// Stored nullable so Flame components that survive a hot reload after this
+  /// field was introduced do not crash with a null non-nullable field slot.
+  bool? _isVisible;
+  bool get isVisible => _isVisible ?? true;
+  set isVisible(bool value) => _isVisible = value;
+
+  /// Animated 0–1 visibility, lerped toward `isVisible` in [update]. Used as an
+  /// opacity multiplier and to derive the node's render scale.
+  ///
+  /// Nullable for the same hot-reload safety reason as [_isVisible].
+  double? _visibility;
+
   void Function(Book book, double x)? onBookTapped;
 
   /// Per-node accent color used for the stripe and selected glow.
@@ -96,7 +121,37 @@ class MapBookNodeComponent extends PositionComponent with TapCallbacks {
         isArrivalFocused = false;
       }
     }
+
+    // Lerp visibility toward the filter target for a fade + shrink transition.
+    final target = isVisible ? 1.0 : 0.0;
+    final current = _visibilityValue;
+    if (current != target) {
+      final step = dt * _visibilitySpeed;
+      if ((target - current).abs() <= step) {
+        _visibility = target;
+      } else {
+        _visibility = current + (target - current).sign * step;
+      }
+    }
   }
+
+  double get _visibilityValue {
+    final value = _visibility;
+    if (value != null) return value;
+
+    final fallback = isVisible ? 1.0 : 0.0;
+    _visibility = fallback;
+    return fallback;
+  }
+
+  /// Whether the node is still part of the active map and shown enough to tap.
+  bool get _isInteractable => isVisible && _visibilityValue >= 0.5;
+
+  @visibleForTesting
+  double get debugVisibility => _visibilityValue;
+
+  @visibleForTesting
+  bool get debugIsInteractable => _isInteractable;
 
   void triggerArrivalFocus({double duration = 1.2}) {
     isArrivalFocused = true;
@@ -110,21 +165,41 @@ class MapBookNodeComponent extends PositionComponent with TapCallbacks {
 
   @override
   void render(Canvas canvas) {
-    final double baseOpacity = isDimmed ? 0.25 : 1.0;
+    // Fully hidden nodes paint nothing (and are non-interactable).
+    final visibility = _visibilityValue;
+    if (visibility <= 0.001) {
+      return;
+    }
+
+    // Smoothstep-eased visibility drives opacity and scale together so the
+    // fade and shrink share one curve.
+    final double eased = visibility * visibility * (3 - 2 * visibility);
+    final double baseOpacity = eased;
+    final double scale = _hiddenScale + (1 - _hiddenScale) * eased;
 
     // Center the pedestal horizontally within the 80px-wide component.
     final double offsetX = (size.x - _pedestalWidth) / 2;
+
+    final bool scaled = scale != 1.0;
+    if (scaled) {
+      // Shrink toward the node's bottom-center so it sinks into its pad.
+      final pivot = Offset(size.x / 2, size.y);
+      canvas.save();
+      canvas.translate(pivot.dx, pivot.dy);
+      canvas.scale(scale);
+      canvas.translate(-pivot.dx, -pivot.dy);
+    }
 
     // 1. Destination pad (ground shadow ellipse)
     _renderDestinationPad(canvas, baseOpacity);
 
     // 2. Selected / arrival glow (behind pedestal)
-    if ((isSelected || isArrivalFocused) && !isDimmed) {
+    if ((isSelected || isArrivalFocused) && _isInteractable) {
       _renderSelectedGlow(canvas, offsetX, baseOpacity);
     }
 
     // 3. Drop shadow
-    _renderDropShadow(canvas, offsetX);
+    _renderDropShadow(canvas, offsetX, baseOpacity);
 
     // 4. Pedestal base
     _renderPedestal(canvas, offsetX, baseOpacity);
@@ -137,6 +212,10 @@ class MapBookNodeComponent extends PositionComponent with TapCallbacks {
 
     // 7. Accent stripe
     _renderAccentStripe(canvas, offsetX, baseOpacity);
+
+    if (scaled) {
+      canvas.restore();
+    }
   }
 
   void _renderDestinationPad(Canvas canvas, double opacity) {
@@ -176,13 +255,13 @@ class MapBookNodeComponent extends PositionComponent with TapCallbacks {
     canvas.drawRRect(glowRect, glowPaint);
   }
 
-  void _renderDropShadow(Canvas canvas, double offsetX) {
+  void _renderDropShadow(Canvas canvas, double offsetX, double opacity) {
     final shadowRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(offsetX, 2, _pedestalWidth, _pedestalHeight),
       const Radius.circular(_pedestalCorner),
     );
     final shadowPaint = Paint()
-      ..color = const Color(0xFF000000).withValues(alpha: 0.15)
+      ..color = const Color(0xFF000000).withValues(alpha: 0.15 * opacity)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
     canvas.drawRRect(shadowRect, shadowPaint);
   }
@@ -314,7 +393,8 @@ class MapBookNodeComponent extends PositionComponent with TapCallbacks {
 
   @override
   void onTapUp(TapUpEvent event) {
-    if (!isDimmed) {
+    // Hidden / fading-out nodes are filtered off the map and ignore taps.
+    if (_isInteractable) {
       onBookTapped?.call(book, position.x);
     }
   }

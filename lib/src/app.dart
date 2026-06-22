@@ -14,7 +14,7 @@ class StoriaApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Storia',
+      title: 'Loratone',
       theme: buildAppTheme(),
       darkTheme: buildAppTheme(brightness: .dark),
       themeMode: .system,

@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:storia_kids/src/audio/page_audio.dart';
 import 'package:storia_kids/src/data/analytics_repository.dart';
 import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/reader/runtime/ports/audio_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/ports/scheduler_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/ports/speech_practice_port.dart';
 import 'package:storia_kids/src/features/reader/runtime/reader_analytics_tracker.dart';
@@ -15,7 +16,7 @@ void main() {
   group('ReaderSessionImpl analytics instrumentation', () {
     late _FakeAnalyticsTransport transport;
     late ReaderAnalyticsTracker tracker;
-    late _FakeAudioPort audio;
+    late _FakePageAudio audio;
     late _FakeSpeechPracticePort speech;
     late ReaderSessionImpl session;
 
@@ -29,10 +30,10 @@ void main() {
         sessionIdFactory: () => 'reader-session-1',
         clock: () => DateTime.utc(2026, 1, 1),
       );
-      audio = _FakeAudioPort();
+      audio = _FakePageAudio();
       speech = _FakeSpeechPracticePort();
       session = ReaderSessionImpl(
-        audioPort: audio,
+        pageAudio: audio,
         speechPort: speech,
         scheduler: _FakeSchedulerPort(),
         analyticsTracker: tracker,
@@ -174,21 +175,34 @@ void main() {
     );
 
     test('analytics transport failures do not break reader flow', () async {
-      transport.error = StateError('network');
+      await _withSuppressedDebugPrint(() async {
+        transport.error = StateError('network');
 
-      await expectLater(session.dispatch(ReaderStart(book: _book)), completes);
-      await pumpEventQueue();
-      var state = await session.states.first;
-      expect(state.isReady, true);
-      expect(state.activePageIndex, 0);
+        await expectLater(session.dispatch(ReaderStart(book: _book)), completes);
+        await pumpEventQueue();
+        var state = await session.states.first;
+        expect(state.isReady, true);
+        expect(state.activePageIndex, 0);
 
-      await expectLater(session.dispatch(const ReaderGoToPage(1)), completes);
-      await pumpEventQueue();
-      state = await session.states.first;
-      expect(state.activePageIndex, 1);
-      expect(transport.events, isEmpty);
+        await expectLater(session.dispatch(const ReaderGoToPage(1)), completes);
+        await pumpEventQueue();
+        state = await session.states.first;
+        expect(state.activePageIndex, 1);
+        expect(transport.events, isEmpty);
+        transport.error = null;
+      });
     });
   });
+}
+
+Future<T> _withSuppressedDebugPrint<T>(Future<T> Function() body) async {
+  final previousDebugPrint = debugPrint;
+  debugPrint = (String? message, {int? wrapWidth}) {};
+  try {
+    return await body();
+  } finally {
+    debugPrint = previousDebugPrint;
+  }
 }
 
 String _eventName(Map<String, dynamic> body) => body['event'] as String;
@@ -232,41 +246,31 @@ class _FakeAnalyticsTransport implements AnalyticsTransport {
   }
 }
 
-class _FakeAudioPort implements AudioPort {
-  final _narrationPosition = StreamController<Duration>.broadcast();
-  final _narrationPlaying = StreamController<bool>.broadcast();
-  final _soundscapePlaying = StreamController<bool>.broadcast();
-  bool isNarrationPlaying = false;
-  bool isSoundscapePlaying = false;
+class _FakePageAudio implements PageAudio {
+  final _statesController = StreamController<AudioSnapshot>.broadcast();
+  bool _isNarrationPlaying = false;
+  bool _isSoundscapePlaying = false;
 
   @override
-  Stream<Duration> get narrationPosition => _narrationPosition.stream;
-
-  @override
-  Stream<bool> get narrationPlaying => _narrationPlaying.stream;
-
-  @override
-  Stream<bool> get soundscapePlaying => _soundscapePlaying.stream;
-
-  @override
-  Future<void> ensureInitialized() async {}
+  Stream<AudioSnapshot> get states => _statesController.stream;
 
   @override
   Future<void> loadPage(PageData page) async {}
 
   @override
-  Future<void> transitionToPage(PageData page) async {}
-
-  @override
   Future<void> toggleNarration() async {
-    isNarrationPlaying = !isNarrationPlaying;
-    _narrationPlaying.add(isNarrationPlaying);
+    _isNarrationPlaying = !_isNarrationPlaying;
+    _statesController.add(
+      AudioSnapshot(isNarrationPlaying: _isNarrationPlaying),
+    );
   }
 
   @override
   Future<void> toggleSoundscape() async {
-    isSoundscapePlaying = !isSoundscapePlaying;
-    _soundscapePlaying.add(isSoundscapePlaying);
+    _isSoundscapePlaying = !_isSoundscapePlaying;
+    _statesController.add(
+      AudioSnapshot(isSoundscapePlaying: _isSoundscapePlaying),
+    );
   }
 
   @override
@@ -276,11 +280,10 @@ class _FakeAudioPort implements AudioPort {
   Future<void> setSoundscapeVolume(double volume) async {}
 
   @override
-  Future<void> dispose() async {
-    await _narrationPosition.close();
-    await _narrationPlaying.close();
-    await _soundscapePlaying.close();
-  }
+  Future<void> duckForPractice() async {}
+
+  @override
+  Future<void> restoreFromPractice() async {}
 }
 
 class _FakeSpeechPracticePort implements SpeechPracticePort {

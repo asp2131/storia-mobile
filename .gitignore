@@ -12,6 +12,7 @@
 .swiftpm/
 migrate_working_dir/
 .claude/
+.expo/
 
 # IntelliJ related
 *.iml
@@ -63,4 +64,4 @@ android/key.properties
 .wolf
 .superdesign
 .symphony/runs/
-.symphony/workspaces/
+.symphony/workspaces/.superpowers/

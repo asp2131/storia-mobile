@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_text_field.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../../onboarding/data/app_review_flow_providers.dart';
 import '../data/auth_providers.dart';
 import '../data/auth_repository.dart';
-import '../domain/auth_state.dart';
 import 'widgets/auth_screen_shell.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -32,25 +31,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthViewState>(authViewStateProvider, (previous, next) {
-      if (!mounted || !next.isAuthenticated) {
-        return;
-      }
-      final location = GoRouterState.of(context).matchedLocation;
-      if (location == '/sign-up' ||
-          location == '/sign-in' ||
-          location == '/intro') {
-        context.go('/library');
-      }
-    });
-
+    // Post-auth advancement is owned by the router redirect backstop:
+    // authStateNotifierProvider is in the router's refreshListenable, so
+    // JourneyPolicy moves the user off this screen the moment auth flips.
+    // (A screen-side listener here used to hardcode the library route, skipping
+    // the profile-picker gate and causing a visible double hop.)
     final textTheme = Theme.of(context).textTheme;
 
     return AuthScreenShell(
       title: 'Join the Library',
       subtitle:
-          'Create a Storia parent account with a magic link. No password to remember, no reset flow to babysit.',
-      onBack: () => context.go('/intro'),
+          'Create a Loratone parent account with a magic link. No password to remember, no reset flow to babysit.',
+      onBack: () => backOutOfJourneyStep(context),
       footer: Center(
         child: Wrap(
           alignment: WrapAlignment.center,
@@ -64,7 +56,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => context.go('/sign-in'),
+              onPressed: () => enterAuth(context, AuthEntry.signIn),
               style: TextButton.styleFrom(foregroundColor: StoriaColors.ink),
               child: const Text('Sign in'),
             ),
@@ -177,7 +169,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/parent-birth-year');
+      continueJourney(ref, context);
     } catch (_) {
       if (mounted) {
         setState(() => _errorMessage = 'Could not start the App Review flow.');

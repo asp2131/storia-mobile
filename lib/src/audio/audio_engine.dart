@@ -1,181 +1,119 @@
 import 'dart:async';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:just_audio/just_audio.dart';
 
 import '../data/models.dart';
+import 'page_audio.dart';
+import 'pronunciation_player.dart';
+import 'raw_player.dart';
 
-class AudioEngine {
+typedef RawPlayerFactory = RawPlayer Function();
+
+class AudioEngine implements PageAudio, PronunciationPlayer {
+  AudioEngine({
+    required RawPlayerFactory playerFactory,
+    RawPlayer? narrationPlayer,
+    RawPlayer? soundscapePlayer,
+    RawPlayer? pronunciationPlayer,
+  })  : _narration = narrationPlayer ?? playerFactory(),
+        _soundscape = soundscapePlayer ?? playerFactory(),
+        _pronunciation = pronunciationPlayer ?? playerFactory();
+
+  final RawPlayer _narration;
+  final RawPlayer _soundscape;
+  final RawPlayer _pronunciation;
+
   static const Duration _restartThreshold = Duration(milliseconds: 250);
 
-  final AudioPlayer _narration = AudioPlayer();
-  final AudioPlayer _soundscape = AudioPlayer();
-  final AudioPlayer _pronunciation = AudioPlayer();
   final StreamController<bool> _pronunciationPlayingController =
       StreamController<bool>.broadcast();
+  final StreamController<AudioSnapshot> _snapshotController =
+      StreamController<AudioSnapshot>.broadcast();
 
   bool _initialized = false;
   int _pageAudioRequestId = 0;
   int _pronunciationRequestId = 0;
   String? _currentSoundscapeUrl;
 
-  /// Whether the user has toggled narration on (independent of player state).
   bool _narrationActive = false;
-
-  /// Whether the user has toggled soundscape on (independent of player state).
   bool _soundscapeActive = false;
-
   double _soundscapeTargetVolume = 0.6;
 
-  Future<void> ensureInitialized() async {
-    if (_initialized) {
-      return;
-    }
+  bool _wasNarrationPlayingBeforePractice = false;
+  double _soundscapeVolumeBeforePractice = 0.6;
 
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.music());
+  StreamSubscription<Duration>? _narrationPositionSub;
+  StreamSubscription<bool>? _narrationPlayingSub;
+  StreamSubscription<bool>? _soundscapePlayingSub;
 
-    _soundscape.setLoopMode(LoopMode.off);
+  AudioSnapshot _currentSnapshot = const AudioSnapshot();
+
+  Future<void> _ensureInitialized() async {
+    if (_initialized) return;
+
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+    } catch (_) {}
+
+    await _soundscape.setLoopMode(RawLoopMode.off);
     await _soundscape.setVolume(_soundscapeTargetVolume);
+
+    _narrationPositionSub = _narration.positionStream.listen((pos) {
+      _currentSnapshot = _currentSnapshot.copyWith(narrationPosition: pos);
+      _emitSnapshot();
+    });
+    _narrationPlayingSub = _narration.playingStream.listen((playing) {
+      _currentSnapshot = _currentSnapshot.copyWith(isNarrationPlaying: playing);
+      _emitSnapshot();
+    });
+    _soundscapePlayingSub = _soundscape.playingStream.listen((playing) {
+      _currentSnapshot =
+          _currentSnapshot.copyWith(isSoundscapePlaying: playing);
+      _emitSnapshot();
+    });
 
     _initialized = true;
   }
 
-  // ---------------------------------------------------------------------------
-  // Page loading
-  // ---------------------------------------------------------------------------
+  void _emitSnapshot() {
+    if (!_snapshotController.isClosed) {
+      _snapshotController.add(_currentSnapshot);
+    }
+  }
 
+  @override
   Future<void> loadPage(PageData page) async {
-    await ensureInitialized();
+    await _ensureInitialized();
     final requestId = ++_pageAudioRequestId;
 
-    await Future.wait([_narration.stop(), _soundscape.stop()]);
-    if (requestId != _pageAudioRequestId) {
-      return;
-    }
+    await _narration.stop();
+    if (requestId != _pageAudioRequestId) return;
 
     final narrationUrl = page.narrationUrl;
     if (narrationUrl != null && narrationUrl.isNotEmpty) {
-      await _narration.setUrl(narrationUrl);
-      if (requestId != _pageAudioRequestId) {
-        return;
-      }
+      await _narration.setSource(narrationUrl);
+      if (requestId != _pageAudioRequestId) return;
       if (_narrationActive) {
         await _narration.play();
       }
     }
 
     final soundscapeUrl = page.soundscapeUrl;
-    if (soundscapeUrl != null && soundscapeUrl.isNotEmpty) {
-      await _soundscape.setVolume(_soundscapeTargetVolume);
-      await _soundscape.setUrl(soundscapeUrl);
-      _currentSoundscapeUrl = soundscapeUrl;
-      if (requestId != _pageAudioRequestId) {
-        return;
-      }
-      if (_soundscapeActive) {
-        await _soundscape.play();
-      }
-    } else {
-      _currentSoundscapeUrl = null;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Independent narration controls
-  // ---------------------------------------------------------------------------
-
-  Future<void> playNarration() async {
-    await ensureInitialized();
-    await _restartIfCompleted(_narration);
-    _narrationActive = true;
-    await _narration.play();
-  }
-
-  Future<void> pauseNarration() async {
-    _narrationActive = false;
-    await _narration.pause();
-  }
-
-  Future<void> toggleNarration() async {
-    if (_narrationActive && _narration.playing) {
-      await pauseNarration();
-    } else {
-      await playNarration();
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Independent soundscape controls
-  // ---------------------------------------------------------------------------
-
-  Future<void> playSoundscape() async {
-    await ensureInitialized();
-    await _restartIfCompleted(_soundscape);
-    _soundscapeActive = true;
-    await _soundscape.play();
-  }
-
-  Future<void> pauseSoundscape() async {
-    _soundscapeActive = false;
-    await _soundscape.pause();
-  }
-
-  Future<void> toggleSoundscape() async {
-    if (_soundscapeActive && _soundscape.playing) {
-      await pauseSoundscape();
-    } else {
-      await playSoundscape();
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Page transitions
-  // ---------------------------------------------------------------------------
-
-  Future<void> transitionToPage(PageData nextPage) async {
-    await ensureInitialized();
-    final requestId = ++_pageAudioRequestId;
-
-    final nextNarrationUrl = nextPage.narrationUrl;
-    final nextSoundscapeUrl = nextPage.soundscapeUrl;
-
-    await _narration.stop();
-    if (requestId != _pageAudioRequestId) {
-      return;
-    }
-
-    if (nextNarrationUrl != null && nextNarrationUrl.isNotEmpty) {
-      await _narration.setUrl(nextNarrationUrl);
-      if (requestId != _pageAudioRequestId) {
-        return;
-      }
-      if (_narrationActive) {
-        await _narration.play();
-      }
-    }
-
-    final hasSoundscape =
-        nextSoundscapeUrl != null && nextSoundscapeUrl.isNotEmpty;
+    final hasSoundscape = soundscapeUrl != null && soundscapeUrl.isNotEmpty;
     final isSameSoundscape =
-        hasSoundscape && nextSoundscapeUrl == _currentSoundscapeUrl;
+        hasSoundscape && soundscapeUrl == _currentSoundscapeUrl;
 
-    if (isSameSoundscape) {
-      return;
-    }
+    if (isSameSoundscape) return;
 
     await _soundscape.stop();
-    if (requestId != _pageAudioRequestId) {
-      return;
-    }
+    if (requestId != _pageAudioRequestId) return;
 
-    if (nextSoundscapeUrl != null && nextSoundscapeUrl.isNotEmpty) {
+    if (hasSoundscape) {
       await _soundscape.setVolume(_soundscapeTargetVolume);
-      await _soundscape.setUrl(nextSoundscapeUrl);
-      _currentSoundscapeUrl = nextSoundscapeUrl;
-      if (requestId != _pageAudioRequestId) {
-        return;
-      }
+      await _soundscape.setSource(soundscapeUrl);
+      _currentSoundscapeUrl = soundscapeUrl;
+      if (requestId != _pageAudioRequestId) return;
       if (_soundscapeActive) {
         await _soundscape.play();
       }
@@ -184,43 +122,92 @@ class AudioEngine {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Pronunciation channel — independent of narration / soundscape state.
-  // ---------------------------------------------------------------------------
-
-  /// Plays the supplied URLs sequentially. Each call cancels any prior
-  /// pronunciation playback (cancel-and-replace). Returns when the sequence
-  /// finishes naturally; if a newer call supersedes this one mid-flight, the
-  /// returned future resolves early without error.
-  Future<void> playPronunciationSequence(List<String> urls) async {
-    final filtered = urls.where((u) => u.isNotEmpty).toList(growable: false);
-    if (filtered.isEmpty) {
-      return;
+  @override
+  Future<void> toggleNarration() async {
+    await _ensureInitialized();
+    if (_narrationActive && _narration.isPlaying) {
+      _narrationActive = false;
+      await _narration.pause();
+    } else {
+      await _restartIfCompleted(_narration);
+      _narrationActive = true;
+      await _narration.play();
     }
+  }
 
-    await ensureInitialized();
+  @override
+  Future<void> toggleSoundscape() async {
+    await _ensureInitialized();
+    if (_soundscapeActive && _soundscape.isPlaying) {
+      _soundscapeActive = false;
+      await _soundscape.pause();
+    } else {
+      await _restartIfCompleted(_soundscape);
+      _soundscapeActive = true;
+      await _soundscape.play();
+    }
+  }
+
+  @override
+  Future<void> setNarrationVolume(double volume) =>
+      _narration.setVolume(volume);
+
+  @override
+  Future<void> setSoundscapeVolume(double volume) {
+    _soundscapeTargetVolume = volume;
+    return _soundscape.setVolume(volume);
+  }
+
+  @override
+  Future<void> duckForPractice() async {
+    _wasNarrationPlayingBeforePractice =
+        _narrationActive && _narration.isPlaying;
+    _soundscapeVolumeBeforePractice = _soundscapeTargetVolume;
+
+    if (_wasNarrationPlayingBeforePractice) {
+      _narrationActive = false;
+      await _narration.pause();
+    }
+    await setSoundscapeVolume(0.3);
+  }
+
+  @override
+  Future<void> restoreFromPractice() async {
+    await setSoundscapeVolume(_soundscapeVolumeBeforePractice);
+
+    if (_wasNarrationPlayingBeforePractice && !_narration.isPlaying) {
+      _narrationActive = true;
+      await _narration.play();
+    }
+  }
+
+  @override
+  Stream<AudioSnapshot> get states => _snapshotController.stream;
+
+  bool get isNarrationActive => _narrationActive;
+  bool get isSoundscapeActive => _soundscapeActive;
+
+  @override
+  Future<void> play(List<String> urls) async {
+    final filtered = urls.where((u) => u.isNotEmpty).toList(growable: false);
+    if (filtered.isEmpty) return;
+
+    await _ensureInitialized();
     final requestId = ++_pronunciationRequestId;
     await _pronunciation.stop();
-    if (requestId != _pronunciationRequestId) {
-      return;
-    }
+    if (requestId != _pronunciationRequestId) return;
 
     _emitPronunciationPlaying(true);
     try {
       for (final url in filtered) {
-        if (requestId != _pronunciationRequestId) {
-          return;
-        }
-        await _pronunciation.setUrl(url);
-        if (requestId != _pronunciationRequestId) {
-          return;
-        }
+        if (requestId != _pronunciationRequestId) return;
+        await _pronunciation.setSource(url);
+        if (requestId != _pronunciationRequestId) return;
         await _pronunciation.seek(Duration.zero);
+        final done = _waitForPronunciationSegmentToEnd(requestId);
         await _pronunciation.play();
-        await _waitForPronunciationSegmentToEnd(requestId);
-        if (requestId != _pronunciationRequestId) {
-          return;
-        }
+        await done;
+        if (requestId != _pronunciationRequestId) return;
       }
     } finally {
       if (requestId == _pronunciationRequestId) {
@@ -229,81 +216,53 @@ class AudioEngine {
     }
   }
 
-  Future<void> stopPronunciation() async {
+  @override
+  Future<void> stop() async {
     _pronunciationRequestId++;
     await _pronunciation.stop();
     _emitPronunciationPlaying(false);
   }
 
-  bool get isPronunciationPlaying => _pronunciation.playing;
+  @override
+  Stream<Duration> get position => _pronunciation.positionStream;
 
-  Stream<bool> get pronunciationPlaying =>
-      _pronunciationPlayingController.stream;
+  @override
+  Stream<bool> get playing => _pronunciationPlayingController.stream;
 
-  Stream<Duration> get pronunciationPosition => _pronunciation.positionStream;
+  bool get isPronunciationPlaying => _pronunciation.isPlaying;
 
   Future<void> _waitForPronunciationSegmentToEnd(int requestId) async {
-    await _pronunciation.processingStateStream.firstWhere((state) {
-      if (requestId != _pronunciationRequestId) {
-        return true;
-      }
-      return state == ProcessingState.completed ||
-          state == ProcessingState.idle;
+    await _pronunciation.stateStream.firstWhere((state) {
+      if (requestId != _pronunciationRequestId) return true;
+      return state == RawPlayerState.completed ||
+          state == RawPlayerState.idle;
     });
   }
 
   void _emitPronunciationPlaying(bool value) {
-    if (_pronunciationPlayingController.isClosed) {
-      return;
-    }
+    if (_pronunciationPlayingController.isClosed) return;
     _pronunciationPlayingController.add(value);
   }
 
-  // ---------------------------------------------------------------------------
-  // Streams
-  // ---------------------------------------------------------------------------
-
-  Stream<Duration> get narrationPosition => _narration.positionStream;
-  Stream<bool> get narrationPlaying => _narration.playingStream;
-  Stream<bool> get soundscapePlaying => _soundscape.playingStream;
-
-  bool get isNarrationActive => _narrationActive;
-  bool get isSoundscapeActive => _soundscapeActive;
-
-  // ---------------------------------------------------------------------------
-  // Volume
-  // ---------------------------------------------------------------------------
-
-  Future<void> setNarrationVolume(double volume) =>
-      _narration.setVolume(volume);
-
-  Future<void> setSoundscapeVolume(double volume) {
-    _soundscapeTargetVolume = volume;
-    return _soundscape.setVolume(volume);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
-
   Future<void> dispose() async {
+    await _narrationPositionSub?.cancel();
+    await _narrationPlayingSub?.cancel();
+    await _soundscapePlayingSub?.cancel();
     await _pronunciationPlayingController.close();
+    await _snapshotController.close();
     await _narration.dispose();
     await _soundscape.dispose();
     await _pronunciation.dispose();
   }
 
-  Future<void> _restartIfCompleted(AudioPlayer player) async {
-    final duration = player.duration;
-    if (duration == null || duration <= Duration.zero) {
-      return;
-    }
+  Future<void> _restartIfCompleted(RawPlayer player) async {
+    final dur = player.duration;
+    if (dur == null || dur <= Duration.zero) return;
 
-    final restartCutoff = duration > _restartThreshold
-        ? duration - _restartThreshold
-        : Duration.zero;
+    final restartCutoff =
+        dur > _restartThreshold ? dur - _restartThreshold : Duration.zero;
     final isNearEnd = player.position >= restartCutoff;
-    final isCompleted = player.processingState == ProcessingState.completed;
+    final isCompleted = player.state == RawPlayerState.completed;
 
     if (isNearEnd || isCompleted) {
       await player.seek(Duration.zero);

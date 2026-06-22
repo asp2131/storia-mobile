@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_border.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../core/widgets/sketch_text_field.dart';
+import '../../../routing/journey/journey_actions.dart';
 import '../../auth/presentation/widgets/auth_screen_shell.dart';
 import '../data/app_review_flow_providers.dart';
 import '../domain/review_onboarding_profile.dart';
@@ -42,7 +42,7 @@ class _ReviewOnboardingScreenState
     return AuthScreenShell(
       title: 'A Quick Family Setup',
       subtitle:
-          'Now add the child details and what the parent hopes Storia will help with.',
+          'Now add the child details and what the parent hopes Loratone will help with.',
       onBack: _startOver,
       child: Builder(
         builder: (context) {
@@ -97,7 +97,7 @@ class _ReviewOnboardingScreenState
               ),
               const SizedBox(height: 20),
               Text(
-                'What are they hoping to get from Storia?',
+                'What are they hoping to get from Loratone?',
                 style: textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                   fontStyle: FontStyle.italic,
@@ -172,7 +172,7 @@ class _ReviewOnboardingScreenState
       if (!mounted) {
         return;
       }
-      context.go('/library');
+      continueJourney(ref, context);
     } catch (_) {
       if (!mounted) {
         return;
@@ -187,13 +187,7 @@ class _ReviewOnboardingScreenState
     }
   }
 
-  Future<void> _startOver() async {
-    await ref.read(appReviewFlowNotifierProvider).clearReviewFlow();
-    if (!mounted) {
-      return;
-    }
-    context.go('/sign-in');
-  }
+  Future<void> _startOver() => restartJourney(ref, context);
 }
 
 class _GoalCard extends StatelessWidget {

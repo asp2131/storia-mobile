@@ -11,6 +11,7 @@ import '../child/data/child_profile_providers.dart';
 import '../gen_ui/data/gen_ui_providers.dart';
 import '../gen_ui/presentation/parent_insight_cards.dart';
 import '../onboarding/data/app_review_flow_providers.dart';
+import '../../routing/journey/journey_policy.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -57,7 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
             trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.push('/profiles/select'),
+            onTap: () => context.push(JourneyRoutes.profilePicker),
           ),
           const Divider(height: 32),
           const ListTile(
@@ -73,7 +74,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.gavel_outlined),
             title: const Text('Terms of Service'),
-            subtitle: const Text('View terms used in Storia'),
+            subtitle: const Text('View terms used in Loratone'),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => const TermsOfServiceScreen(),
@@ -140,7 +141,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (!mounted) {
         return;
       }
-      context.go('/intro');
+      context.go(JourneyRoutes.intro);
     } on AppAuthException catch (error) {
       if (!mounted) {
         return;
@@ -191,7 +192,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             child: ListView(
               children: [
                 Text(
-                  'By using Storia, you agree to use the app for personal, non-commercial reading and learning.',
+                  'By using Loratone, you agree to use the app for personal, non-commercial reading and learning.',
                   style: bodyStyle,
                 ),
                 const SizedBox(height: 12),
@@ -201,12 +202,12 @@ class TermsOfServiceScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Storia content and branding are protected by applicable intellectual property laws.',
+                  'Loratone content and branding are protected by applicable intellectual property laws.',
                   style: bodyStyle,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'For legal questions, contact support through official Storia channels.',
+                  'For legal questions, contact support through official Loratone channels.',
                   style: bodyStyle,
                 ),
               ],

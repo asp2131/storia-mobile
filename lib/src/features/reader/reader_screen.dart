@@ -15,6 +15,7 @@ import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import '../gen_ui/data/gen_ui_preferences_provider.dart';
 import '../gen_ui/presentation/reader_activity_card.dart';
 import 'application/reader_experience_controller.dart';
 import 'liquid_page_clipper.dart';
@@ -277,11 +278,20 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   );
                 },
               ),
-              ReaderActivityPromptOverlay(
-                bookId: book.id,
-                pageIndex: activeIndex,
-                bottomInset: MediaQuery.paddingOf(context).bottom + 128,
-              ),
+              if (ref.watch(storySparksEnabledProvider))
+                ReaderActivityPromptOverlay(
+                  bookId: book.id,
+                  pageIndex: activeIndex,
+                  isNarrationPlaying: state.readerState.isNarrationPlaying,
+                  narrationPositionListenable: c.narrationPositionListenable,
+                  narrationTimestamps: activePage.narrationTimestamps,
+                  onActivityShown: () => unawaited(
+                    c.dispatch(const ReaderExperienceActivityShown()),
+                  ),
+                  onActivityDismissed: () => unawaited(
+                    c.dispatch(const ReaderExperienceActivityDismissed()),
+                  ),
+                ),
               AudioControlsPill(
                 hasNarration: hasNarration,
                 hasSoundscape: hasSoundscape,
@@ -1231,7 +1241,7 @@ class _ChromeButton extends StatelessWidget {
 // Volume settings sheet
 // =============================================================================
 
-class _AudioSettingsSheet extends StatefulWidget {
+class _AudioSettingsSheet extends ConsumerStatefulWidget {
   final ReaderExperienceControllerNotifier controller;
   final double initialNarrationVolume;
   final double initialSoundscapeVolume;
@@ -1243,10 +1253,11 @@ class _AudioSettingsSheet extends StatefulWidget {
   });
 
   @override
-  State<_AudioSettingsSheet> createState() => _AudioSettingsSheetState();
+  ConsumerState<_AudioSettingsSheet> createState() =>
+      _AudioSettingsSheetState();
 }
 
-class _AudioSettingsSheetState extends State<_AudioSettingsSheet> {
+class _AudioSettingsSheetState extends ConsumerState<_AudioSettingsSheet> {
   late double _narrationVolume;
   late double _soundscapeVolume;
 
@@ -1306,6 +1317,86 @@ class _AudioSettingsSheetState extends State<_AudioSettingsSheet> {
             semanticsLabel: 'Ambience volume',
             value: _soundscapeVolume,
             onChanged: _setSoundscapeVolume,
+          ),
+          const SizedBox(height: 14),
+          _ToggleRow(
+            icon: Icons.auto_awesome_rounded,
+            label: 'Story Sparks',
+            description: 'Playful activity cards that pop up while reading.',
+            semanticsLabel: 'Story Sparks activity cards',
+            value: ref.watch(storySparksEnabledProvider),
+            onChanged: (enabled) => unawaited(
+              ref
+                  .read(genUiPreferencesNotifierProvider)
+                  .setStorySparksEnabled(enabled),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToggleRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String description;
+  final String semanticsLabel;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _ToggleRow({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.semanticsLabel,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: const ShapeDecoration(
+        color: Colors.white,
+        shape: SketchBorderShape(
+          side: BorderSide(color: StoriaColors.line, width: 1.1),
+          radiusScale: 0.82,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: StoriaColors.inkMuted),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: StoriaColors.inkMuted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Semantics(
+            label: semanticsLabel,
+            toggled: value,
+            child: Switch.adaptive(
+              value: value,
+              activeThumbColor: StoriaColors.dustyPinkStrong,
+              onChanged: onChanged,
+            ),
           ),
         ],
       ),

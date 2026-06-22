@@ -87,6 +87,7 @@ class GenUiCardSchema {
     required this.skippable,
     required this.graded,
     required this.choices,
+    required this.anchorWordIndex,
   }) : validation = GenUiCardValidation(
          errors: _validate(
            id: id,
@@ -118,6 +119,9 @@ class GenUiCardSchema {
                 .map(GenUiChoiceSchema.fromJson)
                 .toList(growable: false)
           : const <GenUiChoiceSchema>[],
+      anchorWordIndex: _nullableInt(
+        json['anchorWordIndex'] ?? json['anchor_word_index'],
+      ),
     );
   }
 
@@ -131,6 +135,7 @@ class GenUiCardSchema {
   final bool skippable;
   final bool graded;
   final List<GenUiChoiceSchema> choices;
+  final int? anchorWordIndex;
   final GenUiCardValidation validation;
 
   bool get isEmotional {
@@ -189,4 +194,9 @@ String? _nullableString(Object? value) {
 int _int(Object? value) {
   if (value is num && value.isFinite) return value.toInt();
   return 0;
+}
+
+int? _nullableInt(Object? value) {
+  if (value is num && value.isFinite) return value.toInt();
+  return null;
 }

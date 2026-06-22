@@ -101,5 +101,46 @@ void main() {
         contains('Emotional Gen-UI cards cannot be graded.'),
       );
     });
+
+    test('parses anchorWordIndex from snake_case and camelCase', () {
+      final snake = GenUiCardSchema.fromJson({
+        'id': 'a-1',
+        'surface': 'reader',
+        'type': 'picture_choice',
+        'prompt': 'Which one?',
+        'anchor_word_index': 12,
+        'choices': [
+          {'id': 'x', 'label': 'X', 'accessibilityLabel': 'X', 'emoji': '🦋'},
+        ],
+      });
+      final camel = GenUiCardSchema.fromJson({
+        'id': 'a-2',
+        'surface': 'reader',
+        'type': 'picture_choice',
+        'prompt': 'Which one?',
+        'anchorWordIndex': 7,
+        'choices': [
+          {'id': 'x', 'label': 'X', 'accessibilityLabel': 'X', 'emoji': '🦋'},
+        ],
+      });
+
+      expect(snake.anchorWordIndex, 12);
+      expect(camel.anchorWordIndex, 7);
+    });
+
+    test('anchorWordIndex defaults to null when absent', () {
+      final schema = GenUiCardSchema.fromJson({
+        'id': 'a-3',
+        'surface': 'reader',
+        'type': 'reflection_prompt',
+        'prompt': 'Notice anything?',
+        'choices': [
+          {'id': 'y', 'label': 'Yes', 'accessibilityLabel': 'Yes'},
+        ],
+      });
+
+      expect(schema.anchorWordIndex, isNull);
+      expect(schema.validation.isValid, isTrue);
+    });
   });
 }

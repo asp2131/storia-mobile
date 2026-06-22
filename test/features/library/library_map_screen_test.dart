@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:gooey/gooey.dart';
 import 'package:go_router/go_router.dart';
 import 'package:storia_kids/src/data/models.dart';
 import 'package:storia_kids/src/data/providers.dart' as providers;
+import 'package:storia_kids/src/features/library/adapters/flame_library_map_engine_adapter.dart';
 import 'package:storia_kids/src/features/library/library_screen.dart';
 
 // ── Book helpers ───────────────────────────────────────────────────────────
@@ -30,13 +32,13 @@ Book _makeBook({
 
 // ── Router factory ─────────────────────────────────────────────────────────
 
-GoRouter _testRouter({void Function(String)? onNavigate}) {
+GoRouter _testRouter({void Function(String)? onNavigate, DateTime? skyNow}) {
   return GoRouter(
     initialLocation: '/library',
     routes: [
       GoRoute(
         path: '/library',
-        builder: (context, state) => const LibraryScreen(),
+        builder: (context, state) => LibraryScreen(skyNow: skyNow),
       ),
       GoRoute(
         path: '/reader/:bookId',
@@ -50,6 +52,11 @@ GoRouter _testRouter({void Function(String)? onNavigate}) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const Scaffold(body: Text('Settings')),
+      ),
+      GoRoute(
+        path: '/aac-music-demo',
+        builder: (context, state) =>
+            const Scaffold(body: Text('AAC Music Demo')),
       ),
     ],
   );
@@ -215,6 +222,57 @@ void main() {
       expect(find.text('Longer Reads'), findsOneWidget);
     });
 
+    testWidgets('sky toggle swaps between day and night controls', (
+      tester,
+    ) async {
+      router = _testRouter(
+        onNavigate: (id) => navigatedToBookId = id,
+        skyNow: DateTime(2026, 1, 1, 12),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [_twoBooksOverride()],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await _pumpLoadedLibrary(tester);
+
+      expect(find.byTooltip('Open AAC music demo'), findsNothing);
+      expect(find.byTooltip('Switch sky to night'), findsOneWidget);
+      expect(find.byIcon(Icons.nightlight_round), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('library-sky-toggle')));
+      await _pumpNavigation(tester);
+
+      expect(find.byTooltip('Switch sky to day'), findsOneWidget);
+      expect(find.byIcon(Icons.wb_sunny_outlined), findsOneWidget);
+    });
+
+    testWidgets('sky toggle starts in night mode for a night clock', (
+      tester,
+    ) async {
+      router = _testRouter(
+        onNavigate: (id) => navigatedToBookId = id,
+        skyNow: DateTime(2026, 1, 1, 22),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [_twoBooksOverride()],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await _pumpLoadedLibrary(tester);
+
+      expect(find.byTooltip('Switch sky to day'), findsOneWidget);
+      expect(find.byIcon(Icons.wb_sunny_outlined), findsOneWidget);
+      expect(find.byTooltip('Switch sky to night'), findsNothing);
+      expect(find.byIcon(Icons.nightlight_round), findsNothing);
+    });
+
     // ── Search debounce ───────────────────────────────────────────────
 
     testWidgets('search input debounces and does not fire on every keystroke', (
@@ -344,6 +402,68 @@ void main() {
 
       expect(find.text('Settings'), findsOneWidget);
     });
+
+    // ── Engine lifecycle ───────────────────────────────────────────────
+
+    testWidgets(
+      'recreates game if adapter is disposed while screen is mounted',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [_twoBooksOverride()],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await _pumpLoadedLibrary(tester);
+
+        FlameLibraryMapEngineAdapter.instance.dispose();
+        await tester.enterText(find.byType(TextField), 'cat');
+        await tester.pump(const Duration(milliseconds: 250));
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(LibraryScreen), findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'rebuilds the game view after the app returns from the background',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [_twoBooksOverride()],
+            child: MaterialApp.router(routerConfig: router),
+          ),
+        );
+
+        await _pumpLoadedLibrary(tester);
+        final gameWidgetFinder = find.byWidgetPredicate((w) => w is GameWidget);
+        expect(gameWidgetFinder, findsOneWidget);
+
+        // Simulate the OS backgrounding then resuming the app, following the
+        // valid lifecycle transitions enforced by AppLifecycleListener:
+        // resumed -> inactive -> hidden -> paused -> hidden -> inactive ->
+        // resumed.
+        for (final state in const [
+          AppLifecycleState.inactive,
+          AppLifecycleState.hidden,
+          AppLifecycleState.paused,
+          AppLifecycleState.hidden,
+          AppLifecycleState.inactive,
+          AppLifecycleState.resumed,
+        ]) {
+          tester.binding.handleAppLifecycleStateChanged(state);
+        }
+        await _pumpLoadedLibrary(tester);
+
+        // The Flame game view must be present again (not a blank background).
+        expect(tester.takeException(), isNull);
+        expect(find.byType(LibraryScreen), findsOneWidget);
+        expect(gameWidgetFinder, findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
+      },
+    );
 
     // ── Empty library ─────────────────────────────────────────────────
 

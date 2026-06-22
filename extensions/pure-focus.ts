@@ -4,7 +4,7 @@
  * Removes the footer bar and status line entirely, leaving only
  * the conversation and editor. Pure distraction-free mode.
  *
- * Usage: pi -e examples/extensions/pure-focus.ts
+ * Usage: pi -e extensions/pure-focus.ts
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
