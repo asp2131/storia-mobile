@@ -2,6 +2,29 @@
   "version": 1,
   "bugs": [
     {
+      "id": "bug-parental-gate-deepen",
+      "timestamp": "2026-06-22T00:00:00.000Z",
+      "error_message": "Parental gate state machine and view duplicated across parental_gate.dart (425 LOC) and parent_birth_year_screen.dart (533 LOC); GateLockout used static mutable state (untestable, defeated by force-quit); zero tests on lockout ladder; hardcoded hex colors (0xFF4A5BE7 was a known repeat bug \u2014 bug-001).",
+      "file": "lib/src/core/widgets/parental_gate.dart",
+      "root_cause": "Gate concept split across two files with ~150 lines of duplicated state machine (Timer, challenge gen, countdown, lockout progression) and ~225 lines of duplicated view (challenge card, lockout card). Static mutable GateLockout was process-global but in-memory only. No shared view widget. Modal used wrong card color 0xFF4A5BE7 (should be StoriaColors.ink 0xFF2C3358).",
+      "fix": "Extracted GateController (ValueNotifier<GateState>) state machine with autoTick:false for widget-tree-free testing. Extracted GateLockout as instance class with SharedPreferences persistence (survives force-quit). Created shared GateChallengeCard widget (2 colors + header slot + title + showCancel \u2014 not a GateSkin interface). Rewrote parental_gate.dart as thin facade (98 LOC, ParentalGate.verify signature unchanged). Refactored parent_birth_year_screen.dart to use controller + shared card (533\u2192308 LOC). Added 37 tests (gate_lockout_test, gate_controller_test, gate_challenge_card_test). Added StoriaColors.inkDeep/gateTimerWarning/gateError tokens. Wired GateLockout.instance.loadFromPrefs() in main.dart.",
+      "tags": [
+        "flutter",
+        "parental-gate",
+        "refactor",
+        "testability",
+        "persistence",
+        "shared-preferences",
+        "design-tokens",
+        "dart"
+      ],
+      "related_bugs": [
+        "bug-001"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-06-22T00:00:00.000Z"
+    },
+    {
       "id": "bug-custom-avatar-supabase-test-failures",
       "timestamp": "2026-06-19T00:00:00.000Z",
       "error_message": "LibraryScreen widget tests fail with \"You must initialize the supabase instance before calling Supabase.instance\" after mounting PlayerComponent.",
