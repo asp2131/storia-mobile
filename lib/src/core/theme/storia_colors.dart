@@ -18,4 +18,8 @@ abstract final class StoriaColors {
   static const danger = Color(0xFFB65E5E);
   static const readerBackground = Color(0xFF12161A);
   static const readerChrome = Color(0xFF1D2127);
+
+  static const inkDeep = Color(0xFF1E2445);
+  static const gateTimerWarning = Color(0xFFFFB4B4);
+  static const gateError = Color(0xFFFFD4D4);
 }
