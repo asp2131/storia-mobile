@@ -75,6 +75,9 @@ class _CountingPageAudio implements PageAudio {
 
   @override
   Future<void> restoreFromPractice() async {}
+
+  @override
+  Future<void> stopAll() async {}
 }
 
 class _FakeSpeechPracticePort implements SpeechPracticePort {

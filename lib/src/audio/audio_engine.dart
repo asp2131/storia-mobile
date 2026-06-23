@@ -123,6 +123,16 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
   }
 
   @override
+  Future<void> stopAll() async {
+    _pageAudioRequestId++;
+    _narrationActive = false;
+    _soundscapeActive = false;
+    _currentSoundscapeUrl = null;
+    await _narration.stop();
+    await _soundscape.stop();
+  }
+
+  @override
   Future<void> toggleNarration() async {
     await _ensureInitialized();
     if (_narrationActive && _narration.isPlaying) {

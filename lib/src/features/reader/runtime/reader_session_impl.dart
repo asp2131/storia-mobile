@@ -153,6 +153,7 @@ class ReaderSessionImpl implements ReaderSession {
     if (intent is ReaderEnd) {
       _completeSpeechAttempt(reason: intent.reason);
       _analyticsTracker?.endSession(reason: intent.reason);
+      await _pageAudio.stopAll();
       _resetState();
     }
   }

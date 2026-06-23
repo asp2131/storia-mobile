@@ -3344,6 +3344,25 @@
       "related_bugs": [],
       "occurrences": 2,
       "last_seen": "2026-06-18T01:52:52.098Z"
+    },
+    {
+      "id": "bug-reader-audio-bleed-on-exit",
+      "timestamp": "2026-06-22T00:00:00.000Z",
+      "error_message": "Narration audio continues playing for several seconds after navigating away from the reader screen back to the library",
+      "file": "lib/src/features/reader/runtime/reader_session_impl.dart",
+      "root_cause": "ReaderEnd handler called _resetState() which only cancelled celebration timer and reset view state, but never stopped the AudioEngine narration/soundscape players. AudioEngine is an app-lifetime Riverpod Provider singleton, so the JustAudioPlayer kept playing after reader screen unmount. PageAudio interface had no stopAll() method.",
+      "fix": "Added stopAll() to PageAudio interface and AudioEngine implementation (stops narration + soundscape, clears active flags and soundscape URL, increments request ID to cancel in-flight loads). Called await _pageAudio.stopAll() in the ReaderEnd handler before _resetState(). Added stopAll() to all 4 test FakePageAudio implementations.",
+      "tags": [
+        "reader",
+        "audio",
+        "lifecycle",
+        "dispose",
+        "narration",
+        "user-feedback"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-22T00:00:00.000Z"
     }
   ]
 }

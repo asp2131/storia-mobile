@@ -42,5 +42,10 @@ abstract interface class PageAudio {
   Future<void> setSoundscapeVolume(double volume);
   Future<void> duckForPractice();
   Future<void> restoreFromPractice();
+
+  /// Stops narration and soundscape immediately. Called when the reader
+  /// screen unmounts so audio doesn't bleed into the next screen.
+  Future<void> stopAll();
+
   Stream<AudioSnapshot> get states;
 }
