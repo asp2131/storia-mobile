@@ -20,6 +20,7 @@ import '../gen_ui/presentation/reader_activity_card.dart';
 import 'application/reader_experience_controller.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
+import 'walkthrough/reader_walkthrough.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
   final String bookId;
@@ -41,6 +42,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   late final ReaderExperienceControllerNotifier _controller;
   String? _initializedBookId;
   String? _preloadedManifestBookId;
+  bool _walkthroughDismissed = false;
 
   @override
   void initState() {
@@ -92,6 +94,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     final bookAsync = ref.watch(currentBookProvider(widget.bookId));
     final c = _controller;
     final state = ref.watch(readerExperienceControllerProvider(widget.bookId));
+    final walkthroughSeen = ref.watch(readerWalkthroughSeenProvider);
 
     ref.listen<ReaderExperienceState>(
       readerExperienceControllerProvider(widget.bookId),
@@ -340,6 +343,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                       fit: BoxFit.contain,
                     ),
                   ),
+                ),
+              if (walkthroughSeen.valueOrNull == false &&
+                  !_walkthroughDismissed)
+                ReaderWalkthrough(
+                  onComplete: () =>
+                      setState(() => _walkthroughDismissed = true),
                 ),
             ],
           );
