@@ -58,8 +58,11 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
                         element.shadow!.color,
                         fallback: Colors.black,
                       ),
-                      offset: Offset(element.shadow!.x, element.shadow!.y),
-                      blurRadius: element.shadow!.blur,
+                      offset: Offset(
+                        (element.shadow!.x / 100) * imageSize.width,
+                        (element.shadow!.y / 100) * imageSize.height,
+                      ),
+                      blurRadius: (element.shadow!.blur / 100) * imageSize.width,
                     ),
                   ],
           );
@@ -135,8 +138,8 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
                 element.background!.color,
                 fallback: Colors.transparent,
               ),
-              padding: element.background!.padding ?? 0,
-              borderRadius: element.background!.borderRadius ?? 0,
+              padding: ((element.background!.padding ?? 0) / 100) * imageSize.width,
+              borderRadius: ((element.background!.borderRadius ?? 0) / 100) * imageSize.width,
             );
 
       elements.add(

@@ -52,18 +52,30 @@ class TextElement {
   });
 
   factory TextElement.fromJson(Map<String, dynamic> json) {
+    // Mirror the web editor's validateTextElement (single source of truth in
+    // storia/src/types/text-overlay.ts): same defaults + clamp ranges so a
+    // partial/legacy record decodes identically on mobile. Falsy (0/absent)
+    // width and fontSize fall back to 30 and 4 like JS `Number(x) || default`.
+    final rawWidth = (json['width'] as num?)?.toDouble();
+    final rawFontSize = (json['fontSize'] as num?)?.toDouble();
     return TextElement(
       id: json['id'] as String? ?? '',
       text: json['text'] as String? ?? '',
-      x: (json['x'] as num?)?.toDouble() ?? 0,
-      y: (json['y'] as num?)?.toDouble() ?? 0,
-      width: (json['width'] as num?)?.toDouble() ?? 0,
+      x: ((json['x'] as num?)?.toDouble() ?? 0).clamp(0, 100).toDouble(),
+      y: ((json['y'] as num?)?.toDouble() ?? 0).clamp(0, 100).toDouble(),
+      width: ((rawWidth == null || rawWidth == 0) ? 30.0 : rawWidth)
+          .clamp(1, 100)
+          .toDouble(),
       fontFamily: json['fontFamily'] as String? ?? 'Inter',
-      fontSize: (json['fontSize'] as num?)?.toDouble() ?? 0,
+      fontSize: ((rawFontSize == null || rawFontSize == 0) ? 4.0 : rawFontSize)
+          .clamp(0.5, 50)
+          .toDouble(),
       fontWeight: (json['fontWeight'] as num?)?.toInt() ?? 400,
-      color: json['color'] as String? ?? '#FFFFFF',
+      color: json['color'] as String? ?? '#000000',
       textAlign: json['textAlign'] as String? ?? 'left',
-      rotation: (json['rotation'] as num?)?.toDouble() ?? 0,
+      rotation: ((json['rotation'] as num?)?.toDouble() ?? 0)
+          .clamp(-180, 180)
+          .toDouble(),
       shadow: json['shadow'] is Map<String, dynamic>
           ? TextShadow.fromJson(json['shadow'] as Map<String, dynamic>)
           : null,
@@ -91,8 +103,8 @@ class TextShadow {
     return TextShadow(
       color: json['color'] as String? ?? '#000000',
       blur: (json['blur'] as num?)?.toDouble() ?? 0,
-      x: (json['x'] as num?)?.toDouble() ?? 0,
-      y: (json['y'] as num?)?.toDouble() ?? 0,
+      x: (json['offsetX'] as num?)?.toDouble() ?? 0,
+      y: (json['offsetY'] as num?)?.toDouble() ?? 0,
     );
   }
 }

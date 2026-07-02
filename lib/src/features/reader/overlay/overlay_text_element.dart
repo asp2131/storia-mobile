@@ -43,8 +43,16 @@ class OverlayTextElement extends StatelessWidget {
       );
     }
 
+    // Web editor rotates around the element's top-left corner
+    // (transformOrigin: "left top" in IntegratedIllustration.tsx). Flutter's
+    // Transform.rotate defaults to center, which shifts the text off-position.
+    // Match the editor by anchoring rotation to top-left.
     final rotated = element.rotationRadians != 0
-        ? Transform.rotate(angle: element.rotationRadians, child: decorated)
+        ? Transform.rotate(
+            angle: element.rotationRadians,
+            alignment: Alignment.topLeft,
+            child: decorated,
+          )
         : decorated;
 
     // Stagger: element index drives base delay on the parent Cue's timeline.
