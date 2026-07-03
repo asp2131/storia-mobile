@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:Loratone/src/core/widgets/gate_controller.dart';
-import 'package:Loratone/src/core/widgets/gate_lockout.dart';
-import 'package:Loratone/src/core/widgets/gate_state.dart';
+import 'package:loratone/src/core/widgets/gate_controller.dart';
+import 'package:loratone/src/core/widgets/gate_lockout.dart';
+import 'package:loratone/src/core/widgets/gate_state.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

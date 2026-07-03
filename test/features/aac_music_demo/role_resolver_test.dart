@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/word_model.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/role_resolver.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/word_model.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/role_resolver.dart';
 
 void main() {
   const config = BoardMusicConfig(

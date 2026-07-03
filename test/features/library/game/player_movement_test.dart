@@ -1,6 +1,6 @@
 import 'package:flame/extensions.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/features/library/game/player_component.dart';
+import 'package:loratone/src/features/library/game/player_component.dart';
 
 void main() {
   PlayerComponent make() =>

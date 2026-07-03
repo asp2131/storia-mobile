@@ -2,6 +2,67 @@
   "version": 1,
   "bugs": [
     {
+      "id": "bug-tests-dead-package-rename",
+      "timestamp": "2026-07-01T00:00:00.000Z",
+      "error_message": "Couldn't resolve the package 'storia_kids' in 'package:storia_kids/...' \u2014 every test file fails to compile.",
+      "file": "pubspec.yaml",
+      "root_cause": "pubspec name changed to 'Loratone' (rebrand) but all 143 test imports still reference package:storia_kids. lib/ uses relative imports so the app still builds; only tests are dead. Package name 'Loratone' is also non-idiomatic (Dart pkg names should be lowercase, e.g. loratone).",
+      "fix": "NOT YET FIXED \u2014 surfaced to user. Options: (a) rename pubspec to lowercase 'loratone' + sweep test imports storia_kids->loratone (143), or (b) keep internal name 'storia_kids' and set a separate display name.",
+      "tags": [
+        "flutter",
+        "tests",
+        "package-rename",
+        "pubspec",
+        "build",
+        "blocker"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-01T00:00:00.000Z"
+    },
+    {
+      "id": "bug-overlay-decode-contract-drift",
+      "timestamp": "2026-07-01T00:00:00.000Z",
+      "error_message": "Mobile TextElement.fromJson defaults/clamps diverged from web validateTextElement (single source of truth), so partial/legacy overlay records render wrong on mobile.",
+      "file": "lib/src/data/models.dart",
+      "root_cause": "fromJson defaulted width->0 (collapsed box), fontSize->0 (invisible), color->#FFFFFF (web uses #000000), and applied no clamping. Web storia/src/types/text-overlay.ts validateTextElement fills width->30, fontSize->4, color->#000000 and clamps x/y[0,100], width[1,100], fontSize[0.5,50], rotation[-180,180].",
+      "fix": "Aligned fromJson to web validateTextElement: falsy(0/absent) width->30, fontSize->4; color default #000000; clamp x/y/width/fontSize/rotation to web ranges. Verified with scratchpad decode_check.dart asserts.",
+      "tags": [
+        "flutter",
+        "reader",
+        "overlay",
+        "persistence",
+        "json",
+        "web-parity",
+        "dart"
+      ],
+      "related_bugs": [
+        "bug-overlay-rotation-origin"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-07-01T00:00:00.000Z"
+    },
+    {
+      "id": "bug-overlay-rotation-origin",
+      "timestamp": "2026-07-01T00:00:00.000Z",
+      "error_message": "Reader overlay text (e.g. 'Suuuper soccer kick!') rendered rotated/displaced vs web book editor placement.",
+      "file": "lib/src/features/reader/overlay/overlay_text_element.dart",
+      "root_cause": "Web editor (storia/src/components/IntegratedIllustration.tsx:299) rotates elements with transformOrigin 'left top'. Flutter Transform.rotate defaults to Alignment.center, so rotated text pivoted around its center instead of top-left, shifting it down/left and appearing over-rotated. fontSize(height)/shadow+padding(width) conventions already matched web.",
+      "fix": "Set Transform.rotate(alignment: Alignment.topLeft) in OverlayTextElement so rotation origin matches web transformOrigin 'left top'.",
+      "tags": [
+        "flutter",
+        "reader",
+        "overlay",
+        "rotation",
+        "transform-origin",
+        "web-parity",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-01T00:00:00.000Z"
+    },
+    {
       "id": "bug-parental-gate-deepen",
       "timestamp": "2026-06-22T00:00:00.000Z",
       "error_message": "Parental gate state machine and view duplicated across parental_gate.dart (425 LOC) and parent_birth_year_screen.dart (533 LOC); GateLockout used static mutable state (untestable, defeated by force-quit); zero tests on lockout ladder; hardcoded hex colors (0xFF4A5BE7 was a known repeat bug \u2014 bug-001).",
@@ -3363,6 +3424,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-06-22T00:00:00.000Z"
+    },
+    {
+      "id": "bug-207",
+      "timestamp": "2026-07-02T04:37:22.633Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/data/models.dart",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 13\u219225 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-02T04:37:22.633Z"
     }
   ]
 }

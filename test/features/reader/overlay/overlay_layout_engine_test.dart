@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/reader/overlay/overlay_layout_engine.dart';
-import 'package:storia_kids/src/features/reader/overlay/text_overlay_utils.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/features/reader/overlay/overlay_layout_engine.dart';
+import 'package:loratone/src/features/reader/overlay/text_overlay_utils.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

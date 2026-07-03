@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart';
+import 'package:loratone/src/features/gen_ui/domain/gen_ui_card_schema.dart';
 
 void main() {
   group('GenUiCardSchema validation', () {

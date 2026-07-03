@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:storia_kids/src/features/child/presentation/add_child_screen.dart';
+import 'package:loratone/src/features/child/presentation/add_child_screen.dart';
 
 GoRouter _router() {
   return GoRouter(

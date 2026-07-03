@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/features/gen_ui/data/gen_ui_activity_controller.dart';
-import 'package:storia_kids/src/features/gen_ui/domain/gen_ui_activity.dart';
-import 'package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart';
+import 'package:loratone/src/features/gen_ui/data/gen_ui_activity_controller.dart';
+import 'package:loratone/src/features/gen_ui/domain/gen_ui_activity.dart';
+import 'package:loratone/src/features/gen_ui/domain/gen_ui_card_schema.dart';
 
 void main() {
   group('GenUiActivityController', () {

@@ -17,13 +17,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:storia_kids/src/features/auth/data/auth_providers.dart';
-import 'package:storia_kids/src/features/auth/domain/auth_state.dart';
-import 'package:storia_kids/src/features/child/data/child_profile_providers.dart';
-import 'package:storia_kids/src/features/child/domain/child_profile.dart';
-import 'package:storia_kids/src/features/onboarding/data/app_review_flow_providers.dart';
-import 'package:storia_kids/src/routing/journey/journey_policy.dart';
-import 'package:storia_kids/src/routing/journey/journey_providers.dart';
+import 'package:loratone/src/features/auth/data/auth_providers.dart';
+import 'package:loratone/src/features/auth/domain/auth_state.dart';
+import 'package:loratone/src/features/child/data/child_profile_providers.dart';
+import 'package:loratone/src/features/child/domain/child_profile.dart';
+import 'package:loratone/src/features/onboarding/data/app_review_flow_providers.dart';
+import 'package:loratone/src/routing/journey/journey_policy.dart';
+import 'package:loratone/src/routing/journey/journey_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Session, User;
 
 class _FakeAuthNotifier extends ChangeNotifier implements AuthStateNotifier {

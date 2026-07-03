@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/features/gen_ui/domain/gen_ui_activity.dart';
-import 'package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart';
-import 'package:storia_kids/src/features/gen_ui/presentation/parent_insight_cards.dart';
+import 'package:loratone/src/features/gen_ui/domain/gen_ui_activity.dart';
+import 'package:loratone/src/features/gen_ui/domain/gen_ui_card_schema.dart';
+import 'package:loratone/src/features/gen_ui/presentation/parent_insight_cards.dart';
 
 void main() {
   testWidgets('renders supportive aggregate parent insights', (tester) async {

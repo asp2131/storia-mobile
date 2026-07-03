@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/music_theory.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/word_model.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/consonance_engine.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/role_resolver.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/sequencer.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/music_theory.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/word_model.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/consonance_engine.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/role_resolver.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/sequencer.dart';
 
 class _Event {
   _Event.speak(this.text) : pitches = null, gain = null;

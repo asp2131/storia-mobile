@@ -1,7 +1,7 @@
 // backTarget: static back edges for journey steps (pure lookup table).
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/routing/journey/journey_policy.dart';
+import 'package:loratone/src/routing/journey/journey_policy.dart';
 
 void main() {
   group('JourneyPolicy.backTarget', () {

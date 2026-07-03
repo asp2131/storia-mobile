@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/audio/audio_engine.dart';
-import 'package:storia_kids/src/audio/page_audio.dart';
-import 'package:storia_kids/src/audio/raw_player.dart';
-import 'package:storia_kids/src/data/models.dart';
+import 'package:loratone/src/audio/audio_engine.dart';
+import 'package:loratone/src/audio/page_audio.dart';
+import 'package:loratone/src/audio/raw_player.dart';
+import 'package:loratone/src/data/models.dart';
 
 void main() {
   group('AudioEngine', () {

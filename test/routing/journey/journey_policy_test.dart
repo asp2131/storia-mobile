@@ -15,7 +15,7 @@
 // group below.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/routing/journey/journey_policy.dart';
+import 'package:loratone/src/routing/journey/journey_policy.dart';
 
 JourneySnapshot snap({
   bool ready = true,

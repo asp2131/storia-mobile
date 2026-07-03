@@ -5,19 +5,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gif_player/gif_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/data/providers.dart';
-import 'package:storia_kids/src/features/gen_ui/data/gen_ui_preferences_provider.dart';
-import 'package:storia_kids/src/features/gen_ui/data/gen_ui_providers.dart';
-import 'package:storia_kids/src/features/gen_ui/data/mock_gen_ui_cards.dart';
-import 'package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart';
-import 'package:storia_kids/src/features/gen_ui/presentation/reader_activity_card.dart';
-import 'package:storia_kids/src/features/reader/application/reader_experience_controller.dart';
-import 'package:storia_kids/src/features/reader/application/reader_experience_effects.dart';
-import 'package:storia_kids/src/features/reader/reader_screen.dart';
-import 'package:storia_kids/src/features/reader/runtime/providers/reader_session_provider.dart';
-import 'package:storia_kids/src/features/reader/runtime/reader_session.dart';
-import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_help.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/data/providers.dart';
+import 'package:loratone/src/features/gen_ui/data/gen_ui_preferences_provider.dart';
+import 'package:loratone/src/features/gen_ui/data/gen_ui_providers.dart';
+import 'package:loratone/src/features/gen_ui/data/mock_gen_ui_cards.dart';
+import 'package:loratone/src/features/gen_ui/domain/gen_ui_card_schema.dart';
+import 'package:loratone/src/features/gen_ui/presentation/reader_activity_card.dart';
+import 'package:loratone/src/features/reader/application/reader_experience_controller.dart';
+import 'package:loratone/src/features/reader/application/reader_experience_effects.dart';
+import 'package:loratone/src/features/reader/reader_screen.dart';
+import 'package:loratone/src/features/reader/runtime/providers/reader_session_provider.dart';
+import 'package:loratone/src/features/reader/runtime/reader_session.dart';
+import 'package:loratone/src/features/reader/runtime/word_help/reader_word_help.dart';
 
 class _EmptyGenUiRepo implements MockGenUiCardRepository {
   const _EmptyGenUiRepo();

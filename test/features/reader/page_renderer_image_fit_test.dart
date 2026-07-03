@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/reader/overlay/text_overlay_utils.dart';
-import 'package:storia_kids/src/features/reader/page_renderer.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/features/reader/overlay/text_overlay_utils.dart';
+import 'package:loratone/src/features/reader/page_renderer.dart';
 
 void main() {
   test('contained image rect preserves source aspect on portrait phones', () {

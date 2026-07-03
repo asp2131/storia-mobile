@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/features/gen_ui/domain/gen_ui_card_schema.dart';
-import 'package:storia_kids/src/features/gen_ui/domain/reader_activity_trigger.dart';
+import 'package:loratone/src/features/gen_ui/domain/gen_ui_card_schema.dart';
+import 'package:loratone/src/features/gen_ui/domain/reader_activity_trigger.dart';
 
 GenUiCardSchema _card({int? anchor}) => GenUiCardSchema.fromJson({
       'id': 'c-1',

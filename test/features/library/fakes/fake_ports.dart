@@ -2,9 +2,9 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/library/ports/library_map_session.dart';
-import 'package:storia_kids/src/features/library/ports/library_map_types.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/features/library/ports/library_map_session.dart';
+import 'package:loratone/src/features/library/ports/library_map_types.dart';
 
 /// A fake implementation of [LibraryMapEnginePort] that stores all calls
 /// and provides deterministic test data.

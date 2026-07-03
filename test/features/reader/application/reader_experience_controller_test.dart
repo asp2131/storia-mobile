@@ -2,11 +2,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/reader/application/reader_experience_controller.dart';
-import 'package:storia_kids/src/features/reader/runtime/providers/reader_session_provider.dart';
-import 'package:storia_kids/src/features/reader/runtime/reader_session.dart';
-import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_help.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/features/reader/application/reader_experience_controller.dart';
+import 'package:loratone/src/features/reader/runtime/providers/reader_session_provider.dart';
+import 'package:loratone/src/features/reader/runtime/reader_session.dart';
+import 'package:loratone/src/features/reader/runtime/word_help/reader_word_help.dart';
 
 import 'reader_experience_fakes.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gooey/gooey.dart';
 
-import 'package:storia_kids/src/features/reader/reader_screen.dart';
+import 'package:loratone/src/features/reader/reader_screen.dart';
 
 Future<void> _noop() async {}
 

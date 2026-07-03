@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:storia_kids/src/features/reader/application/reader_experience_effects.dart';
-import 'package:storia_kids/src/features/reader/runtime/reader_session.dart';
-import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_help.dart';
+import 'package:loratone/src/features/reader/application/reader_experience_effects.dart';
+import 'package:loratone/src/features/reader/runtime/reader_session.dart';
+import 'package:loratone/src/features/reader/runtime/word_help/reader_word_help.dart';
 
 class FakeReaderSession implements ReaderSession {
   final intents = <ReaderIntent>[];

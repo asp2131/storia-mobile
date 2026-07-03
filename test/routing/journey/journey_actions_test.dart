@@ -8,10 +8,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:storia_kids/src/features/onboarding/data/app_review_flow_providers.dart';
-import 'package:storia_kids/src/routing/journey/journey_actions.dart';
-import 'package:storia_kids/src/routing/journey/journey_policy.dart';
-import 'package:storia_kids/src/routing/journey/journey_providers.dart';
+import 'package:loratone/src/features/onboarding/data/app_review_flow_providers.dart';
+import 'package:loratone/src/routing/journey/journey_actions.dart';
+import 'package:loratone/src/routing/journey/journey_policy.dart';
+import 'package:loratone/src/routing/journey/journey_providers.dart';
 
 class _RecordingReviewNotifier extends AppReviewFlowNotifier {
   final List<String> calls = [];

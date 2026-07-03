@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:storia_kids/src/features/library/ports/library_map_event.dart';
-import 'package:storia_kids/src/features/library/ports/library_map_types.dart';
+import 'package:loratone/src/features/library/ports/library_map_event.dart';
+import 'package:loratone/src/features/library/ports/library_map_types.dart';
 
 void main() {
   test('LibraryMapEvent.occurredAt is stable across reads', () async {

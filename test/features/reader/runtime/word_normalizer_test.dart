@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/reader/runtime/internal/page_words_indexer.dart';
-import 'package:storia_kids/src/features/reader/runtime/internal/word_normalizer.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/features/reader/runtime/internal/page_words_indexer.dart';
+import 'package:loratone/src/features/reader/runtime/internal/word_normalizer.dart';
 
 void main() {
   group('normalizeWordToken', () {

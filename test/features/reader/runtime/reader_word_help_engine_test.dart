@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/audio/pronunciation_player.dart';
-import 'package:storia_kids/src/data/pronunciation_models.dart';
-import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_help.dart';
-import 'package:storia_kids/src/features/reader/runtime/word_help/reader_word_help_engine.dart';
+import 'package:loratone/src/audio/pronunciation_player.dart';
+import 'package:loratone/src/data/pronunciation_models.dart';
+import 'package:loratone/src/features/reader/runtime/word_help/reader_word_help.dart';
+import 'package:loratone/src/features/reader/runtime/word_help/reader_word_help_engine.dart';
 
 void main() {
   group('ReaderWordHelpEngine', () {

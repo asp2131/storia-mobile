@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:Loratone/src/core/widgets/parental_gate.dart';
+import 'package:loratone/src/core/widgets/parental_gate.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

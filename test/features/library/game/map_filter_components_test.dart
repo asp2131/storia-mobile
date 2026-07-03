@@ -5,9 +5,9 @@ import 'package:flame/game.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/library/game/map_book_node_component.dart';
-import 'package:storia_kids/src/features/library/game/map_route_component.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/features/library/game/map_book_node_component.dart';
+import 'package:loratone/src/features/library/game/map_route_component.dart';
 
 Book _book(String id) =>
     Book(id: id, title: 'Book $id', pageCount: 10, pages: const []);

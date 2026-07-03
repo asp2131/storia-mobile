@@ -6,10 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gooey/gooey.dart';
 import 'package:go_router/go_router.dart';
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/data/providers.dart' as providers;
-import 'package:storia_kids/src/features/library/adapters/flame_library_map_engine_adapter.dart';
-import 'package:storia_kids/src/features/library/library_screen.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/data/providers.dart' as providers;
+import 'package:loratone/src/features/library/adapters/flame_library_map_engine_adapter.dart';
+import 'package:loratone/src/features/library/library_screen.dart';
 
 // ── Book helpers ───────────────────────────────────────────────────────────
 

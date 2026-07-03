@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:storia_kids/src/data/analytics_repository.dart';
+import 'package:loratone/src/data/analytics_repository.dart';
 
 void main() {
   group('AnalyticsEventType', () {

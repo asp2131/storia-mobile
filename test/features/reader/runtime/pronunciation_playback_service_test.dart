@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:storia_kids/src/data/pronunciation_models.dart';
+import 'package:loratone/src/data/pronunciation_models.dart';
 
 void main() {
   group('WordPronunciation.fromRow', () {

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:storia_kids/src/features/gen_ui/data/gen_ui_preferences_provider.dart';
+import 'package:loratone/src/features/gen_ui/data/gen_ui_preferences_provider.dart';
 
 void main() {
   group('GenUiPreferencesNotifier', () {

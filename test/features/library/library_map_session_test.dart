@@ -2,11 +2,11 @@ import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/library/core/library_map_layout.dart';
-import 'package:storia_kids/src/features/library/ports/library_map_event.dart';
-import 'package:storia_kids/src/features/library/ports/library_map_types.dart';
-import 'package:storia_kids/src/features/library/services/library_map_session_impl.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/features/library/core/library_map_layout.dart';
+import 'package:loratone/src/features/library/ports/library_map_event.dart';
+import 'package:loratone/src/features/library/ports/library_map_types.dart';
+import 'package:loratone/src/features/library/services/library_map_session_impl.dart';
 import 'fakes/fake_ports.dart';
 
 /// Test helper: creates a minimal [Book] with just the fields [LibraryMapBook]

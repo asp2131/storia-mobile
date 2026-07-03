@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/music_theory.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/word_model.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/consonance_engine.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/role_resolver.dart';
-import 'package:storia_kids/src/features/aac_music_demo/domain/sequencer.dart';
-import 'package:storia_kids/src/features/aac_music_demo/data/aac_board.dart';
-import 'package:storia_kids/src/features/aac_music_demo/presentation/aac_music_demo_controller.dart';
-import 'package:storia_kids/src/features/aac_music_demo/presentation/aac_music_demo_screen.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/music_theory.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/word_model.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/consonance_engine.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/role_resolver.dart';
+import 'package:loratone/src/features/aac_music_demo/domain/sequencer.dart';
+import 'package:loratone/src/features/aac_music_demo/data/aac_board.dart';
+import 'package:loratone/src/features/aac_music_demo/presentation/aac_music_demo_controller.dart';
+import 'package:loratone/src/features/aac_music_demo/presentation/aac_music_demo_screen.dart';
 
 class _SilentSpeech implements SpeechSynth {
   @override

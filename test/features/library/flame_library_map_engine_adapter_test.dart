@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:storia_kids/src/data/models.dart';
-import 'package:storia_kids/src/features/library/adapters/flame_library_map_engine_adapter.dart';
+import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/features/library/adapters/flame_library_map_engine_adapter.dart';
 
 Book _book(String id) =>
     Book(id: id, title: 'Book $id', pageCount: 10, pages: const []);

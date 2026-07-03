@@ -5,9 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:storia_kids/src/features/child/data/child_profile_providers.dart';
-import 'package:storia_kids/src/features/child/data/child_profile_repository.dart';
-import 'package:storia_kids/src/features/child/domain/child_profile.dart';
+import 'package:loratone/src/features/child/data/child_profile_providers.dart';
+import 'package:loratone/src/features/child/data/child_profile_repository.dart';
+import 'package:loratone/src/features/child/domain/child_profile.dart';
 
 void main() {
   group('ChildProfile', () {
