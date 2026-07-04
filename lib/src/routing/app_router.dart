@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,6 +15,8 @@ import '../features/library/library_screen.dart';
 import '../features/onboarding/data/app_review_flow_providers.dart';
 import '../features/onboarding/presentation/parent_birth_year_screen.dart';
 import '../features/onboarding/presentation/review_onboarding_screen.dart';
+import '../features/reader/celebration/book_celebration_screen.dart';
+import '../features/reader/celebration/book_celebration_summary.dart';
 import '../features/reader/reader_screen.dart';
 import '../features/settings/settings_screen.dart';
 import 'journey/journey_policy.dart';
@@ -99,6 +101,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: JourneyRoutes.settings,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: JourneyRoutes.bookCelebration,
+        // Requires a summary via `extra`; a cold-load without one (e.g. deep
+        // link / restart) bounces to the library rather than crashing.
+        redirect: (context, state) => state.extra is BookCelebrationSummary
+            ? null
+            : JourneyRoutes.library,
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: BookCelebrationScreen(
+            summary: state.extra as BookCelebrationSummary,
+          ),
+          transitionsBuilder: (context, animation, secondary, child) {
+            return SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+              child: child,
+            );
+          },
+        ),
       ),
     ],
   );

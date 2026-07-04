@@ -107,6 +107,10 @@ abstract final class JourneyRoutes {
   static const settings = '/settings';
   static const aacMusicDemo = '/aac-music-demo';
 
+  /// Book-finished celebration, pushed over the reader. Terminal pass-through
+  /// (no journey stage claims it) and requires a summary via `extra`.
+  static const bookCelebration = '/celebration';
+
   static String reader(String bookId) => '/reader/$bookId';
 }
 

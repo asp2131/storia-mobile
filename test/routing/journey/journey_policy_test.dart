@@ -307,4 +307,21 @@ void main() {
       expect(JourneyRoutes.reader('abc-123'), '/reader/abc-123');
     });
   });
+
+  group('book celebration route (terminal)', () {
+    const celebration = JourneyRoutes.bookCelebration;
+
+    test('passes through once the journey is complete', () {
+      final supabaseComplete =
+          snap(session: true, profile: ProfileSelection.selected);
+      final bypassComplete = snap(bypass: true, birthYear: true, onboarded: true);
+      expect(JourneyPolicy.redirect(supabaseComplete, celebration), isNull);
+      expect(JourneyPolicy.redirect(bypassComplete, celebration), isNull);
+    });
+
+    test('is not admissible before the journey completes', () {
+      // Unauthenticated: only public locations pass; celebration bounces home.
+      expect(JourneyPolicy.redirect(snap(), celebration), JourneyRoutes.intro);
+    });
+  });
 }

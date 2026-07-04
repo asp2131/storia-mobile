@@ -7,6 +7,7 @@ import 'package:cue/cue.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gif_player/gif_player.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gooey/gooey.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -15,9 +16,11 @@ import '../../core/theme/storia_motion.dart';
 import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
+import '../../routing/journey/journey_policy.dart';
 import '../gen_ui/data/gen_ui_preferences_provider.dart';
 import '../gen_ui/presentation/reader_activity_card.dart';
 import 'application/reader_experience_controller.dart';
+import 'celebration/book_celebration_summary.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
 import 'walkthrough/reader_walkthrough.dart';
@@ -44,6 +47,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   String? _preloadedManifestBookId;
   bool _walkthroughDismissed = false;
 
+  // Book-finished celebration trigger: swipe up past the last page.
+  final DateTime _openedAt = DateTime.now();
+  bool _celebrationTriggered = false;
+  double _overscrollAccum = 0;
+  static const double _kCelebrationOverscroll = 90;
+
   @override
   void initState() {
     super.initState();
@@ -67,6 +76,45 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   void _onPageScroll() {
     final page = _pageController.page;
     if (page != null) _scrollOffsetNotifier.value = page;
+  }
+
+  /// Detects a deliberate upward swipe past the final page and opens the
+  /// book-finished celebration once. Accumulates drag-driven overscroll while
+  /// pinned at the last page; a short intentional pull crosses the threshold.
+  bool _handleReaderScroll(ScrollNotification notification, Book book) {
+    if (_celebrationTriggered) return false;
+    if (notification is ScrollStartNotification ||
+        notification is ScrollEndNotification) {
+      _overscrollAccum = 0;
+      return false;
+    }
+    if (notification is! OverscrollNotification) return false;
+
+    final lastIndex = book.pages.length - 1;
+    final page = _pageController.hasClients ? _pageController.page : null;
+    final atLastPage = page != null && page >= lastIndex - 0.05;
+    // Positive overscroll with drag details == user dragging beyond the end.
+    if (!atLastPage ||
+        notification.overscroll <= 0 ||
+        notification.dragDetails == null) {
+      return false;
+    }
+
+    _overscrollAccum += notification.overscroll;
+    if (_overscrollAccum >= _kCelebrationOverscroll) {
+      _triggerCelebration(book);
+    }
+    return false;
+  }
+
+  void _triggerCelebration(Book book) {
+    if (_celebrationTriggered || !mounted) return;
+    _celebrationTriggered = true;
+    final summary = BookCelebrationSummary.fromBook(
+      book,
+      timeRead: DateTime.now().difference(_openedAt),
+    );
+    context.push(JourneyRoutes.bookCelebration, extra: summary);
   }
 
   @override
@@ -154,203 +202,207 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
           final hasNarration = (activePage.narrationUrl ?? '').isNotEmpty;
           final hasSoundscape = (activePage.soundscapeUrl ?? '').isNotEmpty;
 
-          return Stack(
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                excludeFromSemantics: true,
-                onTap: () =>
-                    _showChromeNotifier.value = !_showChromeNotifier.value,
-                child: PageView.builder(
-                  controller: _pageController,
-                  scrollDirection: Axis.vertical,
-                  itemCount: book.pages.length,
-                  onPageChanged: (index) {
-                    unawaited(c.dispatch(ReaderExperiencePageChanged(index)));
-                  },
-                  itemBuilder: (context, index) {
-                    final isInVirtualizationWindow =
-                        (index - activeIndex).abs() <= 1;
-                    if (!isInVirtualizationWindow) {
-                      return const SizedBox.shrink();
-                    }
+          return NotificationListener<ScrollNotification>(
+            onNotification: (notification) =>
+                _handleReaderScroll(notification, book),
+            child: Stack(
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  excludeFromSemantics: true,
+                  onTap: () =>
+                      _showChromeNotifier.value = !_showChromeNotifier.value,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    scrollDirection: Axis.vertical,
+                    itemCount: book.pages.length,
+                    onPageChanged: (index) {
+                      unawaited(c.dispatch(ReaderExperiencePageChanged(index)));
+                    },
+                    itemBuilder: (context, index) {
+                      final isInVirtualizationWindow =
+                          (index - activeIndex).abs() <= 1;
+                      if (!isInVirtualizationWindow) {
+                        return const SizedBox.shrink();
+                      }
 
-                    final page = book.pages[index];
+                      final page = book.pages[index];
 
-                    final pageRenderer = ValueListenableBuilder<Duration>(
-                      valueListenable: c.narrationPositionListenable,
-                      builder: (context, narrationPosition, _) {
-                        return PageRenderer(
-                          page: page,
-                          pageIndex: index,
-                          scrollOffsetListenable: _scrollOffsetNotifier,
-                          narrationPosition: narrationPosition,
-                          isActive: index == activeIndex,
-                          spokenWordIndices:
-                              state.readerState.spokenWordIndices,
-                          tappedWordIndex: wordHelpSnapshot.activeWordIndex,
-                          tappedWordHighlightParts:
-                              wordHelpSnapshot.highlightParts,
-                          activeTappedWordHighlightPartIndex:
-                              wordHelpSnapshot.activeHighlightPartIndex,
-                          onWordTap: (word, globalIndex) {
-                            unawaited(
-                              c.dispatch(
-                                ReaderExperienceWordTapped(
-                                  word: word,
-                                  globalIndex: globalIndex,
-                                  pageIndex: index,
+                      final pageRenderer = ValueListenableBuilder<Duration>(
+                        valueListenable: c.narrationPositionListenable,
+                        builder: (context, narrationPosition, _) {
+                          return PageRenderer(
+                            page: page,
+                            pageIndex: index,
+                            scrollOffsetListenable: _scrollOffsetNotifier,
+                            narrationPosition: narrationPosition,
+                            isActive: index == activeIndex,
+                            spokenWordIndices:
+                                state.readerState.spokenWordIndices,
+                            tappedWordIndex: wordHelpSnapshot.activeWordIndex,
+                            tappedWordHighlightParts:
+                                wordHelpSnapshot.highlightParts,
+                            activeTappedWordHighlightPartIndex:
+                                wordHelpSnapshot.activeHighlightPartIndex,
+                            onWordTap: (word, globalIndex) {
+                              unawaited(
+                                c.dispatch(
+                                  ReaderExperienceWordTapped(
+                                    word: word,
+                                    globalIndex: globalIndex,
+                                    pageIndex: index,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          onWordLongPress: (word, globalIndex) {
-                            unawaited(
-                              c.dispatch(
-                                ReaderExperienceWordLongPressed(
-                                  word: word,
-                                  globalIndex: globalIndex,
-                                  pageIndex: index,
+                              );
+                            },
+                            onWordLongPress: (word, globalIndex) {
+                              unawaited(
+                                c.dispatch(
+                                  ReaderExperienceWordLongPressed(
+                                    word: word,
+                                    globalIndex: globalIndex,
+                                    pageIndex: index,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
+                              );
+                            },
+                          );
+                        },
+                      );
 
-                    return ValueListenableBuilder<double>(
-                      valueListenable: _scrollOffsetNotifier,
-                      child: pageRenderer,
-                      builder: (context, scrollOffset, child) {
-                        final localOffset = scrollOffset - index;
+                      return ValueListenableBuilder<double>(
+                        valueListenable: _scrollOffsetNotifier,
+                        child: pageRenderer,
+                        builder: (context, scrollOffset, child) {
+                          final localOffset = scrollOffset - index;
 
-                        final double progress;
-                        final bool revealFromTop;
+                          final double progress;
+                          final bool revealFromTop;
 
-                        if (localOffset < 0) {
-                          progress = (1.0 + localOffset).clamp(0.0, 1.0);
-                          revealFromTop = false;
-                        } else if (localOffset > 0) {
-                          progress = (1.0 - localOffset).clamp(0.0, 1.0);
-                          revealFromTop = true;
-                        } else {
-                          progress = 1.0;
-                          revealFromTop = false;
-                        }
+                          if (localOffset < 0) {
+                            progress = (1.0 + localOffset).clamp(0.0, 1.0);
+                            revealFromTop = false;
+                          } else if (localOffset > 0) {
+                            progress = (1.0 - localOffset).clamp(0.0, 1.0);
+                            revealFromTop = true;
+                          } else {
+                            progress = 1.0;
+                            revealFromTop = false;
+                          }
 
-                        return ClipPath(
-                          clipper: VerticalLiquidClipper(
-                            progress: progress,
-                            revealFromTop: revealFromTop,
-                          ),
-                          child: child,
-                        );
-                      },
-                    );
-                  },
+                          return ClipPath(
+                            clipper: VerticalLiquidClipper(
+                              progress: progress,
+                              revealFromTop: revealFromTop,
+                            ),
+                            child: child,
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-              ValueListenableBuilder<bool>(
-                valueListenable: _showChromeNotifier,
-                builder: (context, showChrome, child) {
-                  return IgnorePointer(
-                    ignoring: !showChrome,
-                    // TODO(STO-13): CueFlexibleSpaceBar needs a SliverAppBar +
-                    // CustomScrollView reader refactor; keep Stack chrome for now.
-                    child: Cue.onToggle(
-                      debugLabel: 'reader-top-bar-chrome',
-                      toggled: showChrome,
-                      motion: const CueMotion.curved(
-                        StoriaMotion.quick,
-                        curve: StoriaMotion.emphasized,
-                      ),
-                      acts: const [.fadeIn()],
-                      child: _ReaderTopBar(
-                        book: book,
-                        activePageNumber: activePage.pageNumber,
-                        onClose: () => Navigator.of(context).maybePop(),
-                        onAudioSettingsTap: () => _showAudioSettings(
-                          context,
-                          c,
-                          state.readerState.narrationVolume,
-                          state.readerState.soundscapeVolume,
+                ValueListenableBuilder<bool>(
+                  valueListenable: _showChromeNotifier,
+                  builder: (context, showChrome, child) {
+                    return IgnorePointer(
+                      ignoring: !showChrome,
+                      // TODO(STO-13): CueFlexibleSpaceBar needs a SliverAppBar +
+                      // CustomScrollView reader refactor; keep Stack chrome for now.
+                      child: Cue.onToggle(
+                        debugLabel: 'reader-top-bar-chrome',
+                        toggled: showChrome,
+                        motion: const CueMotion.curved(
+                          StoriaMotion.quick,
+                          curve: StoriaMotion.emphasized,
+                        ),
+                        acts: const [.fadeIn()],
+                        child: _ReaderTopBar(
+                          book: book,
+                          activePageNumber: activePage.pageNumber,
+                          onClose: () => Navigator.of(context).maybePop(),
+                          onAudioSettingsTap: () => _showAudioSettings(
+                            context,
+                            c,
+                            state.readerState.narrationVolume,
+                            state.readerState.soundscapeVolume,
+                          ),
                         ),
                       ),
+                    );
+                  },
+                ),
+                if (ref.watch(storySparksEnabledProvider))
+                  ReaderActivityPromptOverlay(
+                    bookId: book.id,
+                    pageIndex: activeIndex,
+                    isNarrationPlaying: state.readerState.isNarrationPlaying,
+                    narrationPositionListenable: c.narrationPositionListenable,
+                    narrationTimestamps: activePage.narrationTimestamps,
+                    onActivityShown: () => unawaited(
+                      c.dispatch(const ReaderExperienceActivityShown()),
                     ),
-                  );
-                },
-              ),
-              if (ref.watch(storySparksEnabledProvider))
-                ReaderActivityPromptOverlay(
-                  bookId: book.id,
-                  pageIndex: activeIndex,
+                    onActivityDismissed: () => unawaited(
+                      c.dispatch(const ReaderExperienceActivityDismissed()),
+                    ),
+                  ),
+                AudioControlsPill(
+                  hasNarration: hasNarration,
+                  hasSoundscape: hasSoundscape,
                   isNarrationPlaying: state.readerState.isNarrationPlaying,
-                  narrationPositionListenable: c.narrationPositionListenable,
-                  narrationTimestamps: activePage.narrationTimestamps,
-                  onActivityShown: () => unawaited(
-                    c.dispatch(const ReaderExperienceActivityShown()),
-                  ),
-                  onActivityDismissed: () => unawaited(
-                    c.dispatch(const ReaderExperienceActivityDismissed()),
+                  isSoundscapePlaying: state.readerState.isSoundscapePlaying,
+                  isPracticeActive: state.readerState.isPracticeMode,
+                  isListening: state.readerState.isListening,
+                  isVisible: true,
+                  showGrip: true,
+                  onToggleNarration: () =>
+                      c.dispatch(const ReaderExperienceToggleNarration()),
+                  onToggleSoundscape: () =>
+                      c.dispatch(const ReaderExperienceToggleSoundscape()),
+                  onTogglePractice: () =>
+                      c.dispatch(const ReaderExperienceTogglePractice()),
+                ),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: ConfettiWidget(
+                    confettiController: _confettiController,
+                    blastDirectionality: BlastDirectionality.explosive,
+                    numberOfParticles: 30,
+                    gravity: 0.1,
+                    emissionFrequency: 0.05,
+                    colors: const [
+                      Color(0xFFF59E0B),
+                      Color(0xFF14B8A6),
+                      Color(0xFF8A80CC),
+                      Color(0xFFEC4899),
+                      Color(0xFF34D399),
+                    ],
                   ),
                 ),
-              AudioControlsPill(
-                hasNarration: hasNarration,
-                hasSoundscape: hasSoundscape,
-                isNarrationPlaying: state.readerState.isNarrationPlaying,
-                isSoundscapePlaying: state.readerState.isSoundscapePlaying,
-                isPracticeActive: state.readerState.isPracticeMode,
-                isListening: state.readerState.isListening,
-                isVisible: true,
-                showGrip: true,
-                onToggleNarration: () =>
-                    c.dispatch(const ReaderExperienceToggleNarration()),
-                onToggleSoundscape: () =>
-                    c.dispatch(const ReaderExperienceToggleSoundscape()),
-                onTogglePractice: () =>
-                    c.dispatch(const ReaderExperienceTogglePractice()),
-              ),
-              Align(
-                alignment: Alignment.topCenter,
-                child: ConfettiWidget(
-                  confettiController: _confettiController,
-                  blastDirectionality: BlastDirectionality.explosive,
-                  numberOfParticles: 30,
-                  gravity: 0.1,
-                  emissionFrequency: 0.05,
-                  colors: const [
-                    Color(0xFFF59E0B),
-                    Color(0xFF14B8A6),
-                    Color(0xFF8A80CC),
-                    Color(0xFFEC4899),
-                    Color(0xFF34D399),
-                  ],
-                ),
-              ),
-              // Only render the GIF player when celebration is active. The
-              // controller is owned by ReaderScreen so it can survive these
-              // conditional unmounts and be disposed exactly once in dispose().
-              if (state.showCelebrationGif)
-                Positioned(
-                  right: 16,
-                  bottom: MediaQuery.paddingOf(context).bottom + 100,
-                  width: 160,
-                  child: IgnorePointer(
-                    child: GifPlayer(
-                      controller: _gifPlayerController,
-                      isAutoDisposeController: false,
-                      fit: BoxFit.contain,
+                // Only render the GIF player when celebration is active. The
+                // controller is owned by ReaderScreen so it can survive these
+                // conditional unmounts and be disposed exactly once in dispose().
+                if (state.showCelebrationGif)
+                  Positioned(
+                    right: 16,
+                    bottom: MediaQuery.paddingOf(context).bottom + 100,
+                    width: 160,
+                    child: IgnorePointer(
+                      child: GifPlayer(
+                        controller: _gifPlayerController,
+                        isAutoDisposeController: false,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
-                ),
-              if (walkthroughSeen.valueOrNull == false &&
-                  !_walkthroughDismissed)
-                ReaderWalkthrough(
-                  onComplete: () =>
-                      setState(() => _walkthroughDismissed = true),
-                ),
-            ],
+                if (walkthroughSeen.valueOrNull == false &&
+                    !_walkthroughDismissed)
+                  ReaderWalkthrough(
+                    onComplete: () =>
+                        setState(() => _walkthroughDismissed = true),
+                  ),
+              ],
+            ),
           );
         },
         loading: () => const _ReaderLoadingState(),
@@ -1385,14 +1437,16 @@ class _ToggleRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: Theme.of(context).textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w900),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: StoriaColors.inkMuted),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: StoriaColors.inkMuted),
                 ),
               ],
             ),
