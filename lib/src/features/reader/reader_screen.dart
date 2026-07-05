@@ -23,6 +23,7 @@ import 'application/reader_experience_controller.dart';
 import 'celebration/book_celebration_summary.dart';
 import 'liquid_page_clipper.dart';
 import 'page_renderer.dart';
+import 'reader_tilt.dart';
 import 'walkthrough/reader_walkthrough.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
@@ -39,6 +40,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   final PageController _pageController = PageController();
   final ValueNotifier<bool> _showChromeNotifier = ValueNotifier(true);
   final ValueNotifier<double> _scrollOffsetNotifier = ValueNotifier(0.0);
+  late final ReaderTiltController _tiltController;
+  bool _tiltStarted = false;
   late final ConfettiController _confettiController;
   late GifPlayerController _gifPlayerController;
 
@@ -61,6 +64,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       readerExperienceControllerProvider(widget.bookId).notifier,
     );
     _pageController.addListener(_onPageScroll);
+    _tiltController = ReaderTiltController();
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
@@ -71,6 +75,14 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       loop: true,
       showControls: false,
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_tiltStarted) return;
+    _tiltStarted = true;
+    _tiltController.start(enabled: !MediaQuery.disableAnimationsOf(context));
   }
 
   void _onPageScroll() {
@@ -130,6 +142,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
     _showChromeNotifier.dispose();
     _scrollOffsetNotifier.dispose();
+    _tiltController.dispose();
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
     _confettiController.dispose();
@@ -235,6 +248,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                             page: page,
                             pageIndex: index,
                             scrollOffsetListenable: _scrollOffsetNotifier,
+                            tiltOffsetListenable: _tiltController,
                             narrationPosition: narrationPosition,
                             isActive: index == activeIndex,
                             spokenWordIndices:

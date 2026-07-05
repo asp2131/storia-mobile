@@ -15,9 +15,9 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
     RawPlayer? narrationPlayer,
     RawPlayer? soundscapePlayer,
     RawPlayer? pronunciationPlayer,
-  })  : _narration = narrationPlayer ?? playerFactory(),
-        _soundscape = soundscapePlayer ?? playerFactory(),
-        _pronunciation = pronunciationPlayer ?? playerFactory();
+  }) : _narration = narrationPlayer ?? playerFactory(),
+       _soundscape = soundscapePlayer ?? playerFactory(),
+       _pronunciation = pronunciationPlayer ?? playerFactory();
 
   final RawPlayer _narration;
   final RawPlayer _soundscape;
@@ -68,8 +68,9 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
       _emitSnapshot();
     });
     _soundscapePlayingSub = _soundscape.playingStream.listen((playing) {
-      _currentSnapshot =
-          _currentSnapshot.copyWith(isSoundscapePlaying: playing);
+      _currentSnapshot = _currentSnapshot.copyWith(
+        isSoundscapePlaying: playing,
+      );
       _emitSnapshot();
     });
 
@@ -90,13 +91,14 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
     await _narration.stop();
     if (requestId != _pageAudioRequestId) return;
 
+    final tracksToPlay = <RawPlayer>[];
     final narrationUrl = page.narrationUrl;
-    if (narrationUrl != null && narrationUrl.isNotEmpty) {
+    final hasNarration = narrationUrl != null && narrationUrl.isNotEmpty;
+    _narrationActive = hasNarration;
+    if (hasNarration) {
       await _narration.setSource(narrationUrl);
       if (requestId != _pageAudioRequestId) return;
-      if (_narrationActive) {
-        await _narration.play();
-      }
+      tracksToPlay.add(_narration);
     }
 
     final soundscapeUrl = page.soundscapeUrl;
@@ -104,22 +106,37 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
     final isSameSoundscape =
         hasSoundscape && soundscapeUrl == _currentSoundscapeUrl;
 
-    if (isSameSoundscape) return;
-
-    await _soundscape.stop();
-    if (requestId != _pageAudioRequestId) return;
-
-    if (hasSoundscape) {
-      await _soundscape.setVolume(_soundscapeTargetVolume);
-      await _soundscape.setSource(soundscapeUrl);
-      _currentSoundscapeUrl = soundscapeUrl;
-      if (requestId != _pageAudioRequestId) return;
-      if (_soundscapeActive) {
-        await _soundscape.play();
+    if (isSameSoundscape) {
+      _soundscapeActive = true;
+      if (!_soundscape.isPlaying) {
+        tracksToPlay.add(_soundscape);
       }
     } else {
-      _currentSoundscapeUrl = null;
+      await _soundscape.stop();
+      if (requestId != _pageAudioRequestId) return;
+
+      if (hasSoundscape) {
+        await _soundscape.setVolume(_soundscapeTargetVolume);
+        await _soundscape.setSource(soundscapeUrl);
+        _currentSoundscapeUrl = soundscapeUrl;
+        _soundscapeActive = true;
+        if (requestId != _pageAudioRequestId) return;
+        tracksToPlay.add(_soundscape);
+      } else {
+        _currentSoundscapeUrl = null;
+        _soundscapeActive = false;
+      }
     }
+
+    for (final track in tracksToPlay) {
+      _playPageTrack(track);
+    }
+  }
+
+  void _playPageTrack(RawPlayer player) {
+    // just_audio.play() completes when playback completes; don't serialize
+    // narration before soundscape on page load.
+    unawaited(player.play().catchError((_) {}));
   }
 
   @override
@@ -244,8 +261,7 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
   Future<void> _waitForPronunciationSegmentToEnd(int requestId) async {
     await _pronunciation.stateStream.firstWhere((state) {
       if (requestId != _pronunciationRequestId) return true;
-      return state == RawPlayerState.completed ||
-          state == RawPlayerState.idle;
+      return state == RawPlayerState.completed || state == RawPlayerState.idle;
     });
   }
 
@@ -269,8 +285,9 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
     final dur = player.duration;
     if (dur == null || dur <= Duration.zero) return;
 
-    final restartCutoff =
-        dur > _restartThreshold ? dur - _restartThreshold : Duration.zero;
+    final restartCutoff = dur > _restartThreshold
+        ? dur - _restartThreshold
+        : Duration.zero;
     final isNearEnd = player.position >= restartCutoff;
     final isCompleted = player.state == RawPlayerState.completed;
 

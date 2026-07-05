@@ -30,19 +30,26 @@ void main() {
     });
 
     group('loadPage', () {
-      test('sets narration source and plays when active', () async {
-        await engine.toggleNarration();
+      test('autoplays narration and soundscape together', () async {
+        narration.autoComplete = false;
+        soundscape.autoComplete = false;
+
         await engine.loadPage(
           const PageData(
             id: 'p1',
             pageNumber: 1,
             textContent: 'hello',
             narrationUrl: 'https://cdn/narration.mp3',
+            soundscapeUrl: 'https://cdn/soundscape.mp3',
           ),
         );
 
         expect(narration.setSourceCalls, ['https://cdn/narration.mp3']);
-        expect(narration.playCount, greaterThanOrEqualTo(1));
+        expect(soundscape.setSourceCalls, ['https://cdn/soundscape.mp3']);
+        expect(narration.playCount, 1);
+        expect(soundscape.playCount, 1);
+        expect(engine.isNarrationActive, true);
+        expect(engine.isSoundscapeActive, true);
       });
 
       test('stops narration before loading new page', () async {
@@ -200,18 +207,20 @@ void main() {
         expect(snapshots.any((s) => s.narrationPosition.inSeconds == 5), true);
       });
 
-      test('states stream emits isNarrationPlaying false when narration stops',
-          () async {
-        await engine.toggleNarration();
-        final snapshots = <AudioSnapshot>[];
-        final sub = engine.states.listen(snapshots.add);
+      test(
+        'states stream emits isNarrationPlaying false when narration stops',
+        () async {
+          await engine.toggleNarration();
+          final snapshots = <AudioSnapshot>[];
+          final sub = engine.states.listen(snapshots.add);
 
-        await engine.toggleNarration();
-        await Future<void>.delayed(Duration.zero);
+          await engine.toggleNarration();
+          await Future<void>.delayed(Duration.zero);
 
-        expect(snapshots.any((s) => !s.isNarrationPlaying), true);
-        await sub.cancel();
-      });
+          expect(snapshots.any((s) => !s.isNarrationPlaying), true);
+          await sub.cancel();
+        },
+      );
     });
 
     group('play (pronunciation)', () {
@@ -342,8 +351,7 @@ void main() {
       expect(soundscape.stopCount, stopsAfterFirst);
     });
 
-    test('duckForPractice does not pause narration when not playing',
-        () async {
+    test('duckForPractice does not pause narration when not playing', () async {
       await engine.duckForPractice();
 
       expect(narration.pauseCount, 0);
@@ -351,13 +359,14 @@ void main() {
     });
 
     test(
-        'restoreFromPractice does not resume narration if not playing before',
-        () async {
-      await engine.duckForPractice();
-      await engine.restoreFromPractice();
+      'restoreFromPractice does not resume narration if not playing before',
+      () async {
+        await engine.duckForPractice();
+        await engine.restoreFromPractice();
 
-      expect(narration.playCount, 0);
-    });
+        expect(narration.playCount, 0);
+      },
+    );
   });
 }
 

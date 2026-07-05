@@ -41,6 +41,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   google_fonts: ^6.3.0
   just_audio: ^0.10.5
+  flutter_soloud: ^3.5.4
   audio_session: ^0.2.2
   shared_preferences: ^2.5.3
   connectivity_plus: ^6.1.5
@@ -53,6 +54,7 @@ dependencies:
   crypto: ^3.0.6
   path: ^1.9.1
   wakelock_plus: ^1.4.0
+  sensors_plus: ^7.1.0
   flutter_animate: ^4.5.2
   speech_to_text: ^7.0.0
   flutter_tts:
@@ -106,6 +108,7 @@ flutter:
     - assets/tiles/
     - assets/aac/
     - assets/aac/soundfonts/
+    - assets/audio/sfx/
     - assets/lottie/
   shaders:
     - shaders/page_loading.frag

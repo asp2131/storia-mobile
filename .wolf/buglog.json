@@ -4,10 +4,10 @@
     {
       "id": "bug-tests-dead-package-rename",
       "timestamp": "2026-07-01T00:00:00.000Z",
-      "error_message": "Couldn't resolve the package 'storia_kids' in 'package:storia_kids/...' — every test file fails to compile.",
+      "error_message": "Couldn't resolve the package 'storia_kids' in 'package:storia_kids/...' \u2014 every test file fails to compile.",
       "file": "pubspec.yaml",
       "root_cause": "pubspec name changed to 'Loratone' (rebrand) but all 143 test imports still reference package:storia_kids. lib/ uses relative imports so the app still builds; only tests are dead. Package name 'Loratone' is also non-idiomatic (Dart pkg names should be lowercase, e.g. loratone).",
-      "fix": "NOT YET FIXED — surfaced to user. Options: (a) rename pubspec to lowercase 'loratone' + sweep test imports storia_kids->loratone (143), or (b) keep internal name 'storia_kids' and set a separate display name.",
+      "fix": "NOT YET FIXED \u2014 surfaced to user. Options: (a) rename pubspec to lowercase 'loratone' + sweep test imports storia_kids->loratone (143), or (b) keep internal name 'storia_kids' and set a separate display name.",
       "tags": [
         "flutter",
         "tests",
@@ -65,10 +65,10 @@
     {
       "id": "bug-parental-gate-deepen",
       "timestamp": "2026-06-22T00:00:00.000Z",
-      "error_message": "Parental gate state machine and view duplicated across parental_gate.dart (425 LOC) and parent_birth_year_screen.dart (533 LOC); GateLockout used static mutable state (untestable, defeated by force-quit); zero tests on lockout ladder; hardcoded hex colors (0xFF4A5BE7 was a known repeat bug — bug-001).",
+      "error_message": "Parental gate state machine and view duplicated across parental_gate.dart (425 LOC) and parent_birth_year_screen.dart (533 LOC); GateLockout used static mutable state (untestable, defeated by force-quit); zero tests on lockout ladder; hardcoded hex colors (0xFF4A5BE7 was a known repeat bug \u2014 bug-001).",
       "file": "lib/src/core/widgets/parental_gate.dart",
       "root_cause": "Gate concept split across two files with ~150 lines of duplicated state machine (Timer, challenge gen, countdown, lockout progression) and ~225 lines of duplicated view (challenge card, lockout card). Static mutable GateLockout was process-global but in-memory only. No shared view widget. Modal used wrong card color 0xFF4A5BE7 (should be StoriaColors.ink 0xFF2C3358).",
-      "fix": "Extracted GateController (ValueNotifier<GateState>) state machine with autoTick:false for widget-tree-free testing. Extracted GateLockout as instance class with SharedPreferences persistence (survives force-quit). Created shared GateChallengeCard widget (2 colors + header slot + title + showCancel — not a GateSkin interface). Rewrote parental_gate.dart as thin facade (98 LOC, ParentalGate.verify signature unchanged). Refactored parent_birth_year_screen.dart to use controller + shared card (533→308 LOC). Added 37 tests (gate_lockout_test, gate_controller_test, gate_challenge_card_test). Added StoriaColors.inkDeep/gateTimerWarning/gateError tokens. Wired GateLockout.instance.loadFromPrefs() in main.dart.",
+      "fix": "Extracted GateController (ValueNotifier<GateState>) state machine with autoTick:false for widget-tree-free testing. Extracted GateLockout as instance class with SharedPreferences persistence (survives force-quit). Created shared GateChallengeCard widget (2 colors + header slot + title + showCancel \u2014 not a GateSkin interface). Rewrote parental_gate.dart as thin facade (98 LOC, ParentalGate.verify signature unchanged). Refactored parent_birth_year_screen.dart to use controller + shared card (533\u2192308 LOC). Added 37 tests (gate_lockout_test, gate_controller_test, gate_challenge_card_test). Added StoriaColors.inkDeep/gateTimerWarning/gateError tokens. Wired GateLockout.instance.loadFromPrefs() in main.dart.",
       "tags": [
         "flutter",
         "parental-gate",
@@ -112,7 +112,7 @@
       "error_message": "Character disappears when tapping a book (interact one-shot animation)",
       "file": "lib/src/features/library/game/player_component.dart",
       "root_cause": "playOneShot(interact) sets _anim=interact. If _sets[interact] is a non-empty-keyed but layer-missing OR empty map (interact sheets failed to load / not yet streamed in from Supabase), _applyFrame hits 'set == null' per layer and sets every child sprite to null -> character blanks. _frameCountForCurrent returns 0 so the one-shot never reverts to idle, leaving it gone permanently.",
-      "fix": "Added _renderSet() fallback: when the active anim has no loaded frames, render the idle set instead so the character never blanks. Used in _applyFrame and _frameCountForCurrent. Data caveat: interact may genuinely be missing remotely under CustomaizableCharacter/Interact/*.png (kRemoteAnimDir[interact]='Interact') — watch debugPrint 'character: missing ... for CharacterAnimation.interact'.",
+      "fix": "Added _renderSet() fallback: when the active anim has no loaded frames, render the idle set instead so the character never blanks. Used in _applyFrame and _frameCountForCurrent. Data caveat: interact may genuinely be missing remotely under CustomaizableCharacter/Interact/*.png (kRemoteAnimDir[interact]='Interact') \u2014 watch debugPrint 'character: missing ... for CharacterAnimation.interact'.",
       "tags": [
         "flame",
         "character",
@@ -131,7 +131,7 @@
       "error_message": "Wrong reference: 0xFF4A5BE7 should be 0xFF2C3358",
       "file": "lib/src/features/onboarding/presentation/parent_birth_year_screen.dart",
       "root_cause": "Used \"0xFF4A5BE7\" instead of \"0xFF2C3358\"",
-      "fix": "Changed 0xFF4A5BE7 → 0xFF2C3358",
+      "fix": "Changed 0xFF4A5BE7 \u2192 0xFF2C3358",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -243,7 +243,7 @@
       "error_message": "Wrong reference: StatefulWidget should be ConsumerStatefulWidget",
       "file": "lib/src/features/reader/page_renderer.dart",
       "root_cause": "Used \"StatefulWidget\" instead of \"ConsumerStatefulWidget\"",
-      "fix": "Changed StatefulWidget → ConsumerStatefulWidget",
+      "fix": "Changed StatefulWidget \u2192 ConsumerStatefulWidget",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -274,7 +274,7 @@
       "timestamp": "2026-03-26T14:51:26.459Z",
       "error_message": "Missing await",
       "file": "lib/src/features/reader/runtime/providers/word_tts_provider.dart",
-      "root_cause": "Async call without await — returned Promise instead of value",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
       "fix": "Added await to async call",
       "tags": [
         "auto-detected",
@@ -323,7 +323,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/book_shelf_component.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 11→23 lines (2 removed)",
+      "fix": "Rewrote 11\u219223 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -354,7 +354,7 @@
       "timestamp": "2026-04-02T02:08:27.558Z",
       "error_message": "Missing error handling in unknown",
       "file": "lib/src/features/library/game/library_game.dart",
-      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "root_cause": "Code path had no error handling \u2014 exceptions would propagate uncaught",
       "fix": "Added try/catch block",
       "tags": [
         "auto-detected",
@@ -371,7 +371,7 @@
       "error_message": "Wrong reference: opacity should be baseOpacity",
       "file": "lib/src/features/library/game/book_shelf_component.dart",
       "root_cause": "Used \"opacity\" instead of \"baseOpacity\"",
-      "fix": "Changed opacity → baseOpacity",
+      "fix": "Changed opacity \u2192 baseOpacity",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -387,7 +387,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/library_screen.dart",
       "root_cause": "8 lines replaced/restructured",
-      "fix": "Rewrote 98→163 lines (8 removed)",
+      "fix": "Rewrote 98\u2192163 lines (8 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -403,7 +403,7 @@
       "error_message": "Wrong reference: isLoading should be isCoverLoading",
       "file": "lib/src/features/library/game/library_game.dart",
       "root_cause": "Used \"isLoading\" instead of \"isCoverLoading\"",
-      "fix": "Changed isLoading → isCoverLoading",
+      "fix": "Changed isLoading \u2192 isCoverLoading",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -435,7 +435,7 @@
       "error_message": "Wrong reference: idle should be idleFront",
       "file": "lib/src/features/library/game/player_component.dart",
       "root_cause": "Used \"idle\" instead of \"idleFront\"",
-      "fix": "Changed idle → idleFront",
+      "fix": "Changed idle \u2192 idleFront",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -451,7 +451,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/player_component.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 42→62 lines (2 removed)",
+      "fix": "Rewrote 42\u219262 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -467,7 +467,7 @@
       "error_message": "Wrong reference: true should be false",
       "file": "../../../.claude/skills/normalize-sprites/SKILL.md",
       "root_cause": "Used \"true\" instead of \"false\"",
-      "fix": "Changed true → false",
+      "fix": "Changed true \u2192 false",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -483,7 +483,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/library_screen.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 23→28 lines (2 removed) | Also: return Offset(MediaQuery.sizeOf(context).width / 2; // Position above the book with some padding.",
+      "fix": "Rewrote 23\u219228 lines (2 removed) | Also: return Offset(MediaQuery.sizeOf(context).width / 2; // Position above the book with some padding.",
       "tags": [
         "auto-detected",
         "refactor",
@@ -515,7 +515,7 @@
       "error_message": "Wrong reference: BookShelfComponent should be MapBookNodeComponent",
       "file": "lib/src/features/library/game/library_game.dart",
       "root_cause": "Used \"BookShelfComponent\" instead of \"MapBookNodeComponent\"",
-      "fix": "Changed BookShelfComponent → MapBookNodeComponent",
+      "fix": "Changed BookShelfComponent \u2192 MapBookNodeComponent",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -595,7 +595,7 @@
       "error_message": "Wrong reference: _kBookWidth should be _kNodeWidth",
       "file": "lib/src/features/library/library_screen.dart",
       "root_cause": "Used \"_kBookWidth\" instead of \"_kNodeWidth\"",
-      "fix": "Changed _kBookWidth → _kNodeWidth",
+      "fix": "Changed _kBookWidth \u2192 _kNodeWidth",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -611,7 +611,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/player_component.dart",
       "root_cause": "6 lines replaced/restructured",
-      "fix": "Rewrote 17→32 lines (6 removed)",
+      "fix": "Rewrote 17\u219232 lines (6 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -627,7 +627,7 @@
       "error_message": "Wrong operator: == should be >=",
       "file": "lib/src/features/library/game/player_component.dart",
       "root_cause": "Used \"==\" instead of \">=\"",
-      "fix": "Changed operator == → >=",
+      "fix": "Changed operator == \u2192 >=",
       "tags": [
         "auto-detected",
         "operator-fix",
@@ -691,7 +691,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/library_screen.dart",
       "root_cause": "28 lines replaced/restructured",
-      "fix": "Rewrote 67→27 lines (28 removed) | Also: /// Single [CustomPainter] that draws three parall; /// map background: sky (0.2x), hills (0.5x), and  | Also: import 'dart:math' as math;; import 'dart:ui' as ui;",
+      "fix": "Rewrote 67\u219227 lines (28 removed) | Also: /// Single [CustomPainter] that draws three parall; /// map background: sky (0.2x), hills (0.5x), and  | Also: import 'dart:math' as math;; import 'dart:ui' as ui;",
       "tags": [
         "auto-detected",
         "refactor",
@@ -707,7 +707,7 @@
       "error_message": "Wrong reference: HasGameRef should be HasGameReference",
       "file": "lib/src/features/library/game/isometric_ground_component.dart",
       "root_cause": "Used \"HasGameRef\" instead of \"HasGameReference\"",
-      "fix": "Changed HasGameRef → HasGameReference",
+      "fix": "Changed HasGameRef \u2192 HasGameReference",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -835,7 +835,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/library_game.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 6→9 lines (2 removed)",
+      "fix": "Rewrote 6\u21929 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -851,7 +851,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/runtime/reader_session_impl.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 26→53 lines (2 removed)",
+      "fix": "Rewrote 26\u219253 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -866,7 +866,7 @@
       "timestamp": "2026-04-05T14:38:40.928Z",
       "error_message": "Missing await",
       "file": "lib/src/features/reader/runtime/reader_session_impl.dart",
-      "root_cause": "Async call without await — returned Promise instead of value",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
       "fix": "Added await to async call",
       "tags": [
         "auto-detected",
@@ -883,7 +883,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "7 lines replaced/restructured",
-      "fix": "Rewrote 13→6 lines (7 removed) | Also: final bool isPracticeMode;; final bool isListening; | Also: top: -12,; right: -8,",
+      "fix": "Rewrote 13\u21926 lines (7 removed) | Also: final bool isPracticeMode;; final bool isListening; | Also: top: -12,; right: -8,",
       "tags": [
         "auto-detected",
         "refactor",
@@ -899,7 +899,7 @@
       "error_message": "Wrong operator: && should be ||",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "Used \"&&\" instead of \"||\"",
-      "fix": "Changed operator && → ||",
+      "fix": "Changed operator && \u2192 ||",
       "tags": [
         "auto-detected",
         "operator-fix",
@@ -963,7 +963,7 @@
       "error_message": "Wrong reference: PressableDough should be GyroDough",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "Used \"PressableDough\" instead of \"GyroDough\"",
-      "fix": "Changed PressableDough → GyroDough",
+      "fix": "Changed PressableDough \u2192 GyroDough",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -995,7 +995,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "8 lines replaced/restructured",
-      "fix": "Rewrote 16→7 lines (8 removed)",
+      "fix": "Rewrote 16\u21927 lines (8 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1011,7 +1011,7 @@
       "error_message": "Wrong reference: revealFromTop should be shouldClipWithWave",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "Used \"revealFromTop\" instead of \"shouldClipWithWave\"",
-      "fix": "Changed revealFromTop → shouldClipWithWave",
+      "fix": "Changed revealFromTop \u2192 shouldClipWithWave",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -1059,7 +1059,7 @@
       "error_message": "Wrong reference: _snapTo should be _animateSnapTo",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "Used \"_snapTo\" instead of \"_animateSnapTo\"",
-      "fix": "Changed _snapTo → _animateSnapTo",
+      "fix": "Changed _snapTo \u2192 _animateSnapTo",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -1075,7 +1075,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "68 lines replaced/restructured",
-      "fix": "Rewrote 93→59 lines (68 removed)",
+      "fix": "Rewrote 93\u219259 lines (68 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1107,7 +1107,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 29→38 lines (3 removed)",
+      "fix": "Rewrote 29\u219238 lines (3 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1155,7 +1155,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 7→4 lines (2 removed)",
+      "fix": "Rewrote 7\u21924 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1187,7 +1187,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 6→4 lines (2 removed) | Also: GestureDetector(; behavior: HitTestBehavior.translucent,",
+      "fix": "Rewrote 6\u21924 lines (2 removed) | Also: GestureDetector(; behavior: HitTestBehavior.translucent,",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1203,7 +1203,7 @@
       "error_message": "Wrong reference: storia_flutter should be Storia_Kids",
       "file": "test/features/reader/vertical_liquid_swipe_test.dart",
       "root_cause": "Used \"storia_flutter\" instead of \"Storia_Kids\"",
-      "fix": "Changed storia_flutter → Storia_Kids",
+      "fix": "Changed storia_flutter \u2192 Storia_Kids",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -1219,7 +1219,7 @@
       "error_message": "Wrong reference: SingleTickerProviderStateMixin should be TickerProviderStateMixin",
       "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
       "root_cause": "Used \"SingleTickerProviderStateMixin\" instead of \"TickerProviderStateMixin\"",
-      "fix": "Changed SingleTickerProviderStateMixin → TickerProviderStateMixin",
+      "fix": "Changed SingleTickerProviderStateMixin \u2192 TickerProviderStateMixin",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -1235,7 +1235,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
       "root_cause": "6 lines replaced/restructured",
-      "fix": "Rewrote 11→17 lines (6 removed)",
+      "fix": "Rewrote 11\u219217 lines (6 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1251,7 +1251,7 @@
       "error_message": "Wrong reference: showChrome should be true",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "Used \"showChrome\" instead of \"true\"",
-      "fix": "Changed showChrome → true",
+      "fix": "Changed showChrome \u2192 true",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -1267,7 +1267,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/vertical_liquid_swipe.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 6→4 lines (2 removed)",
+      "fix": "Rewrote 6\u21924 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1283,7 +1283,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 3→5 lines (2 removed)",
+      "fix": "Rewrote 3\u21925 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1331,7 +1331,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/book_preview_overlay.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 20→39 lines (2 removed)",
+      "fix": "Rewrote 20\u219239 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1347,7 +1347,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/book_preview_overlay.dart",
       "root_cause": "16 lines replaced/restructured",
-      "fix": "Rewrote 21→33 lines (16 removed)",
+      "fix": "Rewrote 21\u219233 lines (16 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1442,7 +1442,7 @@
       "timestamp": "2026-04-16T14:57:35.995Z",
       "error_message": "Missing await",
       "file": "lib/src/features/reader/reader_screen.dart",
-      "root_cause": "Async call without await — returned Promise instead of value",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
       "fix": "Added await to async call",
       "tags": [
         "auto-detected",
@@ -1571,7 +1571,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/child/presentation/add_child_screen.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 12→14 lines (2 removed)",
+      "fix": "Rewrote 12\u219214 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1602,7 +1602,7 @@
       "timestamp": "2026-04-16T23:01:45.397Z",
       "error_message": "Missing error handling in unknown",
       "file": "lib/src/data/api_client.dart",
-      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "root_cause": "Code path had no error handling \u2014 exceptions would propagate uncaught",
       "fix": "Added try/catch block",
       "tags": [
         "auto-detected",
@@ -1666,7 +1666,7 @@
       "timestamp": "2026-04-25T19:36:58.616Z",
       "error_message": "Missing await",
       "file": "lib/src/audio/audio_engine.dart",
-      "root_cause": "Async call without await — returned Promise instead of value",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
       "fix": "Added await to async call",
       "tags": [
         "auto-detected",
@@ -1683,7 +1683,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/runtime/providers/word_tts_provider.dart",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 31→42 lines (3 removed)",
+      "fix": "Rewrote 31\u219242 lines (3 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1717,7 +1717,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/data/pronunciation_repository.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 39→55 lines (2 removed)",
+      "fix": "Rewrote 39\u219255 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1749,7 +1749,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/runtime/services/pronunciation_playback_service.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 46→63 lines (2 removed)",
+      "fix": "Rewrote 46\u219263 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1764,7 +1764,7 @@
       "timestamp": "2026-04-26T13:28:29.482204+00:00",
       "error_message": "After routing tap through manifest, mobile still plays OS TTS for ElevenLabs-generated book",
       "file": "lib/src/data/pronunciation_repository.dart, lib/src/features/reader/runtime/services/pronunciation_playback_service.dart",
-      "root_cause": "Unknown — added debugPrint diagnostics. Top suspects: anon RLS on book_pronunciations, mobile status filter narrower than web (mobile drops != generated/reviewed; web /api returns all), normalization regex divergence (mobile strips on Letter only, web on Letter+Number).",
+      "root_cause": "Unknown \u2014 added debugPrint diagnostics. Top suspects: anon RLS on book_pronunciations, mobile status filter narrower than web (mobile drops != generated/reviewed; web /api returns all), normalization regex divergence (mobile strips on Letter only, web on Letter+Number).",
       "fix": "Diagnostics-only this pass; awaiting log output. Pending: relax status filter, align normalizer, or route via /api/books/[id]/pronunciations.",
       "tags": [
         "reader",
@@ -1782,7 +1782,7 @@
       "timestamp": "2026-04-26T13:51:01.285458+00:00",
       "error_message": "Mobile pronunciation manifest empty for book with 34 DB rows",
       "file": "supabase: book_pronunciations RLS",
-      "root_cause": "RLS enabled on public.book_pronunciations with no policies. Web Prisma server uses service role (bypasses RLS); Flutter Supabase client uses anon JWT and gets denied → empty result → empty manifest → fallback to OS TTS.",
+      "root_cause": "RLS enabled on public.book_pronunciations with no policies. Web Prisma server uses service role (bypasses RLS); Flutter Supabase client uses anon JWT and gets denied \u2192 empty result \u2192 empty manifest \u2192 fallback to OS TTS.",
       "fix": "Add SELECT policy for anon+authenticated on public.book_pronunciations. Confirm storage bucket also publicly readable for full_word_url/breakdown_url.",
       "tags": [
         "supabase",
@@ -1833,7 +1833,7 @@
       "error_message": "Significant refactor of ",
       "file": "WORKFLOW.md",
       "root_cause": "5 lines replaced/restructured",
-      "fix": "Rewrote 8→13 lines (5 removed) | Also: Primary Flutter validation:; flutter pub get | Also: 2. Inspect relevant repo files.; 3. Update the workpad with: | Also: 1. Use repo-local Flutter/Riverpod architecture an; 2. Keep state-management, routing, data, and UI bo",
+      "fix": "Rewrote 8\u219213 lines (5 removed) | Also: Primary Flutter validation:; flutter pub get | Also: 2. Inspect relevant repo files.; 3. Update the workpad with: | Also: 1. Use repo-local Flutter/Riverpod architecture an; 2. Keep state-management, routing, data, and UI bo",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1849,7 +1849,7 @@
       "error_message": "Wrong reference: Codex should be Symphony",
       "file": "bin/pi-symphony.sh",
       "root_cause": "Used \"Codex\" instead of \"Symphony\"",
-      "fix": "Changed Codex → Symphony",
+      "fix": "Changed Codex \u2192 Symphony",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -1865,7 +1865,7 @@
       "error_message": "Significant refactor of ",
       "file": "bin/pi-symphony.sh",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 11→16 lines (3 removed) | Also: local id ident title desc url; log \"=== $ident — $title ===\" | Also: # Polls Linear for tickets in `Todo`, dispatches `; # in an isolated git worktree, runs ./bin/verify.s",
+      "fix": "Rewrote 11\u219216 lines (3 removed) | Also: local id ident title desc url; log \"=== $ident \u2014 $title ===\" | Also: # Polls Linear for tickets in `Todo`, dispatches `; # in an isolated git worktree, runs ./bin/verify.s",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1881,7 +1881,7 @@
       "error_message": "Significant refactor of ",
       "file": "bin/pi-symphony.sh",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 13→19 lines (3 removed)",
+      "fix": "Rewrote 13\u219219 lines (3 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1913,7 +1913,7 @@
       "error_message": "Significant refactor of ",
       "file": "bin/pi-symphony.sh",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 10→15 lines (3 removed) | Also: linear_gql \"$q\" \"$(jq -nc --arg p \"$pid\" --argjson; | jq -c '.data.issues.nodes[]?'",
+      "fix": "Rewrote 10\u219215 lines (3 removed) | Also: linear_gql \"$q\" \"$(jq -nc --arg p \"$pid\" --argjson; | jq -c '.data.issues.nodes[]?'",
       "tags": [
         "auto-detected",
         "refactor",
@@ -1964,7 +1964,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/library_screen.dart",
       "root_cause": "25 lines replaced/restructured",
-      "fix": "Rewrote 30→4 lines (25 removed)",
+      "fix": "Rewrote 30\u21924 lines (25 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2037,7 +2037,7 @@
       "error_message": "Wrong reference: debugPrint should be print",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "Used \"debugPrint\" instead of \"print\"",
-      "fix": "Changed debugPrint → print",
+      "fix": "Changed debugPrint \u2192 print",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -2053,7 +2053,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 11→8 lines (2 removed)",
+      "fix": "Rewrote 11\u21928 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2069,7 +2069,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 14→28 lines (3 removed) | Also: // ignore: avoid_print; print('PIE_PAN_START off=$_dragOffset isDragging=$ | Also: onPanStart: (_) {; // ignore: avoid_print",
+      "fix": "Rewrote 14\u219228 lines (3 removed) | Also: // ignore: avoid_print; print('PIE_PAN_START off=$_dragOffset isDragging=$ | Also: onPanStart: (_) {; // ignore: avoid_print",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2085,7 +2085,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "19 lines replaced/restructured",
-      "fix": "Rewrote 39→13 lines (19 removed) | Also: child: Stack(; clipBehavior: Clip.none,",
+      "fix": "Rewrote 39\u219213 lines (19 removed) | Also: child: Stack(; clipBehavior: Clip.none,",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2101,7 +2101,7 @@
       "error_message": "Wrong reference: _AudioControlsPill should be AudioControlsPill",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "Used \"_AudioControlsPill\" instead of \"AudioControlsPill\"",
-      "fix": "Changed _AudioControlsPill → AudioControlsPill",
+      "fix": "Changed _AudioControlsPill \u2192 AudioControlsPill",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -2117,7 +2117,7 @@
       "error_message": "Significant refactor of ",
       "file": "test/features/reader/audio_controls_pill_drag_test.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 5→9 lines (2 removed)",
+      "fix": "Rewrote 5\u21929 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2190,7 +2190,7 @@
       "error_message": "Significant refactor of ",
       "file": "../../../../../var/folders/vh/2k15dtzx66l3r__n7mtz07f00000gq/T/handoff-XXXXXX.md.Ayaug0mYNJ",
       "root_cause": "4 lines replaced/restructured",
-      "fix": "Rewrote 11→23 lines (4 removed)",
+      "fix": "Rewrote 11\u219223 lines (4 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2222,7 +2222,7 @@
       "error_message": "Significant refactor of ",
       "file": "test/features/library/map_segment_renderer_test.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 6→4 lines (2 removed)",
+      "fix": "Rewrote 6\u21924 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2270,7 +2270,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/isometric_ground_component.dart",
       "root_cause": "4 lines replaced/restructured",
-      "fix": "Rewrote 24→47 lines (4 removed)",
+      "fix": "Rewrote 24\u219247 lines (4 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2321,7 +2321,7 @@
       "error_message": "Wrong reference: false should be true",
       "file": "lib/src/features/library/core/library_renderer_flag.dart",
       "root_cause": "Used \"false\" instead of \"true\"",
-      "fix": "Changed false → true",
+      "fix": "Changed false \u2192 true",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -2337,7 +2337,7 @@
       "error_message": "Wrong reference: false should be true",
       "file": "test/features/library/library_renderer_flag_test.dart",
       "root_cause": "Used \"false\" instead of \"true\"",
-      "fix": "Changed false → true",
+      "fix": "Changed false \u2192 true",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -2369,7 +2369,7 @@
       "error_message": "Significant refactor of ",
       "file": "tools/tilemap_editor/lib/editor/widgets/iso_canvas.dart",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 6→3 lines (3 removed)",
+      "fix": "Rewrote 6\u21923 lines (3 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2385,7 +2385,7 @@
       "error_message": "Significant refactor of ",
       "file": "tools/tilemap_editor/lib/editor/editor_state.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 7→5 lines (2 removed)",
+      "fix": "Rewrote 7\u21925 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2416,7 +2416,7 @@
       "timestamp": "2026-05-16T19:42:25.868Z",
       "error_message": "Missing error handling in unknown",
       "file": "tools/tilemap_editor/lib/main.dart",
-      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "root_cause": "Code path had no error handling \u2014 exceptions would propagate uncaught",
       "fix": "Added try/catch block",
       "tags": [
         "auto-detected",
@@ -2465,7 +2465,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "4 lines replaced/restructured",
-      "fix": "Rewrote 12→20 lines (4 removed)",
+      "fix": "Rewrote 12\u219220 lines (4 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2518,7 +2518,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/reader_screen.dart",
       "root_cause": "11 lines replaced/restructured",
-      "fix": "Rewrote 14→3 lines (11 removed)",
+      "fix": "Rewrote 14\u21923 lines (11 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2534,7 +2534,7 @@
       "error_message": "Significant refactor of ",
       "file": "docs/superpowers/specs/2026-05-26-story-spark-takeover-design.md",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 4→5 lines (3 removed) | Also: - The chosen card for the active page (`readerGenU; - `spokenWordIndices` (read-aloud progress) and `i | Also: **Audio coordination:**; - On `live`: signal `ReaderExperienceController` t | Also: 2. `ReaderActivityTrigger` holds it `pending` and ; 3. Anchor crossed (highlight or scroll) → card goe | Also: - **Anchor beyond word count:** degrades to page-l; - **Narration toggled mid-page:** trigger re-evalu | Also: - Narration on → live when `spokenWordIndices` cro; - Narration off → live when anchor word scrolls pa",
+      "fix": "Rewrote 4\u21925 lines (3 removed) | Also: - The chosen card for the active page (`readerGenU; - `spokenWordIndices` (read-aloud progress) and `i | Also: **Audio coordination:**; - On `live`: signal `ReaderExperienceController` t | Also: 2. `ReaderActivityTrigger` holds it `pending` and ; 3. Anchor crossed (highlight or scroll) \u2192 card goe | Also: - **Anchor beyond word count:** degrades to page-l; - **Narration toggled mid-page:** trigger re-evalu | Also: - Narration on \u2192 live when `spokenWordIndices` cro; - Narration off \u2192 live when anchor word scrolls pa",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2550,7 +2550,7 @@
       "error_message": "Significant refactor of ",
       "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 4→35 lines (2 removed) | Also: - Test: `test/features/reader/runtime/reader_sessi; - Test: `test/features/reader/application/reader_e",
+      "fix": "Rewrote 4\u219235 lines (2 removed) | Also: - Test: `test/features/reader/runtime/reader_sessi; - Test: `test/features/reader/application/reader_e",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2566,7 +2566,7 @@
       "error_message": "Significant refactor of ",
       "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
       "root_cause": "11 lines replaced/restructured",
-      "fix": "Rewrote 53→115 lines (11 removed)",
+      "fix": "Rewrote 53\u2192115 lines (11 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2581,7 +2581,7 @@
       "timestamp": "2026-05-26T23:35:44.356Z",
       "error_message": "Missing await",
       "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
-      "root_cause": "Async call without await — returned Promise instead of value",
+      "root_cause": "Async call without await \u2014 returned Promise instead of value",
       "fix": "Added await to async call",
       "tags": [
         "auto-detected",
@@ -2614,7 +2614,7 @@
       "error_message": "Significant refactor of ",
       "file": "docs/superpowers/specs/2026-05-26-story-spark-takeover-design.md",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 6→10 lines (3 removed)",
+      "fix": "Rewrote 6\u219210 lines (3 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2646,7 +2646,7 @@
       "error_message": "Significant refactor of ",
       "file": "docs/superpowers/plans/2026-05-26-story-spark-takeover.md",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 11→17 lines (2 removed) | Also: // Skip via the card's close button.; await tester.tap(find.byIcon(Icons.close_rounded)) | Also: Append the outcome to `.wolf/memory.md` and update; git add -A",
+      "fix": "Rewrote 11\u219217 lines (2 removed) | Also: // Skip via the card's close button.; await tester.tap(find.byIcon(Icons.close_rounded)) | Also: Append the outcome to `.wolf/memory.md` and update; git add -A",
       "tags": [
         "auto-detected",
         "refactor",
@@ -2725,7 +2725,7 @@
     {
       "id": "bug-161",
       "timestamp": "2026-05-27T00:00:00.000Z",
-      "error_message": "Missing mounted guard in addPostFrameCallback — onActivityShown could be called after widget dispose",
+      "error_message": "Missing mounted guard in addPostFrameCallback \u2014 onActivityShown could be called after widget dispose",
       "file": "lib/src/features/gen_ui/presentation/reader_activity_card.dart",
       "root_cause": "WidgetsBinding.instance.addPostFrameCallback in _handleLive called widget.onActivityShown() without checking mounted, risking callback invocation after State disposal",
       "fix": "Added if (!mounted) return; at top of the post-frame callback",
@@ -3000,7 +3000,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/map_book_node_component.dart",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 14→30 lines (3 removed) | Also: final double baseOpacity = isDimmed ? 0.25 : 1.0;; if ((isSelected || isArrivalFocused) && !isDimmed)",
+      "fix": "Rewrote 14\u219230 lines (3 removed) | Also: final double baseOpacity = isDimmed ? 0.25 : 1.0;; if ((isSelected || isArrivalFocused) && !isDimmed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -3016,7 +3016,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/map_route_component.dart",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 7→13 lines (2 removed)",
+      "fix": "Rewrote 7\u219213 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -3142,7 +3142,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/reader/page_renderer.dart",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 11→16 lines (3 removed)",
+      "fix": "Rewrote 11\u219216 lines (3 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -3157,7 +3157,7 @@
       "timestamp": "2026-06-17T21:24:21.496Z",
       "error_message": "Missing error handling in unknown",
       "file": "lib/src/features/reader/page_loading_shader.dart",
-      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "root_cause": "Code path had no error handling \u2014 exceptions would propagate uncaught",
       "fix": "Added try/catch block",
       "tags": [
         "auto-detected",
@@ -3190,7 +3190,7 @@
       "error_message": "Wrong operator: == should be <=",
       "file": "test/features/library/game/character/layer_sprite_set_test.dart",
       "root_cause": "Used \"==\" instead of \"<=\"",
-      "fix": "Changed operator == → <=",
+      "fix": "Changed operator == \u2192 <=",
       "tags": [
         "auto-detected",
         "operator-fix",
@@ -3270,7 +3270,7 @@
       "error_message": "Wrong reference: JourneyRoutes should be character",
       "file": "lib/src/features/library/library_screen.dart",
       "root_cause": "Used \"JourneyRoutes\" instead of \"character\"",
-      "fix": "Changed JourneyRoutes → character",
+      "fix": "Changed JourneyRoutes \u2192 character",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -3286,7 +3286,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/library/game/player_component.dart",
       "root_cause": "3 lines replaced/restructured",
-      "fix": "Rewrote 10→16 lines (3 removed)",
+      "fix": "Rewrote 10\u219216 lines (3 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -3302,7 +3302,7 @@
       "error_message": "Wrong reference: default should be pack",
       "file": "lib/src/features/library/game/character/character_image_loader.dart",
       "root_cause": "Used \"default\" instead of \"pack\"",
-      "fix": "Changed default → pack",
+      "fix": "Changed default \u2192 pack",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -3350,7 +3350,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/features/character/presentation/character_editor_screen.dart",
       "root_cause": "6 lines replaced/restructured",
-      "fix": "Rewrote 21→26 lines (6 removed)",
+      "fix": "Rewrote 21\u219226 lines (6 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -3431,7 +3431,7 @@
       "error_message": "Significant refactor of ",
       "file": "lib/src/data/models.dart",
       "root_cause": "6 lines replaced/restructured",
-      "fix": "Rewrote 13→25 lines (6 removed)",
+      "fix": "Rewrote 13\u219225 lines (6 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -3463,7 +3463,7 @@
       "error_message": "Significant refactor of ",
       "file": "../../../../../private/tmp/claude-503/-Users-akinpound-Documents-experiments-storia-mobile/97640e7f-e5d3-4a79-b172-ee97c4ea8385/scratchpad/build_rig.py",
       "root_cause": "7 lines replaced/restructured",
-      "fix": "Rewrote 16→12 lines (7 removed)",
+      "fix": "Rewrote 16\u219212 lines (7 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -3479,7 +3479,7 @@
       "error_message": "Incorrect value in code",
       "file": "../../../.claude/projects/-Users-akinpound-Documents-experiments-storia-mobile/memory/celebration-lottie-spike.md",
       "root_cause": "Had 't move on this art:** it'",
-      "fix": "Changed to `x 30→120`",
+      "fix": "Changed to `x 30\u2192120`",
       "tags": [
         "auto-detected",
         "wrong-value",
@@ -3530,7 +3530,7 @@
       "error_message": "Wrong reference: 6px should be 44px",
       "file": "../../../../../private/tmp/claude-503/-Users-akinpound-Documents-experiments-storia-mobile/97640e7f-e5d3-4a79-b172-ee97c4ea8385/scratchpad/celebration_screen_mock.html",
       "root_cause": "Used \"6px\" instead of \"44px\"",
-      "fix": "Changed 6px → 44px",
+      "fix": "Changed 6px \u2192 44px",
       "tags": [
         "auto-detected",
         "wrong-reference",
@@ -3546,7 +3546,7 @@
       "error_message": "Significant refactor of ",
       "file": "../../../../../private/tmp/claude-503/-Users-akinpound-Documents-experiments-storia-mobile/97640e7f-e5d3-4a79-b172-ee97c4ea8385/scratchpad/build_combo.py",
       "root_cause": "2 lines replaced/restructured",
-      "fix": "Rewrote 9→15 lines (2 removed)",
+      "fix": "Rewrote 9\u219215 lines (2 removed)",
       "tags": [
         "auto-detected",
         "refactor",
@@ -3667,6 +3667,26 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-07-04T15:55:15.766Z"
+    },
+    {
+      "id": "bug-android-duplicate-native-codecs-flutter-soloud-midi",
+      "timestamp": "2026-07-04T00:00:00.000Z",
+      "error_message": "Android debug build failed in :app:mergeDebugNativeLibs after adding flutter_soloud: duplicate native codec libraries libFLAC.so/libogg.so/libopus.so/libvorbis.so/libvorbisfile.so from flutter_midi_pro and flutter_soloud.",
+      "file": "android/app/build.gradle.kts",
+      "root_cause": "flutter_midi_pro and flutter_soloud both package common native audio codec .so files for Android ABIs. AGP mergeDebugNativeLibs rejects duplicate jniLib paths unless packaging rules choose one copy.",
+      "fix": "Added android.packaging.jniLibs.pickFirsts for the shared codec libraries across arm64-v8a, armeabi-v7a, x86, and x86_64. Verified with `flutter build apk --debug`.",
+      "tags": [
+        "android",
+        "flutter",
+        "native-libs",
+        "flutter_soloud",
+        "flutter_midi_pro",
+        "gradle",
+        "build"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T00:00:00.000Z"
     }
   ]
 }

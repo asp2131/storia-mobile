@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../audio/audio_providers.dart';
 import '../../../data/models.dart';
 import '../runtime/providers/reader_session_provider.dart';
 import '../runtime/providers/reader_word_help_provider.dart';
@@ -12,7 +13,7 @@ import '../runtime/word_help/reader_word_help.dart';
 import 'reader_experience_effects.dart';
 
 final readerExperienceEffectsProvider = Provider<ReaderExperienceEffects>(
-  (ref) => const NoopReaderExperienceEffects(),
+  (ref) => SfxReaderExperienceEffects(ref.watch(sfxBusProvider)),
 );
 
 final readerExperienceWordHelpProvider = Provider.autoDispose
@@ -215,6 +216,7 @@ class ReaderExperienceController {
           ReaderStart(book: book, initialPageIndex: initialPageIndex),
         );
       case ReaderExperiencePageChanged(:final index):
+        await _effects.playPageChange();
         await _session.dispatch(ReaderGoToPage(index));
       case ReaderExperienceScrollOffsetChanged(:final offset):
         _scrollOffsetNotifier.value = offset;
@@ -223,6 +225,10 @@ class ReaderExperienceController {
         :final globalIndex,
         :final pageIndex,
       ):
+        if (_currentBook == null) {
+          throw StateError('ReaderExperienceController must be started first.');
+        }
+        await _effects.playWordTap();
         await _playWordHelp(
           word: word,
           globalIndex: globalIndex,

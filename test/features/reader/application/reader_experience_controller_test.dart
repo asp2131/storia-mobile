@@ -50,6 +50,7 @@ void main() {
     test('dispatches page changes to the reader session', () async {
       await controller.dispatch(const ReaderExperiencePageChanged(1));
 
+      expect(effects.playPageChangeCount, 1);
       expect(session.intents.single, isA<ReaderGoToPage>());
       expect((session.intents.single as ReaderGoToPage).pageIndex, 1);
     });
@@ -99,6 +100,7 @@ void main() {
       );
 
       expect(wordHelp.requests, hasLength(2));
+      expect(effects.playWordTapCount, 1);
       expect(wordHelp.requests[0].bookId, 'book-1');
       expect(wordHelp.requests[0].pageIndex, 1);
       expect(wordHelp.requests[0].wordIndex, 12);
@@ -122,6 +124,7 @@ void main() {
         ),
         throwsStateError,
       );
+      expect(effects.playWordTapCount, 0);
       expect(wordHelp.requests, isEmpty);
     });
 

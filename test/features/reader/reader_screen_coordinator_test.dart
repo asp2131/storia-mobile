@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:loratone/src/data/models.dart';
 import 'package:loratone/src/data/providers.dart';
+import 'package:loratone/src/features/child/data/child_profile_providers.dart';
 import 'package:loratone/src/features/gen_ui/data/gen_ui_preferences_provider.dart';
 import 'package:loratone/src/features/gen_ui/data/gen_ui_providers.dart';
 import 'package:loratone/src/features/gen_ui/data/mock_gen_ui_cards.dart';
@@ -32,7 +33,9 @@ void main() {
   setUp(() {
     // The gen-UI preferences notifier reads SharedPreferences on construction;
     // provide an in-memory store so reader tests don't hit the platform plugin.
-    SharedPreferences.setMockInitialValues(<String, Object>{});
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      'reader_walkthrough_seen.reader-test-child': true,
+    });
   });
 
   testWidgets('ReaderScreen routes start and controls through coordinator', (
@@ -50,6 +53,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          activeChildProfileIdProvider.overrideWith(
+            (ref) => 'reader-test-child',
+          ),
           currentBookProvider('book-1').overrideWith((ref) async => _book),
           bookManifestProvider('book-1').overrideWith((ref) async => null),
           readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
@@ -103,6 +109,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          activeChildProfileIdProvider.overrideWith(
+            (ref) => 'reader-test-child',
+          ),
           currentBookProvider(
             'book-multi',
           ).overrideWith((ref) async => _multiPageBook),
@@ -144,6 +153,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          activeChildProfileIdProvider.overrideWith(
+            (ref) => 'reader-test-child',
+          ),
           currentBookProvider('missing').overrideWith((ref) async => null),
           readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
           readerExperienceControllerProvider.overrideWith(
@@ -181,6 +193,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          activeChildProfileIdProvider.overrideWith(
+            (ref) => 'reader-test-child',
+          ),
           currentBookProvider('book-1').overrideWith((ref) async => _book),
           bookManifestProvider('book-1').overrideWith((ref) async => null),
           readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
@@ -231,6 +246,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          activeChildProfileIdProvider.overrideWith(
+            (ref) => 'reader-test-child',
+          ),
           currentBookProvider('book-1').overrideWith((ref) async => _book),
           bookManifestProvider('book-1').overrideWith((ref) async => null),
           readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
@@ -289,6 +307,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          activeChildProfileIdProvider.overrideWith(
+            (ref) => 'reader-test-child',
+          ),
           currentBookProvider('book-1').overrideWith((ref) async => _book),
           bookManifestProvider('book-1').overrideWith((ref) async => null),
           readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),

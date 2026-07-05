@@ -73,9 +73,21 @@ class FakeReaderWordHelp implements ReaderWordHelp {
 }
 
 class FakeReaderExperienceEffects implements ReaderExperienceEffects {
+  int playPageChangeCount = 0;
+  int playWordTapCount = 0;
   int playCelebrationCount = 0;
   int stopCelebrationCount = 0;
   int disposeCount = 0;
+
+  @override
+  Future<void> playPageChange() async {
+    playPageChangeCount += 1;
+  }
+
+  @override
+  Future<void> playWordTap() async {
+    playWordTapCount += 1;
+  }
 
   @override
   Future<void> playCelebration() async {

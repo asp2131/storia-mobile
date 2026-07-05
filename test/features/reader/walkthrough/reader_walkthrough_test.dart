@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../../lib/src/features/child/data/child_profile_providers.dart';
-import '../../../../lib/src/features/reader/walkthrough/reader_walkthrough.dart';
+import 'package:loratone/src/features/child/data/child_profile_providers.dart';
+import 'package:loratone/src/features/reader/walkthrough/reader_walkthrough.dart';
 
 void main() {
   setUp(() {
@@ -15,8 +15,9 @@ void main() {
     activeChildProfileIdProvider.overrideWith((ref) => childId),
   ];
 
-  testWidgets('shows walkthrough when not seen, advances through all steps',
-      (tester) async {
+  testWidgets('shows walkthrough when not seen, advances through all steps', (
+    tester,
+  ) async {
     final onCompleteCalled = ValueNotifier<int>(0);
     addTearDown(onCompleteCalled.dispose);
 
@@ -25,9 +26,7 @@ void main() {
         overrides: overridesFor(childId: 'child-1'),
         child: MaterialApp(
           home: Scaffold(
-            body: ReaderWalkthrough(
-              onComplete: () => onCompleteCalled.value++,
-            ),
+            body: ReaderWalkthrough(onComplete: () => onCompleteCalled.value++),
           ),
         ),
       ),
@@ -70,10 +69,7 @@ void main() {
 
     // Verify persisted as seen
     final prefs = await SharedPreferences.getInstance();
-    expect(
-      prefs.getBool('reader_walkthrough_seen.child-1'),
-      isTrue,
-    );
+    expect(prefs.getBool('reader_walkthrough_seen.child-1'), isTrue);
   });
 
   testWidgets('skip marks seen and calls onComplete', (tester) async {
@@ -85,9 +81,7 @@ void main() {
         overrides: overridesFor(childId: 'child-2'),
         child: MaterialApp(
           home: Scaffold(
-            body: ReaderWalkthrough(
-              onComplete: () => onCompleteCalled.value++,
-            ),
+            body: ReaderWalkthrough(onComplete: () => onCompleteCalled.value++),
           ),
         ),
       ),
@@ -103,14 +97,10 @@ void main() {
 
     // Verify persisted as seen
     final prefs = await SharedPreferences.getInstance();
-    expect(
-      prefs.getBool('reader_walkthrough_seen.child-2'),
-      isTrue,
-    );
+    expect(prefs.getBool('reader_walkthrough_seen.child-2'), isTrue);
   });
 
-  test('walkthrough seen provider returns false when no prefs set',
-      () async {
+  test('walkthrough seen provider returns false when no prefs set', () async {
     final container = ProviderContainer(
       overrides: overridesFor(childId: 'child-3'),
     );

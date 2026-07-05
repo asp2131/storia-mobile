@@ -27,6 +27,7 @@ class PageRenderer extends StatefulWidget {
   final PageData page;
   final int pageIndex;
   final ValueListenable<double>? scrollOffsetListenable;
+  final ValueListenable<Offset>? tiltOffsetListenable;
   final Duration narrationPosition;
   final bool isActive;
   final String? heroTag;
@@ -42,6 +43,7 @@ class PageRenderer extends StatefulWidget {
     required this.page,
     this.pageIndex = 0,
     this.scrollOffsetListenable,
+    this.tiltOffsetListenable,
     required this.narrationPosition,
     required this.isActive,
     this.heroTag,
@@ -200,7 +202,7 @@ class _PageRendererState extends State<PageRenderer> {
             _parallaxLayer(
               multiplier: _kBackgroundParallax,
               pageHeight: container.height,
-              child: imageLayer,
+              child: _tiltLayer(child: imageLayer),
             ),
             // Text layer stays at neutral parallax (multiplier 1.0 = 0 shift)
             // and must remain a direct child of Stack so Positioned works.
@@ -208,6 +210,22 @@ class _PageRendererState extends State<PageRenderer> {
           ],
         );
       },
+    );
+  }
+
+  Widget _tiltLayer({required Widget child}) {
+    final listenable = widget.tiltOffsetListenable;
+    if (listenable == null ||
+        !widget.isActive ||
+        MediaQuery.disableAnimationsOf(context)) {
+      return child;
+    }
+
+    return ValueListenableBuilder<Offset>(
+      valueListenable: listenable,
+      child: child,
+      builder: (context, tilt, child) =>
+          Transform.translate(offset: tilt, child: child!),
     );
   }
 
