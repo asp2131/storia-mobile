@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
@@ -8,6 +7,8 @@ import '../../../core/widgets/sketch_button.dart';
 import '../../../core/widgets/sketch_text_field.dart';
 import '../../../routing/journey/journey_actions.dart';
 import 'widgets/auth_screen_shell.dart';
+import 'widgets/auth_social_buttons.dart';
+import 'widgets/magic_code_field.dart';
 import '../data/auth_providers.dart';
 import '../data/auth_repository.dart';
 
@@ -20,29 +21,23 @@ class SignInScreen extends ConsumerStatefulWidget {
 
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _emailController = TextEditingController();
+  final _codeController = TextEditingController();
   bool _isSubmitting = false;
   bool _isSocialSubmitting = false;
+  bool _isVerifying = false;
+
+  /// The code field only appears once an email has actually been sent.
+  bool _hasSentLink = false;
+
   String? _errorMessage;
   String? _successMessage;
 
-  bool get _supportsAppleSignIn {
-    if (kIsWeb) {
-      return false;
-    }
-    return defaultTargetPlatform == TargetPlatform.iOS ||
-        defaultTargetPlatform == TargetPlatform.macOS;
-  }
-
-  bool get _supportsGoogleSignIn {
-    if (kIsWeb) {
-      return true;
-    }
-    return defaultTargetPlatform != TargetPlatform.iOS;
-  }
+  bool get _isBusy => _isSubmitting || _isSocialSubmitting || _isVerifying;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _codeController.dispose();
     super.dispose();
   }
 
@@ -117,55 +112,23 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           ],
           const SizedBox(height: 18),
           SketchButton(
-            label: 'Email Me a Magic Link',
+            label: _hasSentLink ? 'Send Another Link' : 'Email Me a Magic Link',
             trailing: const Icon(Icons.mark_email_read_outlined, size: 18),
             isLoading: _isSubmitting,
-            onPressed: (_isSubmitting || _isSocialSubmitting) ? null : _submit,
+            onPressed: _isBusy ? null : _submit,
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Divider(color: StoriaColors.ink.withValues(alpha: 0.18)),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  'or',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: StoriaColors.ink.withValues(alpha: 0.58),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Divider(color: StoriaColors.ink.withValues(alpha: 0.18)),
-              ),
-            ],
+          if (_hasSentLink)
+            MagicCodeField(
+              controller: _codeController,
+              isVerifying: _isVerifying,
+              isBusy: _isBusy,
+              onVerify: _verifyCode,
+            ),
+          AuthSocialButtons(
+            isBusy: _isBusy,
+            isSocialSubmitting: _isSocialSubmitting,
+            onProviderSelected: _startOAuth,
           ),
-          const SizedBox(height: 16),
-          if (_supportsGoogleSignIn)
-            SketchButton(
-              label: 'Continue with Google',
-              tone: SketchButtonTone.secondary,
-              leading: const Icon(Icons.g_mobiledata_rounded, size: 24),
-              isLoading: _isSocialSubmitting,
-              onPressed: (_isSubmitting || _isSocialSubmitting)
-                  ? null
-                  : () => _startOAuth(OAuthProvider.google),
-            ),
-          if (_supportsAppleSignIn) ...[
-            const SizedBox(height: 12),
-            SketchButton(
-              label: 'Continue with Apple',
-              tone: SketchButtonTone.secondary,
-              leading: const Icon(Icons.apple_rounded, size: 18),
-              isLoading: _isSocialSubmitting,
-              onPressed: (_isSubmitting || _isSocialSubmitting)
-                  ? null
-                  : () => _startOAuth(OAuthProvider.apple),
-            ),
-          ],
         ],
       ),
     );
@@ -190,8 +153,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       await repository.sendMagicLink(email: email, shouldCreateUser: false);
       if (mounted) {
         setState(() {
+          _hasSentLink = true;
           _successMessage =
-              'Magic link sent. Check your email and open the link on this device.';
+              'Email sent. Tap the link on this device, or enter the 6-digit '
+              'code from that email below.';
         });
       }
     } on AppAuthException catch (error) {
@@ -207,6 +172,44 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  Future<void> _verifyCode() async {
+    final repository = ref.read(authRepositoryProvider);
+    final email = _emailController.text.trim();
+    final code = normalizeMagicCode(_codeController.text);
+
+    if (code.length < 6) {
+      setState(() => _errorMessage = 'Enter the 6-digit code from your email.');
+      return;
+    }
+
+    setState(() {
+      _isVerifying = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await repository.verifyEmailCode(
+        email: email,
+        code: code,
+        isSignUp: false,
+      );
+    } on AppAuthException catch (error) {
+      if (mounted) {
+        setState(() => _errorMessage = error.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _errorMessage = 'That code did not work. Request a new one.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isVerifying = false);
       }
     }
   }

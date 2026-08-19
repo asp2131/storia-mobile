@@ -73,6 +73,8 @@ dependencies:
   flame: ^1.21.0
   flame_tiled: ^1.20.0
   flutter_midi_pro: ^3.1.6
+  record: ^7.1.1
+  http_parser: ^4.1.2
 
 dependency_overrides:
   # better_auth_flutter 0.0.7 constrains flutter_web_auth_2 to ^4.1.0, but

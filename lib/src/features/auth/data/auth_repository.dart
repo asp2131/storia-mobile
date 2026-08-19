@@ -48,6 +48,48 @@ class AuthRepository {
     }
   }
 
+  /// Completes an email sign-in with the 6-digit code from the same email that
+  /// carries the magic link.
+  ///
+  /// Why this exists: the link alone is unreliable. It can be consumed by an
+  /// inbox security scanner before the human taps it, or opened in a browser
+  /// that never had the PKCE code verifier — in both cases Supabase marks the
+  /// address confirmed while the device never receives a session. Production
+  /// data showed several signups stuck exactly there (`email_confirmed_at` set,
+  /// `last_sign_in_at` null). Typing the code needs no deep link at all, and
+  /// works when the mail is read on another device.
+  Future<void> verifyEmailCode({
+    required String email,
+    required String code,
+    required bool isSignUp,
+  }) async {
+    // GoTrue derives the OTP type from whichever template sent the code: a
+    // brand-new account gets "Confirm signup" (signup) and an existing one gets
+    // "Magic Link" (email). The caller can't know which fired, so try the more
+    // likely one first and fall back once.
+    final types = isSignUp
+        ? const [supabase.OtpType.signup, supabase.OtpType.email]
+        : const [supabase.OtpType.email, supabase.OtpType.signup];
+
+    Object? lastError;
+
+    for (final type in types) {
+      try {
+        await _client.auth.verifyOTP(email: email, token: code, type: type);
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (lastError is supabase.AuthException) {
+      throw AppAuthException(lastError.message);
+    }
+    throw AppAuthException(
+      _messageFrom(lastError, 'That code did not work. Request a new one.'),
+    );
+  }
+
   Future<void> signOut() async {
     try {
       await _client.auth.signOut();

@@ -20,7 +20,12 @@ enum AnalyticsEventType {
   speechAttemptCompleted('speech_attempt_completed'),
   readingSessionStarted('reading_session_started'),
   readingSessionEnded('reading_session_ended'),
-  readingSessionDropOff('reading_session_drop_off');
+  readingSessionDropOff('reading_session_drop_off'),
+  narrationRecordingStarted('narration_recording_started'),
+  narrationPageRecorded('narration_page_recorded'),
+  narrationAlignmentFallback('narration_alignment_fallback'),
+  narrationTrackCompleted('narration_track_completed'),
+  narrationTrackSelected('narration_track_selected');
 
   const AnalyticsEventType(this.eventName);
 

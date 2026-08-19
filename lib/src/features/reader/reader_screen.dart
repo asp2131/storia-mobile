@@ -19,6 +19,8 @@ import '../../data/providers.dart';
 import '../../routing/journey/journey_policy.dart';
 import '../gen_ui/data/gen_ui_preferences_provider.dart';
 import '../gen_ui/presentation/reader_activity_card.dart';
+import '../narration_studio/data/narration_providers.dart';
+import '../narration_studio/presentation/narration_voice_sheet.dart';
 import 'application/reader_experience_controller.dart';
 import 'celebration/book_celebration_summary.dart';
 import 'liquid_page_clipper.dart';
@@ -46,6 +48,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   late GifPlayerController _gifPlayerController;
 
   late final ReaderExperienceControllerNotifier _controller;
+
+  /// Book id plus the narration voice it was started with. The reader session
+  /// keeps its own copy of the book, so switching voices has to restart it —
+  /// the pages are identical apart from their narration urls.
   String? _initializedBookId;
   String? _preloadedManifestBookId;
   bool _walkthroughDismissed = false;
@@ -152,7 +158,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   @override
   Widget build(BuildContext context) {
-    final bookAsync = ref.watch(currentBookProvider(widget.bookId));
+    // readerBookProvider = the published book with the selected
+    // parent-recorded narration swapped into its pages (if any).
+    final bookAsync = ref.watch(readerBookProvider(widget.bookId));
+    final selectedTrackId = ref.watch(
+      narrationTrackSelectionProvider(widget.bookId),
+    );
     final c = _controller;
     final state = ref.watch(readerExperienceControllerProvider(widget.bookId));
     final walkthroughSeen = ref.watch(readerWalkthroughSeenProvider);
@@ -185,16 +196,29 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             return const Center(child: Text('No pages in this book'));
           }
 
-          if (_initializedBookId != book.id) {
-            _initializedBookId = book.id;
+          final startKey = '${book.id}:${selectedTrackId ?? 'default'}';
+          if (_initializedBookId != startKey) {
+            final isVoiceSwitch =
+                _initializedBookId != null &&
+                _initializedBookId!.startsWith('${book.id}:');
+            // A voice switch resumes on the page the reader is already on;
+            // opening the book always starts at the beginning.
+            final startIndex = isVoiceSwitch
+                ? state.readerState.activePageIndex.clamp(
+                    0,
+                    book.pages.length - 1,
+                  )
+                : 0;
+            _initializedBookId = startKey;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
-              // Always open at the beginning. Starting at page 0 (the default)
-              // also resets any page index a surviving reader controller or the
-              // singleton session retained from a prior visit, so the physical
-              // PageView (which starts at 0) and the logical active page agree
-              // and re-entering a book is deterministic.
-              c.dispatch(ReaderExperienceStart(book: book));
+              // Opening a book always starts at page 0, which also resets any
+              // page index a surviving reader controller or the singleton
+              // session retained from a prior visit, so the physical PageView
+              // and the logical active page agree.
+              c.dispatch(
+                ReaderExperienceStart(book: book, initialPageIndex: startIndex),
+              );
             });
           }
 
@@ -361,6 +385,12 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     ),
                   ),
                 AudioControlsPill(
+                  voiceChip: NarrationVoiceChip(
+                    bookId: widget.bookId,
+                    onTap: () => unawaited(
+                      showNarrationVoiceSheet(context, bookId: widget.bookId),
+                    ),
+                  ),
                   hasNarration: hasNarration,
                   hasSoundscape: hasSoundscape,
                   isNarrationPlaying: state.readerState.isNarrationPlaying,
@@ -426,6 +456,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             _initializedBookId = null;
             _preloadedManifestBookId = null;
             ref.invalidate(currentBookProvider(widget.bookId));
+            ref.invalidate(bookNarrationTracksProvider(widget.bookId));
           },
         ),
       ),
@@ -446,6 +477,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       ),
       builder: (ctx) {
         return _AudioSettingsSheet(
+          bookId: widget.bookId,
           controller: controller,
           initialNarrationVolume: narrationVolume,
           initialSoundscapeVolume: soundscapeVolume,
@@ -600,6 +632,9 @@ const _gripSize = 36.0;
 enum _WedgeZone { left, right, bottom }
 
 class AudioControlsPill extends StatefulWidget {
+  /// Rides just above the dial and travels with it while dragging, so "who is
+  /// reading" stays attached to the audio controls instead of floating loose.
+  final Widget? voiceChip;
   final bool hasNarration;
   final bool hasSoundscape;
   final bool isNarrationPlaying;
@@ -614,6 +649,7 @@ class AudioControlsPill extends StatefulWidget {
 
   const AudioControlsPill({
     super.key,
+    this.voiceChip,
     required this.hasNarration,
     required this.hasSoundscape,
     required this.isNarrationPlaying,
@@ -1166,6 +1202,21 @@ class AudioControlsPillState extends State<AudioControlsPill>
           return Stack(
             clipBehavior: Clip.none,
             children: [
+              if (widget.voiceChip case final chip?)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: baseTop + clamped.dy - 56,
+                  child: IgnorePointer(
+                    ignoring: !widget.isVisible,
+                    child: AnimatedOpacity(
+                      opacity: widget.isVisible ? 1 : 0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                      child: Center(child: chip),
+                    ),
+                  ),
+                ),
               Positioned(
                 left: baseLeft + clamped.dx,
                 top: baseTop + clamped.dy,
@@ -1317,11 +1368,13 @@ class _ChromeButton extends StatelessWidget {
 // =============================================================================
 
 class _AudioSettingsSheet extends ConsumerStatefulWidget {
+  final String bookId;
   final ReaderExperienceControllerNotifier controller;
   final double initialNarrationVolume;
   final double initialSoundscapeVolume;
 
   const _AudioSettingsSheet({
+    required this.bookId,
     required this.controller,
     required this.initialNarrationVolume,
     required this.initialSoundscapeVolume,

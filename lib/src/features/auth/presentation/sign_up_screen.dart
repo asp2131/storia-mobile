@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
 
 import '../../../core/theme/storia_colors.dart';
 import '../../../core/widgets/sketch_button.dart';
@@ -9,6 +10,8 @@ import '../../onboarding/data/app_review_flow_providers.dart';
 import '../data/auth_providers.dart';
 import '../data/auth_repository.dart';
 import 'widgets/auth_screen_shell.dart';
+import 'widgets/auth_social_buttons.dart';
+import 'widgets/magic_code_field.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -19,13 +22,23 @@ class SignUpScreen extends ConsumerStatefulWidget {
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _emailController = TextEditingController();
+  final _codeController = TextEditingController();
   bool _isSubmitting = false;
+  bool _isSocialSubmitting = false;
+  bool _isVerifying = false;
+
+  /// The code field only appears once an email has actually been sent.
+  bool _hasSentLink = false;
+
   String? _errorMessage;
   String? _successMessage;
+
+  bool get _isBusy => _isSubmitting || _isSocialSubmitting || _isVerifying;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _codeController.dispose();
     super.dispose();
   }
 
@@ -100,10 +113,24 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ],
           const SizedBox(height: 20),
           SketchButton(
-            label: 'Create Account with Magic Link',
+            label: _hasSentLink
+                ? 'Send Another Link'
+                : 'Create Account with Magic Link',
             trailing: const Icon(Icons.arrow_forward_rounded, size: 18),
             isLoading: _isSubmitting,
-            onPressed: _isSubmitting ? null : _submit,
+            onPressed: _isBusy ? null : _submit,
+          ),
+          if (_hasSentLink)
+            MagicCodeField(
+              controller: _codeController,
+              isVerifying: _isVerifying,
+              isBusy: _isBusy,
+              onVerify: _verifyCode,
+            ),
+          AuthSocialButtons(
+            isBusy: _isBusy,
+            isSocialSubmitting: _isSocialSubmitting,
+            onProviderSelected: _startOAuth,
           ),
         ],
       ),
@@ -134,8 +161,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       await repository.sendMagicLink(email: email, shouldCreateUser: true);
       if (mounted) {
         setState(() {
+          _hasSentLink = true;
           _successMessage =
-              'Magic link sent. Check your email and open it on this device to create your account.';
+              'Email sent. Tap the link on this device, or enter the 6-digit '
+              'code from that email below.';
         });
       }
     } on AppAuthException catch (error) {
@@ -151,6 +180,78 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  Future<void> _verifyCode() async {
+    final repository = ref.read(authRepositoryProvider);
+    final email = _emailController.text.trim();
+    final code = normalizeMagicCode(_codeController.text);
+
+    if (code.length < 6) {
+      setState(() => _errorMessage = 'Enter the 6-digit code from your email.');
+      return;
+    }
+
+    setState(() {
+      _isVerifying = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // On success the router's auth backstop advances the journey; this screen
+      // deliberately does not navigate (see the build() note).
+      await repository.verifyEmailCode(
+        email: email,
+        code: code,
+        isSignUp: true,
+      );
+    } on AppAuthException catch (error) {
+      if (mounted) {
+        setState(() => _errorMessage = error.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _errorMessage = 'That code did not work. Request a new one.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isVerifying = false);
+      }
+    }
+  }
+
+  Future<void> _startOAuth(OAuthProvider provider) async {
+    final repository = ref.read(authRepositoryProvider);
+
+    setState(() {
+      _isSocialSubmitting = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    try {
+      if (provider == OAuthProvider.apple) {
+        await repository.signInWithNativeApple();
+      } else {
+        await repository.signInWithOAuth(provider);
+      }
+    } on AppAuthException catch (error) {
+      if (mounted) {
+        setState(() => _errorMessage = error.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _errorMessage = 'Could not start the social sign-in flow.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSocialSubmitting = false);
       }
     }
   }

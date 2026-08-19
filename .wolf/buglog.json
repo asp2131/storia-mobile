@@ -3687,6 +3687,74 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-07-04T00:00:00.000Z"
+    },
+    {
+      "id": "magic-link-signup-no-session",
+      "timestamp": "2026-08-16T15:35:58.521158",
+      "error_message": "User report: magic auth broken on signup (mobile). Prod auth.users showed email signups with email_confirmed_at set but last_sign_in_at NULL.",
+      "file": "lib/src/features/auth/presentation/sign_up_screen.dart; lib/src/features/auth/data/auth_repository.dart",
+      "root_cause": "Signup relied entirely on the emailed magic link deep-linking back into the app (storia://login-callback) and completing the PKCE exchange. When an inbox security scanner prefetches the link, or the mail is opened in a browser/device that lacks the PKCE code_verifier, Supabase marks the address confirmed but the device never receives a session. 2 of 5 real email signups were stuck in exactly that state.",
+      "fix": "Added AuthRepository.verifyEmailCode() using verifyOTP with the 6-digit code from the same email (tries OtpType.signup then email on signup, reverse on sign-in, since the template that fired determines the type). Added a MagicCodeField shown after the link is sent on both sign-in and sign-up, so auth no longer depends on the deep link. Also added Apple/Google buttons to sign-up via the new shared AuthSocialButtons widget \u2014 every Apple signup in prod succeeded first try.",
+      "tags": [
+        "auth",
+        "supabase",
+        "magic-link",
+        "otp",
+        "pkce",
+        "deep-link",
+        "signup"
+      ],
+      "related_bugs": [
+        "journey-auth-auto-advance-double-hop"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-08-16T15:35:58.521158"
+    },
+    {
+      "id": "flutter-test-platform-override-teardown",
+      "timestamp": "2026-08-16T15:35:58.521158",
+      "error_message": "The value of a foundation debug variable was changed by the test.",
+      "file": "test/features/auth/magic_code_test.dart",
+      "root_cause": "debugDefaultTargetPlatformOverride was reset via addTearDown, but flutter_test asserts all foundation debug vars are unset in _verifyInvariants, which runs BEFORE tearDown callbacks.",
+      "fix": "Set the override at the top of the test body and reset it in a finally block inside the same body, before the test returns.",
+      "tags": [
+        "flutter",
+        "testing",
+        "widget-test",
+        "platform-override"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-16T15:35:58.521158"
+    },
+    {
+      "id": "bug-227",
+      "timestamp": "2026-08-17T01:39:21.165Z",
+      "error_message": "Significant refactor of ",
+      "file": "lib/src/features/narration_studio/presentation/narration_studio_screen.dart",
+      "root_cause": "14 lines replaced/restructured",
+      "fix": "Rewrote 17\u21924 lines (14 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "dart"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-08-17T01:39:21.165Z"
+    },
+    {
+      "date": "2026-08-18",
+      "error_message": "Selecting a parent-recorded narration voice kept playing the original ElevenLabs narration",
+      "root_cause": "ReaderScreen only dispatched ReaderExperienceStart when book.id changed. ReaderSessionImpl keeps its own _book copy, so readerBookProvider re-emitting the same book with swapped narrationUrls never reached the session or AudioEngine.loadPage.",
+      "fix": "Gate the start dispatch on 'bookId:selectedTrackId' instead of bookId, and restart at the current page index on a voice switch (lib/src/features/reader/reader_screen.dart).",
+      "tags": [
+        "reader",
+        "narration",
+        "riverpod",
+        "audio",
+        "stale-state"
+      ]
     }
   ]
 }

@@ -167,17 +167,21 @@ class PageData {
     this.narrationTimestamps,
   });
 
-  PageData copyWith({String? soundscapeUrl}) {
+  PageData copyWith({
+    String? soundscapeUrl,
+    String? narrationUrl,
+    List<WordTimestamp>? narrationTimestamps,
+  }) {
     return PageData(
       id: id,
       pageNumber: pageNumber,
       textContent: textContent,
       overlay: overlay,
       imageUrl: imageUrl,
-      narrationUrl: narrationUrl,
+      narrationUrl: narrationUrl ?? this.narrationUrl,
       soundscapeUrl: soundscapeUrl ?? this.soundscapeUrl,
       compositedImageUrl: compositedImageUrl,
-      narrationTimestamps: narrationTimestamps,
+      narrationTimestamps: narrationTimestamps ?? this.narrationTimestamps,
     );
   }
 
@@ -267,6 +271,19 @@ class Book {
     required this.pageCount,
     required this.pages,
   });
+
+  /// Same book, different pages. Used to swap in a parent-recorded narration
+  /// track without touching the rest of the book payload.
+  Book copyWithPages(List<PageData> pages) {
+    return Book(
+      id: id,
+      title: title,
+      author: author,
+      coverUrl: coverUrl,
+      pageCount: pageCount,
+      pages: pages,
+    );
+  }
 
   factory Book.fromLibraryJson(Map<String, dynamic> json) {
     final pageCount = _parseBookPageCount(json);
