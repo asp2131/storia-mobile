@@ -133,8 +133,7 @@ class _ParentBirthYearScreenState extends ConsumerState<ParentBirthYearScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: List<Widget>.generate(4, (index) {
-                      final char =
-                          index < digits.length ? digits[index] : '';
+                      final char = index < digits.length ? digits[index] : '';
                       return _YearDigitSlot(value: char);
                     }),
                   ),

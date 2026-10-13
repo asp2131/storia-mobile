@@ -9,6 +9,7 @@ import '../../../core/widgets/watercolor_scaffold.dart';
 import '../../../routing/journey/journey_actions.dart';
 import '../data/child_profile_providers.dart';
 import '../domain/child_profile.dart';
+import 'add_child_screen.dart';
 
 class ProfilePickerScreen extends ConsumerWidget {
   const ProfilePickerScreen({super.key});
@@ -18,6 +19,11 @@ class ProfilePickerScreen extends ConsumerWidget {
     final profiles = ref.watch(childProfilesProvider);
     final activeId = ref.watch(activeChildProfileIdProvider);
     final selectionState = ref.watch(activeChildProfileIdStateProvider);
+
+    // A parent with no readers yet goes straight into onboarding.
+    if (profiles.valueOrNull?.isEmpty ?? false) {
+      return const AddChildScreen(isFirstReader: true);
+    }
 
     return Scaffold(
       backgroundColor: StoriaColors.paper,

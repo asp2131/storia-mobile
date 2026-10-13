@@ -7,12 +7,18 @@ class CreateChildProfileInput {
     required this.ageBand,
     this.readingLevel,
     required this.isDefault,
+    this.parentGoal,
+    this.interests = const [],
+    this.readingTime,
   });
 
   final String displayName;
   final String ageBand;
   final String? readingLevel;
   final bool isDefault;
+  final String? parentGoal;
+  final List<String> interests;
+  final String? readingTime;
 
   Map<String, dynamic> toJson() {
     final normalizedReadingLevel = readingLevel?.trim();
@@ -24,6 +30,9 @@ class CreateChildProfileInput {
           ? null
           : normalizedReadingLevel,
       'isDefault': isDefault,
+      'parentGoal': parentGoal,
+      'interests': interests,
+      'readingTime': readingTime,
     };
   }
 }

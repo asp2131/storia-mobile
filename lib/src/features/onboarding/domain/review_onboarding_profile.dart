@@ -30,17 +30,19 @@ enum ParentGoal { improveReading, reduceScreenTime, lovesReading }
 extension ParentGoalCopy on ParentGoal {
   String get label => switch (this) {
     ParentGoal.improveReading => "Improve my child's reading level",
-    ParentGoal.reduceScreenTime => 'Pull them away from brain-rot apps',
+    // Picked with Jev (2026-10-13) over "brain-rot apps", which read as judging.
+    ParentGoal.reduceScreenTime => 'Find a calmer kind of screen time',
     ParentGoal.lovesReading => 'They already love reading',
   };
 
+  /// How Loratone helps with this goal, shown once the parent picks it.
   String get description => switch (this) {
     ParentGoal.improveReading =>
-      'Build stronger reading habits and confidence over time.',
+      'Words light up as they are read aloud, so your child follows along and builds confidence one page at a time.',
     ParentGoal.reduceScreenTime =>
-      'Replace low-value screen time with calmer story moments.',
+      'Stories read aloud with sound from inside the scene hold their attention without the endless scroll.',
     ParentGoal.lovesReading =>
-      'Keep a good thing going with more books they will ask for.',
+      'Fresh picture books and manga, read aloud with sound, keep a good habit going.',
   };
 }
 

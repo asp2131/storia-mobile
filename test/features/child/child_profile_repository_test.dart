@@ -53,6 +53,9 @@ void main() {
         'ageBand': '7-9',
         'readingLevel': 'Early reader',
         'isDefault': true,
+        'parentGoal': null,
+        'interests': <String>[],
+        'readingTime': null,
       });
 
       expect(
@@ -67,6 +70,9 @@ void main() {
           'ageBand': '7-9',
           'readingLevel': null,
           'isDefault': false,
+          'parentGoal': null,
+          'interests': <String>[],
+          'readingTime': null,
         },
       );
     });
@@ -156,6 +162,9 @@ void main() {
         'ageBand': '7-9',
         'readingLevel': 'Early reader',
         'isDefault': true,
+        'parentGoal': null,
+        'interests': <String>[],
+        'readingTime': null,
       });
       expect(created.id, 'child-2');
     });

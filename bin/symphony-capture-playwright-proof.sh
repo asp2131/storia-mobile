@@ -292,10 +292,14 @@ async page => {
   }
 
   const onboardingDone = await tryAction('complete onboarding by UI', async () => {
-    await fillByLabelOrInput(["Child.*Nickname", 'Milo'], nickname, 0);
-    await clickText(['4-6', '7-9', '10-12']);
+    await fillByLabelOrInput(["Child.*nickname", 'Nickname'], nickname, 0);
+    await clickText(['^Continue$']);
+    await clickText(['^7-9$', '^4-6$', '^10-12$']);
+    await clickText(['Skip for now']);
     await clickText([escapeRe("Improve my child's reading level"), 'reading level', 'already love reading']);
-    await clickText(['Continue to Library']);
+    await clickText(['^Continue$']);
+    await clickText(['Skip for now']);
+    await clickText(['Start reading']);
   });
   if (!onboardingDone) {
     await seedAppReviewStorage('complete');
