@@ -24,14 +24,22 @@ import '../narration_studio/presentation/narration_voice_sheet.dart';
 import 'application/reader_experience_controller.dart';
 import 'celebration/book_celebration_summary.dart';
 import 'liquid_page_clipper.dart';
+import 'runtime/providers/reader_capabilities_provider.dart';
 import 'page_renderer.dart';
 import 'reader_tilt.dart';
 import 'walkthrough/reader_walkthrough.dart';
 
 class ReaderScreen extends ConsumerStatefulWidget {
   final String bookId;
+  final VoidCallback? onExit;
+  final VoidCallback? onFinished;
 
-  const ReaderScreen({super.key, required this.bookId});
+  const ReaderScreen({
+    super.key,
+    required this.bookId,
+    this.onExit,
+    this.onFinished,
+  });
 
   @override
   ConsumerState<ReaderScreen> createState() => _ReaderScreenState();
@@ -128,6 +136,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   void _triggerCelebration(Book book) {
     if (_celebrationTriggered || !mounted) return;
     _celebrationTriggered = true;
+    if (widget.onFinished case final onFinished?) {
+      unawaited(
+        _controller.dispatch(
+          const ReaderExperienceEnd(reason: 'book_finished'),
+        ),
+      );
+      onFinished();
+      return;
+    }
     final summary = BookCelebrationSummary.fromBook(
       book,
       timeRead: DateTime.now().difference(_openedAt),
@@ -158,15 +175,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   @override
   Widget build(BuildContext context) {
-    // readerBookProvider = the published book with the selected
-    // parent-recorded narration swapped into its pages (if any).
-    final bookAsync = ref.watch(readerBookProvider(widget.bookId));
-    final selectedTrackId = ref.watch(
-      narrationTrackSelectionProvider(widget.bookId),
-    );
+    final capabilities = ref.watch(readerCapabilitiesProvider);
+    final bookAsync = capabilities.allowsParentNarration
+        ? ref.watch(readerBookProvider(widget.bookId))
+        : ref.watch(currentBookProvider(widget.bookId));
+    final selectedTrackId = capabilities.allowsParentNarration
+        ? ref.watch(narrationTrackSelectionProvider(widget.bookId))
+        : null;
     final c = _controller;
     final state = ref.watch(readerExperienceControllerProvider(widget.bookId));
-    final walkthroughSeen = ref.watch(readerWalkthroughSeenProvider);
+    final walkthroughSeen = capabilities.allowsSpeech
+        ? ref.watch(readerWalkthroughSeenProvider).valueOrNull
+        : true;
 
     ref.listen<ReaderExperienceState>(
       readerExperienceControllerProvider(widget.bookId),
@@ -222,7 +242,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             });
           }
 
-          if (_preloadedManifestBookId != book.id) {
+          if (capabilities.allowsWordHelp &&
+              _preloadedManifestBookId != book.id) {
             _preloadedManifestBookId = book.id;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
@@ -282,28 +303,32 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                 wordHelpSnapshot.highlightParts,
                             activeTappedWordHighlightPartIndex:
                                 wordHelpSnapshot.activeHighlightPartIndex,
-                            onWordTap: (word, globalIndex) {
-                              unawaited(
-                                c.dispatch(
-                                  ReaderExperienceWordTapped(
-                                    word: word,
-                                    globalIndex: globalIndex,
-                                    pageIndex: index,
-                                  ),
-                                ),
-                              );
-                            },
-                            onWordLongPress: (word, globalIndex) {
-                              unawaited(
-                                c.dispatch(
-                                  ReaderExperienceWordLongPressed(
-                                    word: word,
-                                    globalIndex: globalIndex,
-                                    pageIndex: index,
-                                  ),
-                                ),
-                              );
-                            },
+                            onWordTap: capabilities.allowsWordHelp
+                                ? (word, globalIndex) {
+                                    unawaited(
+                                      c.dispatch(
+                                        ReaderExperienceWordTapped(
+                                          word: word,
+                                          globalIndex: globalIndex,
+                                          pageIndex: index,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                : null,
+                            onWordLongPress: capabilities.allowsWordHelp
+                                ? (word, globalIndex) {
+                                    unawaited(
+                                      c.dispatch(
+                                        ReaderExperienceWordLongPressed(
+                                          word: word,
+                                          globalIndex: globalIndex,
+                                          pageIndex: index,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                : null,
                           );
                         },
                       );
@@ -358,7 +383,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                         child: _ReaderTopBar(
                           book: book,
                           activePageNumber: activePage.pageNumber,
-                          onClose: () => Navigator.of(context).maybePop(),
+                          onClose:
+                              widget.onExit ??
+                              () => Navigator.of(context).maybePop(),
                           onAudioSettingsTap: () => _showAudioSettings(
                             context,
                             c,
@@ -370,7 +397,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     );
                   },
                 ),
-                if (ref.watch(storySparksEnabledProvider))
+                if (capabilities.allowsActivities &&
+                    ref.watch(storySparksEnabledProvider))
                   ReaderActivityPromptOverlay(
                     bookId: book.id,
                     pageIndex: activeIndex,
@@ -385,14 +413,20 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     ),
                   ),
                 AudioControlsPill(
-                  voiceChip: NarrationVoiceChip(
-                    bookId: widget.bookId,
-                    onTap: () => unawaited(
-                      showNarrationVoiceSheet(context, bookId: widget.bookId),
-                    ),
-                  ),
+                  voiceChip: capabilities.allowsParentNarration
+                      ? NarrationVoiceChip(
+                          bookId: widget.bookId,
+                          onTap: () => unawaited(
+                            showNarrationVoiceSheet(
+                              context,
+                              bookId: widget.bookId,
+                            ),
+                          ),
+                        )
+                      : null,
                   hasNarration: hasNarration,
                   hasSoundscape: hasSoundscape,
+                  allowsPractice: capabilities.allowsSpeech,
                   isNarrationPlaying: state.readerState.isNarrationPlaying,
                   isSoundscapePlaying: state.readerState.isSoundscapePlaying,
                   isPracticeActive: state.readerState.isPracticeMode,
@@ -439,8 +473,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                       ),
                     ),
                   ),
-                if (walkthroughSeen.valueOrNull == false &&
-                    !_walkthroughDismissed)
+                if (walkthroughSeen == false && !_walkthroughDismissed)
                   ReaderWalkthrough(
                     onComplete: () =>
                         setState(() => _walkthroughDismissed = true),
@@ -456,7 +489,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
             _initializedBookId = null;
             _preloadedManifestBookId = null;
             ref.invalidate(currentBookProvider(widget.bookId));
-            ref.invalidate(bookNarrationTracksProvider(widget.bookId));
+            if (capabilities.allowsParentNarration) {
+              ref.invalidate(bookNarrationTracksProvider(widget.bookId));
+            }
           },
         ),
       ),
@@ -479,6 +514,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         return _AudioSettingsSheet(
           bookId: widget.bookId,
           controller: controller,
+          allowsActivities: ref
+              .read(readerCapabilitiesProvider)
+              .allowsActivities,
           initialNarrationVolume: narrationVolume,
           initialSoundscapeVolume: soundscapeVolume,
         );
@@ -643,6 +681,7 @@ class AudioControlsPill extends StatefulWidget {
   final bool isListening;
   final bool isVisible;
   final bool showGrip;
+  final bool allowsPractice;
   final Future<void> Function() onToggleNarration;
   final Future<void> Function() onToggleSoundscape;
   final Future<void> Function() onTogglePractice;
@@ -658,6 +697,7 @@ class AudioControlsPill extends StatefulWidget {
     required this.isListening,
     required this.isVisible,
     required this.showGrip,
+    this.allowsPractice = true,
     required this.onToggleNarration,
     required this.onToggleSoundscape,
     required this.onTogglePractice,
@@ -850,7 +890,7 @@ class AudioControlsPillState extends State<AudioControlsPill>
       case _WedgeZone.right:
         widget.onToggleSoundscape();
       case _WedgeZone.bottom:
-        widget.onTogglePractice();
+        if (widget.allowsPractice) widget.onTogglePractice();
     }
   }
 
@@ -1044,19 +1084,20 @@ class AudioControlsPillState extends State<AudioControlsPill>
                           : const Color.fromRGBO(255, 255, 255, 0.85),
                     ),
                   ),
-                  Positioned(
-                    left: practiceIconPos.dx,
-                    top: practiceIconPos.dy,
-                    child: Icon(
-                      widget.isListening
-                          ? Icons.mic_rounded
-                          : Icons.mic_off_rounded,
-                      size: 22,
-                      color: (widget.isPracticeActive || widget.isListening)
-                          ? _practiceColor
-                          : const Color.fromRGBO(255, 255, 255, 0.85),
+                  if (widget.allowsPractice)
+                    Positioned(
+                      left: practiceIconPos.dx,
+                      top: practiceIconPos.dy,
+                      child: Icon(
+                        widget.isListening
+                            ? Icons.mic_rounded
+                            : Icons.mic_off_rounded,
+                        size: 22,
+                        color: (widget.isPracticeActive || widget.isListening)
+                            ? _practiceColor
+                            : const Color.fromRGBO(255, 255, 255, 0.85),
+                      ),
                     ),
-                  ),
                   Center(
                     child: _buildGripHandle(
                       viewportSize: viewportSize,
@@ -1373,11 +1414,13 @@ class _AudioSettingsSheet extends ConsumerStatefulWidget {
   final double initialNarrationVolume;
   final double initialSoundscapeVolume;
 
+  final bool allowsActivities;
   const _AudioSettingsSheet({
     required this.bookId,
     required this.controller,
     required this.initialNarrationVolume,
     required this.initialSoundscapeVolume,
+    required this.allowsActivities,
   });
 
   @override
@@ -1447,18 +1490,19 @@ class _AudioSettingsSheetState extends ConsumerState<_AudioSettingsSheet> {
             onChanged: _setSoundscapeVolume,
           ),
           const SizedBox(height: 14),
-          _ToggleRow(
-            icon: Icons.auto_awesome_rounded,
-            label: 'Story Sparks',
-            description: 'Playful activity cards that pop up while reading.',
-            semanticsLabel: 'Story Sparks activity cards',
-            value: ref.watch(storySparksEnabledProvider),
-            onChanged: (enabled) => unawaited(
-              ref
-                  .read(genUiPreferencesNotifierProvider)
-                  .setStorySparksEnabled(enabled),
+          if (widget.allowsActivities)
+            _ToggleRow(
+              icon: Icons.auto_awesome_rounded,
+              label: 'Story Sparks',
+              description: 'Playful activity cards that pop up while reading.',
+              semanticsLabel: 'Story Sparks activity cards',
+              value: ref.watch(storySparksEnabledProvider),
+              onChanged: (enabled) => unawaited(
+                ref
+                    .read(genUiPreferencesNotifierProvider)
+                    .setStorySparksEnabled(enabled),
+              ),
             ),
-          ),
         ],
       ),
     );

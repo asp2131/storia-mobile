@@ -6,6 +6,8 @@ import '../features/aac_music_demo/presentation/aac_music_demo_screen.dart';
 import '../features/auth/data/auth_providers.dart';
 import '../features/auth/presentation/auth_gate.dart';
 import '../features/auth/presentation/intro_screen.dart';
+import '../features/auth/presentation/guest_reader_screen.dart';
+import '../features/auth/presentation/story_picker_screen.dart';
 import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/sign_up_screen.dart';
 import '../features/child/data/child_profile_providers.dart';
@@ -58,6 +60,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: JourneyRoutes.intro,
         builder: (context, state) => const IntroScreen(),
+      ),
+      GoRoute(
+        path: JourneyRoutes.tryStory,
+        builder: (context, state) => const StoryPickerScreen(),
+      ),
+      GoRoute(
+        path: JourneyRoutes.tryStoryReaderPattern,
+        builder: (context, state) =>
+            GuestReaderScreen(bookId: state.pathParameters['bookId'] ?? ''),
       ),
       GoRoute(
         path: JourneyRoutes.signIn,

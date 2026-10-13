@@ -9,6 +9,8 @@
 /// RFC: https://github.com/asp2131/storia-mobile/issues/33
 library;
 
+import '../../features/auth/domain/intro_book_selection.dart';
+
 /// How far child-profile selection has progressed.
 ///
 /// Collapses the `AsyncValue<String?>` of
@@ -97,6 +99,8 @@ class JourneySnapshot {
 abstract final class JourneyRoutes {
   static const root = '/';
   static const intro = '/intro';
+  static const tryStory = '/try-a-story';
+  static const tryStoryReaderPattern = '/try-a-story/:bookId';
   static const signIn = '/sign-in';
   static const signUp = '/sign-up';
   static const parentBirthYear = '/parent-birth-year';
@@ -112,6 +116,7 @@ abstract final class JourneyRoutes {
   static const bookCelebration = '/celebration';
 
   static String reader(String bookId) => '/reader/$bookId';
+  static String tryStoryReader(String bookId) => '$tryStory/$bookId';
 }
 
 /// Which stage of the journey a snapshot resolves to.
@@ -162,6 +167,11 @@ abstract final class JourneyPolicy {
     JourneyRoutes.signUp,
   };
 
+  static final _guestLocations = {
+    JourneyRoutes.tryStory,
+    for (final id in introBookIds) JourneyRoutes.tryStoryReader(id),
+  };
+
   /// Locations admissible while the profile-picker step is pending.
   /// Adding a profile is a legitimate detour from the picker.
   static const _profileStepAdmissible = {
@@ -194,7 +204,8 @@ abstract final class JourneyPolicy {
       case _JourneyStage.profileLoading:
         return null;
       case _JourneyStage.unauthenticated:
-        return _unauthenticatedAdmissible.contains(location)
+        return _unauthenticatedAdmissible.contains(location) ||
+                _guestLocations.contains(location)
             ? null
             : JourneyRoutes.intro;
       case _JourneyStage.parentBirthYear:
@@ -210,7 +221,8 @@ abstract final class JourneyPolicy {
             ? null
             : JourneyRoutes.profilePicker;
       case _JourneyStage.complete:
-        return _preJourneyLocations.contains(location)
+        return _preJourneyLocations.contains(location) ||
+                _guestLocations.contains(location)
             ? JourneyRoutes.library
             : null;
     }
@@ -240,6 +252,7 @@ abstract final class JourneyPolicy {
   static String backTarget(String location) {
     return switch (location) {
       JourneyRoutes.signIn || JourneyRoutes.signUp => JourneyRoutes.intro,
+      JourneyRoutes.tryStory => JourneyRoutes.intro,
       JourneyRoutes.addProfile => JourneyRoutes.profilePicker,
       _ => JourneyRoutes.root,
     };

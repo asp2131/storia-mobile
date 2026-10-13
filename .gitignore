@@ -14,6 +14,8 @@ migrate_working_dir/
 .claude/
 .expo/
 
+design/
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -50,6 +52,7 @@ app.*.map.json
 
 # Environment files
 .env
+.env.client
 
 # Android signing secrets
 android/key.properties

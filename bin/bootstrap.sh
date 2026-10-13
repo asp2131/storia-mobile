@@ -21,6 +21,18 @@ if [ -f .env.example ] && [ ! -f .env ]; then
   cp .env.example .env
 fi
 
+# Flutter assets are public. Never ship the server environment wholesale.
+if [ ! -f .env.client ] && [ -f .env ]; then
+  echo "[bootstrap] creating .env.client with public settings only"
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      API_BASE_URL=*|SUPABASE_URL=*|SUPABASE_ANON_KEY=*)
+        printf '%s\n' "$line"
+        ;;
+    esac
+  done < .env > .env.client
+fi
+
 if [ "$(uname -s)" = "Darwin" ] && [ -f ios/Podfile ]; then
   if command -v pod >/dev/null 2>&1; then
     echo "[bootstrap] pod install (ios/)"

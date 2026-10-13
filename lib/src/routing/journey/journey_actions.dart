@@ -62,3 +62,12 @@ void enterAuth(BuildContext context, AuthEntry mode) {
 void pushAddProfile(BuildContext context) {
   context.push(JourneyRoutes.addProfile);
 }
+
+/// PUBLIC DETOUR: try a featured book before starting account setup.
+void tryStory(BuildContext context) {
+  context.push(JourneyRoutes.tryStory);
+}
+
+void readGuestStory(BuildContext context, String bookId) {
+  context.push(JourneyRoutes.tryStoryReader(bookId));
+}

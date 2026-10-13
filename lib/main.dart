@@ -11,7 +11,7 @@ import 'src/features/child/data/child_profile_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  await dotenv.load(fileName: '.env.client');
 
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',

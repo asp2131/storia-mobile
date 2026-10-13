@@ -10,8 +10,10 @@ import '../../../../data/providers.dart';
 import '../adapters/flutter_scheduler_port.dart';
 import '../adapters/speech_to_text_practice_port.dart';
 import '../reader_analytics_tracker.dart';
+import '../ports/speech_practice_port.dart';
 import '../reader_session.dart';
 import '../reader_session_impl.dart';
+import 'reader_capabilities_provider.dart';
 
 /// Completes when the illustration at [url] has decoded a frame (or errored), so
 /// narration/soundscape can wait for the picture. Shares the reader's cache, so
@@ -37,6 +39,14 @@ Future<void> _awaitImageReady(String? url) {
   return completer.future;
 }
 
+final readerImageReadyProbeProvider = Provider<ImageReadyProbe>(
+  (ref) => _awaitImageReady,
+);
+
+final readerSpeechPracticePortProvider = Provider<SpeechPracticePort>(
+  (ref) => SpeechToTextPracticePort(),
+);
+
 final readerAnalyticsTrackerProvider = Provider<ReaderAnalyticsTracker>((ref) {
   return ReaderAnalyticsTracker(
     analyticsRepository: ref.watch(analyticsRepositoryProvider),
@@ -45,12 +55,17 @@ final readerAnalyticsTrackerProvider = Provider<ReaderAnalyticsTracker>((ref) {
 
 final readerSessionProvider = Provider<ReaderSession>((ref) {
   final pageAudio = ref.watch(pageAudioProvider);
+  final capabilities = ref.watch(readerCapabilitiesProvider);
   final session = ReaderSessionImpl(
     pageAudio: pageAudio,
-    speechPort: SpeechToTextPracticePort(),
+    speechPort: capabilities.allowsSpeech
+        ? ref.watch(readerSpeechPracticePortProvider)
+        : null,
     scheduler: FlutterSchedulerPort(),
-    analyticsTracker: ref.watch(readerAnalyticsTrackerProvider),
-    imageReadyProbe: _awaitImageReady,
+    analyticsTracker: capabilities.allowsAnalytics
+        ? ref.watch(readerAnalyticsTrackerProvider)
+        : null,
+    imageReadyProbe: ref.watch(readerImageReadyProbeProvider),
   );
 
   ref.onDispose(() {
@@ -58,4 +73,4 @@ final readerSessionProvider = Provider<ReaderSession>((ref) {
   });
 
   return session;
-});
+}, dependencies: [readerCapabilitiesProvider, pageAudioProvider]);

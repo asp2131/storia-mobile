@@ -18,7 +18,7 @@ typedef ImageReadyProbe = Future<void> Function(String? url);
 class ReaderSessionImpl implements ReaderSession {
   ReaderSessionImpl({
     required PageAudio pageAudio,
-    required SpeechPracticePort speechPort,
+    SpeechPracticePort? speechPort,
     required SchedulerPort scheduler,
     ReaderAnalyticsTracker? analyticsTracker,
     ImageReadyProbe? imageReadyProbe,
@@ -40,7 +40,7 @@ class ReaderSessionImpl implements ReaderSession {
   }
 
   final PageAudio _pageAudio;
-  final SpeechPracticePort _speechPort;
+  final SpeechPracticePort? _speechPort;
   final SchedulerPort _scheduler;
   final ReaderAnalyticsTracker? _analyticsTracker;
   final ImageReadyProbe _imageReadyProbe;
@@ -119,7 +119,7 @@ class ReaderSessionImpl implements ReaderSession {
       return;
     }
     if (intent is ReaderPauseListening) {
-      await _speechPort.stopListening();
+      await _speechPort?.stopListening();
       _completeSpeechAttempt(reason: 'paused');
       _emit(_state.copyWith(isListening: false));
       return;
@@ -151,6 +151,7 @@ class ReaderSessionImpl implements ReaderSession {
       return;
     }
     if (intent is ReaderEnd) {
+      _pageRequestId++;
       _completeSpeechAttempt(reason: intent.reason);
       _analyticsTracker?.endSession(reason: intent.reason);
       await _pageAudio.stopAll();
@@ -211,7 +212,7 @@ class ReaderSessionImpl implements ReaderSession {
     final nextPage = book.pages[clampedIndex];
     final isPageChange = clampedIndex != previousPageIndex;
 
-    await _speechPort.stopListening();
+    await _speechPort?.stopListening();
     _completeSpeechAttempt(reason: 'page_changed');
     _clearCelebration();
     _emit(
@@ -242,6 +243,7 @@ class ReaderSessionImpl implements ReaderSession {
   }
 
   Future<void> _handlePracticePrimaryAction() async {
+    if (_speechPort == null) return;
     if (!_state.isListening) {
       await _ensureSpeechInitialized();
       if (!_speechAvailable) {
@@ -283,7 +285,7 @@ class ReaderSessionImpl implements ReaderSession {
     if (_speechInitialized) {
       return;
     }
-    _speechAvailable = await _speechPort.initialize();
+    _speechAvailable = await _speechPort?.initialize() ?? false;
     _speechInitialized = true;
   }
 
@@ -292,7 +294,7 @@ class ReaderSessionImpl implements ReaderSession {
       return;
     }
 
-    await _speechPort.startListening(
+    await _speechPort?.startListening(
       onResult: (recognizedWords, {required isFinal}) {
         final updated = matchSpokenWords(
           recognizedWords: recognizedWords,
@@ -403,11 +405,12 @@ class ReaderSessionImpl implements ReaderSession {
 
   @override
   Future<void> dispose() async {
+    _pageRequestId++;
     _completeSpeechAttempt(reason: 'dispose');
     _analyticsTracker?.endSession(reason: 'provider_dispose');
     _celebrationTask?.cancel();
     await _audioSnapshotSub?.cancel();
-    await _speechPort.dispose();
+    await _speechPort?.dispose();
     await _controller.close();
     await _pageChangeController.close();
   }

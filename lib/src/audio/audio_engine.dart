@@ -15,13 +15,17 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
     RawPlayer? narrationPlayer,
     RawPlayer? soundscapePlayer,
     RawPlayer? pronunciationPlayer,
+    bool autoplayPages = true,
   }) : _narration = narrationPlayer ?? playerFactory(),
        _soundscape = soundscapePlayer ?? playerFactory(),
-       _pronunciation = pronunciationPlayer ?? playerFactory();
+       _pronunciation = pronunciationPlayer ?? playerFactory(),
+       _autoplayPages = autoplayPages;
 
   final RawPlayer _narration;
   final RawPlayer _soundscape;
   final RawPlayer _pronunciation;
+  final bool _autoplayPages;
+  bool _userStartedAudio = false;
 
   static const Duration _restartThreshold = Duration(milliseconds: 250);
 
@@ -85,8 +89,10 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
 
   @override
   Future<void> loadPage(PageData page) async {
-    await _ensureInitialized();
     final requestId = ++_pageAudioRequestId;
+    await _ensureInitialized();
+    if (requestId != _pageAudioRequestId) return;
+    final autoplay = _autoplayPages || _userStartedAudio;
 
     await _narration.stop();
     if (requestId != _pageAudioRequestId) return;
@@ -98,7 +104,7 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
     if (hasNarration) {
       await _narration.setSource(narrationUrl);
       if (requestId != _pageAudioRequestId) return;
-      tracksToPlay.add(_narration);
+      if (autoplay) tracksToPlay.add(_narration);
     }
 
     final soundscapeUrl = page.soundscapeUrl;
@@ -108,7 +114,9 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
 
     if (isSameSoundscape) {
       _soundscapeActive = true;
-      if (!_soundscape.isPlaying) {
+      if (!autoplay && _soundscape.isPlaying) {
+        await _soundscape.pause();
+      } else if (autoplay && !_soundscape.isPlaying) {
         tracksToPlay.add(_soundscape);
       }
     } else {
@@ -121,7 +129,7 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
         _currentSoundscapeUrl = soundscapeUrl;
         _soundscapeActive = true;
         if (requestId != _pageAudioRequestId) return;
-        tracksToPlay.add(_soundscape);
+        if (autoplay) tracksToPlay.add(_soundscape);
       } else {
         _currentSoundscapeUrl = null;
         _soundscapeActive = false;
@@ -142,6 +150,7 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
   @override
   Future<void> stopAll() async {
     _pageAudioRequestId++;
+    _userStartedAudio = false;
     _narrationActive = false;
     _soundscapeActive = false;
     _currentSoundscapeUrl = null;
@@ -156,6 +165,7 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
       _narrationActive = false;
       await _narration.pause();
     } else {
+      _userStartedAudio = true;
       await _restartIfCompleted(_narration);
       _narrationActive = true;
       await _narration.play();
@@ -169,6 +179,7 @@ class AudioEngine implements PageAudio, PronunciationPlayer {
       _soundscapeActive = false;
       await _soundscape.pause();
     } else {
+      _userStartedAudio = true;
       await _restartIfCompleted(_soundscape);
       _soundscapeActive = true;
       await _soundscape.play();

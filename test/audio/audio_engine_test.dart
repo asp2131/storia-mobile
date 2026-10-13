@@ -124,6 +124,55 @@ void main() {
       });
     });
 
+    test(
+      'guest audio stays silent until a tap, then follows page changes',
+      () async {
+        await engine.dispose();
+        engine = AudioEngine(
+          playerFactory: () => throw UnimplementedError('use injected players'),
+          narrationPlayer: narration = FakeRawPlayer()..autoComplete = false,
+          soundscapePlayer: soundscape = FakeRawPlayer()..autoComplete = false,
+          pronunciationPlayer: pronunciation = FakeRawPlayer(),
+          autoplayPages: false,
+        );
+        const firstPage = PageData(
+          id: 'guest-1',
+          pageNumber: 1,
+          textContent: 'hello',
+          narrationUrl: 'https://cdn/guest-1.mp3',
+          soundscapeUrl: 'https://cdn/ambience.mp3',
+        );
+        const nextPage = PageData(
+          id: 'guest-2',
+          pageNumber: 2,
+          textContent: 'world',
+          narrationUrl: 'https://cdn/guest-2.mp3',
+          soundscapeUrl: 'https://cdn/ambience.mp3',
+        );
+
+        await engine.loadPage(firstPage);
+        await engine.loadPage(nextPage);
+        expect(narration.isPlaying, isFalse);
+        expect(soundscape.isPlaying, isFalse);
+        expect(narration.playCount, 0);
+        expect(soundscape.playCount, 0);
+
+        unawaited(engine.toggleNarration());
+        await pumpEventQueue();
+        expect(narration.isPlaying, isTrue);
+
+        await engine.loadPage(firstPage);
+        expect(narration.setSourceCalls.last, 'https://cdn/guest-1.mp3');
+        expect(narration.isPlaying, isTrue);
+        expect(soundscape.isPlaying, isTrue);
+
+        await engine.stopAll();
+        await engine.loadPage(nextPage);
+        expect(narration.isPlaying, isFalse);
+        expect(soundscape.isPlaying, isFalse);
+      },
+    );
+
     group('toggleNarration', () {
       test('plays when inactive', () async {
         await engine.toggleNarration();

@@ -94,23 +94,25 @@ void main() {
   });
 
   group('unauthenticated (no session, no bypass)', () {
-    test('public locations pass; everything else, including /, goes to intro',
-        () {
-      expectTable(snap(), {
-        '/': '/intro',
-        '/intro': null,
-        '/sign-in': null,
-        '/sign-up': null,
-        '/parent-birth-year': '/intro',
-        '/onboarding': '/intro',
-        '/profiles/select': '/intro',
-        '/profiles/new': '/intro',
-        '/library': '/intro',
-        '/settings': '/intro',
-        '/aac-music-demo': '/intro',
-        '/reader/book-1': '/intro',
-      });
-    });
+    test(
+      'public locations pass; everything else, including /, goes to intro',
+      () {
+        expectTable(snap(), {
+          '/': '/intro',
+          '/intro': null,
+          '/sign-in': null,
+          '/sign-up': null,
+          '/parent-birth-year': '/intro',
+          '/onboarding': '/intro',
+          '/profiles/select': '/intro',
+          '/profiles/new': '/intro',
+          '/library': '/intro',
+          '/settings': '/intro',
+          '/aac-music-demo': '/intro',
+          '/reader/book-1': '/intro',
+        });
+      },
+    );
 
     test('profile selection loading does not outrank unauthenticated', () {
       expectTable(snap(profile: ProfileSelection.loading), {
@@ -165,10 +167,8 @@ void main() {
       });
     });
 
-    test(
-        'bypass complete: pre-journey locations bounce to /library, '
-        'terminals and profile routes pass (no backend profile required)',
-        () {
+    test('bypass complete: pre-journey locations bounce to /library, '
+        'terminals and profile routes pass (no backend profile required)', () {
       expectTable(snap(bypass: true, birthYear: true, onboarded: true), {
         '/': '/library',
         '/intro': '/library',
@@ -193,8 +193,7 @@ void main() {
       });
     });
 
-    test('no active profile: everything except picker/add goes to picker',
-        () {
+    test('no active profile: everything except picker/add goes to picker', () {
       expectTable(snap(session: true), {
         '/': '/profiles/select',
         '/intro': '/profiles/select',
@@ -211,8 +210,7 @@ void main() {
       });
     });
 
-    test(
-        'profile selected: pre-journey bounces to /library; terminals and '
+    test('profile selected: pre-journey bounces to /library; terminals and '
         'profile routes stay reachable (profile switching)', () {
       expectTable(snap(session: true, profile: ProfileSelection.selected), {
         '/': '/library',
@@ -237,22 +235,19 @@ void main() {
         snap(session: true, bypass: true, profile: ProfileSelection.loading),
         {
           for (final location in allLocations)
-            location:
-                location == '/parent-birth-year' ? null : '/parent-birth-year',
+            location: location == '/parent-birth-year'
+                ? null
+                : '/parent-birth-year',
         },
       );
     });
 
-    test(
-        'onboarding pending wins over missing profile '
+    test('onboarding pending wins over missing profile '
         '(normalized divergence from legacy `/` branch)', () {
-      expectTable(
-        snap(session: true, bypass: true, birthYear: true),
-        {
-          for (final location in allLocations)
-            location: location == '/onboarding' ? null : '/onboarding',
-        },
-      );
+      expectTable(snap(session: true, bypass: true, birthYear: true), {
+        for (final location in allLocations)
+          location: location == '/onboarding' ? null : '/onboarding',
+      });
     });
 
     test('both tracks complete behaves like supabase-complete', () {
@@ -302,6 +297,53 @@ void main() {
     });
   });
 
+  group('guest story entry', () {
+    test('signed-out readers can choose and open only featured stories', () {
+      for (final location in [
+        '/try-a-story',
+        '/try-a-story/68',
+        '/try-a-story/63',
+        '/try-a-story/54',
+      ]) {
+        expect(JourneyPolicy.redirect(snap(), location), isNull);
+      }
+      for (final location in [
+        '/try-a-story/66',
+        '/try-a-story/unknown',
+        '/try-a-story/68/extra',
+        '/reader/68',
+        '/library',
+        '/settings',
+      ]) {
+        expect(JourneyPolicy.redirect(snap(), location), JourneyRoutes.intro);
+      }
+    });
+
+    test('guest routes do not bypass parent or profile setup', () {
+      for (final location in ['/try-a-story', '/try-a-story/68']) {
+        expect(
+          JourneyPolicy.redirect(snap(bypass: true), location),
+          JourneyRoutes.parentBirthYear,
+        );
+        expect(
+          JourneyPolicy.redirect(snap(bypass: true, birthYear: true), location),
+          JourneyRoutes.onboarding,
+        );
+        expect(
+          JourneyPolicy.redirect(snap(session: true), location),
+          JourneyRoutes.profilePicker,
+        );
+        expect(
+          JourneyPolicy.redirect(
+            snap(session: true, profile: ProfileSelection.selected),
+            location,
+          ),
+          JourneyRoutes.library,
+        );
+      }
+    });
+  });
+
   group('JourneyRoutes', () {
     test('reader() builds parameterized deep links', () {
       expect(JourneyRoutes.reader('abc-123'), '/reader/abc-123');
@@ -312,9 +354,15 @@ void main() {
     const celebration = JourneyRoutes.bookCelebration;
 
     test('passes through once the journey is complete', () {
-      final supabaseComplete =
-          snap(session: true, profile: ProfileSelection.selected);
-      final bypassComplete = snap(bypass: true, birthYear: true, onboarded: true);
+      final supabaseComplete = snap(
+        session: true,
+        profile: ProfileSelection.selected,
+      );
+      final bypassComplete = snap(
+        bypass: true,
+        birthYear: true,
+        onboarded: true,
+      );
       expect(JourneyPolicy.redirect(supabaseComplete, celebration), isNull);
       expect(JourneyPolicy.redirect(bypassComplete, celebration), isNull);
     });

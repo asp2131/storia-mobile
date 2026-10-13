@@ -8,8 +8,13 @@ Flutter mobile app for Loratone.
 2. Run:
 
 ```bash
-flutter pub get
+./bin/bootstrap.sh
 ```
+
+The app bundles only `.env.client`: `API_BASE_URL`, `SUPABASE_URL`, and
+`SUPABASE_ANON_KEY`. Bootstrap derives it from `.env` when absent. After
+configuring those values, update `.env.client` too (or regenerate it with
+bootstrap). Never put server credentials in a Flutter asset.
 
 3. Start the app:
 
@@ -21,10 +26,28 @@ flutter run
 
 The `bin/` directory contains helper scripts used by both humans and Symphony agents:
 
-- `bin/bootstrap.sh` sets up a fresh checkout by running `flutter pub get`, creating `.env` from `.env.example` when needed, and running `pod install` on macOS when iOS pods are available.
+- `bin/bootstrap.sh` sets up a fresh checkout by running `flutter pub get`, provisioning `.env` and public-only `.env.client` when needed, and running `pod install` on macOS when iOS pods are available.
 - `bin/verify.sh` is the pre-handoff validation gate; it runs `flutter analyze` and `flutter test`.
 - `bin/pi-symphony.sh` polls Linear and dispatches Pi/Symphony workspaces for automated ticket processing.
 - `bin/loopany-storia.sh` runs the globally-installed loopany CLI with a Storia-scoped `LOOPANY_HOME`; see `docs/tooling/loopany.md`.
+
+## Try a story
+
+Signed-out readers can preview narration on the Loratone intro, then choose
+**Super Soccer Shot**, **Kumu's Sky**, or **My Day at Granny's** at
+`/try-a-story`. These are the published catalog IDs `68`, `63`, and `54`,
+in that order; unavailable titles are omitted rather than substituted.
+
+The intro illustration uses the shared file cache and retains its encoded bytes
+in app-scoped state, so it can be decoded again after navigating away or image
+cache eviction. The entry palette follows the selected C design in
+`design/entry-flow/intro-20261011/shots/r6/03-c-outside-the-lines.png`.
+
+Guest reading at `/try-a-story/:bookId` offers the full public book, narration,
+word highlighting, and soundscapes. Audio starts on a user tap. Closing or
+finishing returns to story selection. Guest sessions do not initialize analytics,
+microphone practice, word-help services, parent recordings, or Story Sparks.
+Grown-ups and sign-in still enter the existing account journey.
 
 ## iOS Sign In with Apple
 

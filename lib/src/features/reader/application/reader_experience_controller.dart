@@ -8,6 +8,7 @@ import '../../../audio/audio_providers.dart';
 import '../../../data/models.dart';
 import '../runtime/providers/reader_session_provider.dart';
 import '../runtime/providers/reader_word_help_provider.dart';
+import '../runtime/providers/reader_capabilities_provider.dart';
 import '../runtime/reader_session.dart';
 import '../runtime/word_help/reader_word_help.dart';
 import 'reader_experience_effects.dart';
@@ -27,7 +28,15 @@ final readerExperienceControllerProvider =
       ReaderExperienceControllerNotifier,
       ReaderExperienceState,
       String
-    >(ReaderExperienceControllerNotifier.new);
+    >(
+      ReaderExperienceControllerNotifier.new,
+      dependencies: [
+        readerCapabilitiesProvider,
+        readerSessionProvider,
+        readerExperienceWordHelpProvider,
+        readerExperienceEffectsProvider,
+      ],
+    );
 
 class ReaderExperienceState {
   const ReaderExperienceState({
@@ -169,24 +178,24 @@ final class ReaderExperienceEnd extends ReaderExperienceAction {
 class ReaderExperienceController {
   ReaderExperienceController({
     required ReaderSession session,
-    required ReaderWordHelp wordHelp,
+    ReaderWordHelp? wordHelp,
     ReaderExperienceEffects effects = const NoopReaderExperienceEffects(),
   }) : _session = session,
        _wordHelp = wordHelp,
        _effects = effects,
        _state = ReaderExperienceState(
          readerState: const ReaderViewState.initial(),
-         wordHelpSnapshot: wordHelp.snapshot,
+         wordHelpSnapshot: wordHelp?.snapshot ?? const WordHelpSnapshot.idle(),
          showCelebrationGif: false,
          endedForLifecycle: false,
          activityNarrationPaused: false,
        ) {
     _sessionSubscription = _session.states.listen(_onReaderStateChanged);
-    _wordHelpSubscription = _wordHelp.snapshots.listen(_onWordHelpChanged);
+    _wordHelpSubscription = _wordHelp?.snapshots.listen(_onWordHelpChanged);
   }
 
   final ReaderSession _session;
-  final ReaderWordHelp _wordHelp;
+  final ReaderWordHelp? _wordHelp;
   final ReaderExperienceEffects _effects;
   final _states = StreamController<ReaderExperienceState>.broadcast();
   final _narrationPositionNotifier = ValueNotifier<Duration>(Duration.zero);
@@ -225,6 +234,7 @@ class ReaderExperienceController {
         :final globalIndex,
         :final pageIndex,
       ):
+        if (_wordHelp == null) return;
         if (_currentBook == null) {
           throw StateError('ReaderExperienceController must be started first.');
         }
@@ -240,6 +250,7 @@ class ReaderExperienceController {
         :final globalIndex,
         :final pageIndex,
       ):
+        if (_wordHelp == null) return;
         await _playWordHelp(
           word: word,
           globalIndex: globalIndex,
@@ -311,7 +322,7 @@ class ReaderExperienceController {
     _isDisposed = true;
 
     await _session.dispatch(const ReaderEnd(reason: 'screen_dispose'));
-    await _wordHelp.cancel(reason: WordHelpCancelReason.disposed);
+    await _wordHelp?.cancel(reason: WordHelpCancelReason.disposed);
     await _sessionSubscription?.cancel();
     await _wordHelpSubscription?.cancel();
     await _states.close();
@@ -331,7 +342,7 @@ class ReaderExperienceController {
       throw StateError('ReaderExperienceController must be started first.');
     }
 
-    await _wordHelp.play(
+    await _wordHelp?.play(
       WordHelpRequest(
         bookId: book.id,
         pageIndex: pageIndex,
@@ -410,9 +421,12 @@ class ReaderExperienceControllerNotifier
   ReaderExperienceState build(String bookId) {
     _disposeController();
 
+    final capabilities = ref.watch(readerCapabilitiesProvider);
     final nextController = ReaderExperienceController(
       session: ref.watch(readerSessionProvider),
-      wordHelp: ref.watch(readerExperienceWordHelpProvider(bookId)),
+      wordHelp: capabilities.allowsWordHelp
+          ? ref.watch(readerExperienceWordHelpProvider(bookId))
+          : null,
       effects: ref.watch(readerExperienceEffectsProvider),
     );
     _controller = nextController;
