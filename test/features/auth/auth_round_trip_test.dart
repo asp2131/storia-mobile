@@ -9,8 +9,7 @@ import 'package:loratone/src/routing/app_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:loratone/src/features/auth/data/auth_providers.dart';
 import 'package:loratone/src/features/auth/data/auth_repository.dart';
-import 'package:loratone/src/features/auth/presentation/sign_in_screen.dart';
-import 'package:loratone/src/features/auth/presentation/sign_up_screen.dart';
+import 'package:loratone/src/features/auth/presentation/account_screen.dart';
 import 'package:loratone/src/features/onboarding/data/entry_flow_provider.dart';
 import 'package:loratone/src/features/onboarding/domain/entry_flow_state.dart';
 
@@ -91,13 +90,13 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(SignUpScreen), findsOneWidget);
+      expect(find.byType(AccountScreen), findsOneWidget);
       final visited = <String>[];
       router.routerDelegate.addListener(() {
         visited.add(router.routerDelegate.currentConfiguration.uri.path);
       });
       await tester.enterText(find.byType(TextField), appReviewBypassEmail);
-      final submit = find.text('Create Account with Magic Link');
+      final submit = find.text('Email me a code');
       await tester.ensureVisible(submit);
       await tester.tap(submit);
       await tester.pumpAndSettle();
@@ -128,9 +127,7 @@ void main() {
               entryFlowNotifierProvider.overrideWith((ref) => entry),
               authRepositoryProvider.overrideWithValue(repository),
             ],
-            child: MaterialApp(
-              home: signUp ? const SignUpScreen() : const SignInScreen(),
-            ),
+            child: MaterialApp(home: const AccountScreen()),
           ),
         );
         await tester.pumpAndSettle();
@@ -138,35 +135,30 @@ void main() {
           find.byType(TextField).first,
           ' parent@example.com ',
         );
-        final send = find.text(
-          signUp ? 'Create Account with Magic Link' : 'Email Me a Magic Link',
-        );
+        final send = find.text('Email me a code');
         await tester.ensureVisible(send);
         await tester.tap(send);
         await tester.pumpAndSettle();
         expect(repository.sentEmail, 'parent@example.com');
-        expect(repository.createsUser, signUp);
-        expect(find.textContaining('Email sent.'), findsOneWidget);
+        // One path for new and returning parents: OTP always may create.
+        expect(repository.createsUser, true);
+        expect(
+          find.textContaining('We sent a code to parent@example.com'),
+          findsOneWidget,
+        );
         entry.didChangeAppLifecycleState(AppLifecycleState.paused);
         entry.didChangeAppLifecycleState(AppLifecycleState.resumed);
         expect(entry.state.isAdultVerified, true);
 
-        final code = find.byType(TextField).last;
+        final code = find.byType(TextField);
         await tester.enterText(code, '123456');
         repository.verifyError = const AppAuthException('Code expired');
-        final verify = find.text('Verify Code');
+        final verify = find.text('Check code');
         await tester.ensureVisible(verify);
         await tester.tap(verify);
         await tester.pumpAndSettle();
         expect(find.text('Code expired'), findsOneWidget);
         expect(tester.widget<TextField>(code).controller!.text, '123456');
-        expect(
-          tester
-              .widget<TextField>(find.byType(TextField).first)
-              .controller!
-              .text,
-          ' parent@example.com ',
-        );
         repository.verifyError = null;
         await tester.ensureVisible(verify);
         await tester.tap(verify);
@@ -174,10 +166,7 @@ void main() {
         expect(repository.verifiedCode, '123456');
         // A successful OTP ends the lifecycle exception; the router, not this
         // screen, owns advancing when the backend session arrives.
-        expect(
-          find.byType(signUp ? SignUpScreen : SignInScreen),
-          findsOneWidget,
-        );
+        expect(find.byType(AccountScreen), findsOneWidget);
         entry.didChangeAppLifecycleState(AppLifecycleState.paused);
         expect(entry.state.isParentAuthorized, false);
         await tester.pumpWidget(const SizedBox());
@@ -202,9 +191,7 @@ void main() {
               entryFlowNotifierProvider.overrideWith((ref) => entry),
               authRepositoryProvider.overrideWithValue(repository),
             ],
-            child: MaterialApp(
-              home: signUp ? const SignUpScreen() : const SignInScreen(),
-            ),
+            child: MaterialApp(home: const AccountScreen()),
           ),
         );
         await tester.pumpAndSettle();
@@ -212,9 +199,7 @@ void main() {
           find.byType(TextField).first,
           'parent@example.com',
         );
-        final send = find.text(
-          signUp ? 'Create Account with Magic Link' : 'Email Me a Magic Link',
-        );
+        final send = find.text('Email me a code');
         await tester.ensureVisible(send);
         await tester.tap(send);
         await tester.pumpAndSettle();

@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loratone/src/features/auth/presentation/widgets/auth_social_buttons.dart';
-import 'package:loratone/src/features/auth/presentation/widgets/magic_code_field.dart';
+import 'package:loratone/src/features/auth/presentation/account_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
 
 void main() {
@@ -33,76 +33,21 @@ void main() {
     });
   });
 
-  group('MagicCodeField', () {
+  group('AuthSocialButtons', () {
     Widget host({
-      required TextEditingController controller,
-      bool isVerifying = false,
+      required ValueChanged<OAuthProvider> onSelected,
       bool isBusy = false,
-      VoidCallback? onVerify,
     }) => MaterialApp(
       home: Scaffold(
         body: SingleChildScrollView(
-          child: MagicCodeField(
-            controller: controller,
-            isVerifying: isVerifying,
+          child: AuthSocialButtons(
             isBusy: isBusy,
-            onVerify: onVerify ?? () {},
+            isSocialSubmitting: false,
+            onProviderSelected: onSelected,
           ),
         ),
       ),
     );
-
-    testWidgets('offers the code as a way past a broken link', (tester) async {
-      await tester.pumpWidget(host(controller: TextEditingController()));
-
-      expect(find.textContaining('6-digit'), findsOneWidget);
-      expect(find.text('Verify Code'), findsOneWidget);
-    });
-
-    testWidgets('verifies on button tap', (tester) async {
-      var taps = 0;
-      await tester.pumpWidget(
-        host(controller: TextEditingController(), onVerify: () => taps++),
-      );
-
-      await tester.tap(find.text('Verify Code'));
-      await tester.pump();
-
-      expect(taps, 1);
-    });
-
-    testWidgets('disables verification while another request is in flight', (
-      tester,
-    ) async {
-      var taps = 0;
-      await tester.pumpWidget(
-        host(
-          controller: TextEditingController(),
-          isBusy: true,
-          onVerify: () => taps++,
-        ),
-      );
-
-      await tester.tap(find.text('Verify Code'), warnIfMissed: false);
-      await tester.pump();
-
-      expect(taps, 0);
-    });
-  });
-
-  group('AuthSocialButtons', () {
-    Widget host({required ValueChanged<OAuthProvider> onSelected, bool isBusy = false}) =>
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: AuthSocialButtons(
-                isBusy: isBusy,
-                isSocialSubmitting: false,
-                onProviderSelected: onSelected,
-              ),
-            ),
-          ),
-        );
 
     testWidgets('offers Apple on iOS', (tester) async {
       // Reset inside the body: the framework asserts foundation debug vars are

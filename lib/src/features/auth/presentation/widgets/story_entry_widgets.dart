@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/loratone_entry_colors.dart';
@@ -54,6 +55,71 @@ class StoryEntryButton extends StatelessWidget {
       child: Text(label, textAlign: TextAlign.center),
     ),
   );
+}
+
+class StoryEntryTextField extends StatelessWidget {
+  const StoryEntryTextField({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    required this.semanticLabel,
+    this.keyboardType,
+    this.autofillHints,
+    this.inputFormatters,
+    this.textAlign = TextAlign.start,
+    this.letterSpacing,
+    this.onSubmitted,
+  });
+
+  final TextEditingController controller;
+  final String hintText;
+  final String semanticLabel;
+  final TextInputType? keyboardType;
+  final Iterable<String>? autofillHints;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextAlign textAlign;
+  final double? letterSpacing;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    OutlineInputBorder border(Color color, double width) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(28),
+      borderSide: BorderSide(color: color, width: width),
+    );
+
+    return Semantics(
+      label: semanticLabel,
+      textField: true,
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        autofillHints: autofillHints,
+        inputFormatters: inputFormatters,
+        textAlign: textAlign,
+        textInputAction: TextInputAction.done,
+        onSubmitted: onSubmitted,
+        cursorColor: LoratoneEntryColors.blue,
+        style: storyEntryText(size: 18).copyWith(letterSpacing: letterSpacing),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: storyEntryText(
+            size: 18,
+            weight: FontWeight.w500,
+            color: LoratoneEntryColors.inkMuted,
+          ).copyWith(letterSpacing: 0),
+          filled: true,
+          fillColor: LoratoneEntryColors.surface,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: StoriaSpacing.xl,
+            vertical: StoriaSpacing.lg + 2,
+          ),
+          enabledBorder: border(LoratoneEntryColors.line, 1.5),
+          focusedBorder: border(LoratoneEntryColors.blue, 2),
+        ),
+      ),
+    );
+  }
 }
 
 class GrownUpsButton extends StatelessWidget {

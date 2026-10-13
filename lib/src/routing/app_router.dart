@@ -8,8 +8,7 @@ import '../features/auth/presentation/auth_gate.dart';
 import '../features/auth/presentation/intro_screen.dart';
 import '../features/auth/presentation/guest_reader_screen.dart';
 import '../features/auth/presentation/story_picker_screen.dart';
-import '../features/auth/presentation/sign_in_screen.dart';
-import '../features/auth/presentation/sign_up_screen.dart';
+import '../features/auth/presentation/account_screen.dart';
 import '../features/child/data/child_profile_providers.dart';
 import '../features/child/presentation/add_child_screen.dart';
 import '../features/child/presentation/profile_picker_screen.dart';
@@ -72,11 +71,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: JourneyRoutes.signIn,
-        builder: (context, state) => const SignInScreen(),
+        builder: (context, state) => const AccountScreen(),
       ),
       GoRoute(
         path: JourneyRoutes.signUp,
-        builder: (context, state) => const SignUpScreen(),
+        builder: (context, state) => const AccountScreen(),
       ),
       GoRoute(
         path: JourneyRoutes.parentBirthYear,

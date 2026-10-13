@@ -2,14 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show OAuthProvider;
 
-import '../../../../core/theme/storia_colors.dart';
-import '../../../../core/widgets/sketch_button.dart';
+import '../../../../core/theme/loratone_entry_colors.dart';
+import '../../../../core/theme/storia_spacing.dart';
+import 'story_entry_widgets.dart';
 
-/// Apple / Google sign-in block shared by the sign-in and sign-up screens.
+/// Apple / Google buttons above the email field on the account screen.
 ///
-/// Both screens offer the same providers: an account created with Apple is the
-/// same account whether the user arrived via "sign in" or "sign up", and these
-/// paths avoid the emailed-link failure modes entirely.
+/// These paths avoid the emailed-link failure modes entirely, so they lead.
 class AuthSocialButtons extends StatelessWidget {
   const AuthSocialButtons({
     super.key,
@@ -48,56 +47,111 @@ class AuthSocialButtons extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final textTheme = Theme.of(context).textTheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: Divider(color: StoriaColors.ink.withValues(alpha: 0.18)),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                dividerLabel,
-                style: textTheme.bodySmall?.copyWith(
-                  color: StoriaColors.ink.withValues(alpha: 0.58),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Divider(color: StoriaColors.ink.withValues(alpha: 0.18)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (supportsGoogle)
-          SketchButton(
-            label: 'Continue with Google',
-            tone: SketchButtonTone.secondary,
-            leading: const Icon(Icons.g_mobiledata_rounded, size: 24),
-            isLoading: isSocialSubmitting,
-            onPressed: isBusy
-                ? null
-                : () => onProviderSelected(OAuthProvider.google),
-          ),
         if (supportsApple) ...[
-          const SizedBox(height: 12),
-          SketchButton(
+          _SocialButton(
             label: 'Continue with Apple',
-            tone: SketchButtonTone.secondary,
-            leading: const Icon(Icons.apple_rounded, size: 18),
+            leading: const Icon(Icons.apple_rounded, size: 24),
+            dark: true,
             isLoading: isSocialSubmitting,
             onPressed: isBusy
                 ? null
                 : () => onProviderSelected(OAuthProvider.apple),
           ),
+          const SizedBox(height: StoriaSpacing.md),
         ],
+        if (supportsGoogle) ...[
+          _SocialButton(
+            label: 'Continue with Google',
+            leading: Text(
+              'G',
+              style: storyEntryText(size: 18, weight: FontWeight.w900),
+            ),
+            isLoading: isSocialSubmitting,
+            onPressed: isBusy
+                ? null
+                : () => onProviderSelected(OAuthProvider.google),
+          ),
+          const SizedBox(height: StoriaSpacing.md),
+        ],
+        Row(
+          children: [
+            const Expanded(child: Divider(color: LoratoneEntryColors.line)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: StoriaSpacing.md),
+              child: Text(
+                dividerLabel,
+                style: storyEntryText(
+                  size: 15,
+                  color: LoratoneEntryColors.inkMuted,
+                ),
+              ),
+            ),
+            const Expanded(child: Divider(color: LoratoneEntryColors.line)),
+          ],
+        ),
+        const SizedBox(height: StoriaSpacing.md),
       ],
+    );
+  }
+}
+
+class _SocialButton extends StatelessWidget {
+  const _SocialButton({
+    required this.label,
+    required this.leading,
+    required this.isLoading,
+    required this.onPressed,
+    this.dark = false,
+  });
+
+  final String label;
+  final Widget leading;
+  final bool isLoading;
+  final VoidCallback? onPressed;
+  final bool dark;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = dark
+        ? LoratoneEntryColors.surface
+        : LoratoneEntryColors.ink;
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        backgroundColor: dark
+            ? LoratoneEntryColors.ink
+            : LoratoneEntryColors.surface,
+        foregroundColor: foreground,
+        minimumSize: const Size(0, 56),
+        shape: const StadiumBorder(),
+        side: BorderSide(
+          color: dark ? LoratoneEntryColors.ink : LoratoneEntryColors.line,
+          width: 1.5,
+        ),
+        textStyle: storyEntryText(size: 18, weight: FontWeight.w800),
+      ),
+      child: isLoading
+          ? SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: foreground,
+              ),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconTheme.merge(
+                  data: IconThemeData(color: foreground),
+                  child: leading,
+                ),
+                const SizedBox(width: StoriaSpacing.md),
+                Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+              ],
+            ),
     );
   }
 }
