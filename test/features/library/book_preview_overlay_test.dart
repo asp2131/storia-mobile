@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:loratone/src/data/models.dart';
 import 'package:loratone/src/features/library/catalog_copy.dart';
 import 'package:loratone/src/features/library/game/book_preview_overlay.dart';
-import 'package:loratone/src/features/library/ports/library_map_types.dart';
 import 'package:loratone/src/features/narration_studio/application/narration_track_selection.dart';
 import 'package:loratone/src/features/narration_studio/domain/narration_track.dart';
 
@@ -43,20 +42,14 @@ void main() {
   testWidgets('library map round trip keeps the human artwork explanation', (
     tester,
   ) async {
-    final book = LibraryMapBook.fromBook(
-      Book.fromLibraryJson({
-        'id': '1',
-        'title': 'A library book',
-        'author': 'A creator',
-        'artwork_provenance': 'human_created',
-        'pages': [
-          {'count': 8},
-        ],
-      }),
-      nodeIndex: 0,
-      worldX: 100,
-      worldY: 300,
-    ).toBook();
+    final book = Book.fromLibraryJson({
+      'id': '1',
+      'title': 'A library book',
+      'author': 'A creator',
+      'pages': [
+        {'count': 8},
+      ],
+    });
 
     await _pumpPreview(tester, book);
     final badge = find.widgetWithText(

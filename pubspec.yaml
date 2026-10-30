@@ -107,6 +107,7 @@ flutter:
     - assets/gifs/
     - assets/svgs/
     - assets/images/
+    - assets/images/library/
     - assets/tiles/
     - assets/aac/
     - assets/aac/soundfonts/
