@@ -20,8 +20,12 @@ class ProfilePickerScreen extends ConsumerWidget {
     final activeId = ref.watch(activeChildProfileIdProvider);
     final selectionState = ref.watch(activeChildProfileIdStateProvider);
 
-    // A parent with no readers yet goes straight into onboarding.
-    if (profiles.valueOrNull?.isEmpty ?? false) {
+    // A parent with no readers yet goes straight into onboarding. Require a
+    // settled AsyncData: right after sign-in this provider reloads while still
+    // carrying the signed-out `[]` as its previous value, and `valueOrNull`
+    // would flash onboarding before the real profiles arrive.
+    if (profiles case AsyncData(:final value, isLoading: false)
+        when value.isEmpty) {
       return const AddChildScreen(isFirstReader: true);
     }
 

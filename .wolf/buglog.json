@@ -3819,6 +3819,23 @@
         "flutter",
         "widget-test"
       ]
+    },
+    {
+      "id": "bug-234",
+      "timestamp": "2026-11-03",
+      "error_message": "After successful sign-in, parent sees onboarding (AddChildScreen first-reader flow) briefly, then the Choose Reader profile picker",
+      "root_cause": "ProfilePickerScreen used profiles.valueOrNull?.isEmpty to route first-run parents into onboarding. childProfilesProvider watches authViewStateProvider and returns [] while signed out; on sign-in it reloads as AsyncLoading carrying the previous [] value, so valueOrNull was [] and onboarding rendered until real profiles arrived.",
+      "fix": "profile_picker_screen.dart: only show onboarding on settled data: `profiles case AsyncData(:final value, isLoading: false) when value.isEmpty`. Regression test test/features/child/profile_picker_stale_empty_test.dart.",
+      "file": "lib/src/features/child/presentation/profile_picker_screen.dart",
+      "tags": [
+        "riverpod",
+        "asyncvalue",
+        "valueOrNull",
+        "stale-state",
+        "onboarding",
+        "auth",
+        "routing"
+      ]
     }
   ]
 }
