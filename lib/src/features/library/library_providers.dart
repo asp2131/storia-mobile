@@ -20,3 +20,7 @@ final libraryShelfProvider =
 final libraryClockProvider = Provider<DateTime Function()>(
   (ref) => DateTime.now,
 );
+
+/// Announced launch date for the comics banner; null until one is set.
+// ponytail: hardcoded; move to remote config if launch dates change often.
+final comicsLaunchProvider = Provider<DateTime?>((ref) => null);

@@ -3836,6 +3836,24 @@
         "auth",
         "routing"
       ]
+    },
+    {
+      "id": "bug-235",
+      "timestamp": "2026-11-11T10:26:25",
+      "error_message": "Library comics banner showed 'Out now / Comics are here' from Nov 8 2026 while Hat Trickster was still in production; 'Learn more' opened https://loratone.com/hat-trickster which returned 404",
+      "file": "lib/src/features/library/library_screen.dart",
+      "root_cause": "Launch date hardcoded as static DateTime(2026, 11, 8) in _ComicsBannerState; no way to postpone or unset without a code change, and the linked web page was never built",
+      "fix": "Launch date now read from comicsLaunchProvider (Provider<DateTime?>, default null). Null shows 'In the works' with no countdown; a date restores 'Coming <Mon D>' + countdown. Storia next.config.ts redirects /hat-trickster to /#spotlight",
+      "tags": [
+        "library",
+        "comics-banner",
+        "countdown",
+        "hardcoded-date",
+        "404"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-11-11T10:26:25"
     }
   ]
 }
