@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -44,6 +46,41 @@ final analyticsRepositoryProvider = Provider<AnalyticsRepository>((ref) {
     currentAccessToken: () => supabase.auth.currentSession?.accessToken,
     currentChildProfileId: () => ref.read(currentChildProfileIdProvider),
   );
+});
+
+/// Fires funnel events the backend cannot infer from reader activity:
+/// `app_opened` once per launch with a restored session, and
+/// `signup_completed` / `signin_completed` on each sign-in. Watched from the
+/// app root so it lives for the whole process.
+final authAnalyticsListenerProvider = Provider<void>((ref) {
+  final supabase = ref.watch(supabaseClientProvider);
+  final analytics = ref.watch(analyticsRepositoryProvider);
+
+  if (supabase.auth.currentSession != null) {
+    unawaited(analytics.track(AnalyticsEventType.appOpened));
+  }
+
+  final subscription = supabase.auth.onAuthStateChange.listen((data) {
+    if (data.event != AuthChangeEvent.signedIn) return;
+    final user = data.session?.user;
+    if (user == null) return;
+    // ponytail: "new user" = account created within the last two minutes.
+    // Good enough to split sign-ups from returning sign-ins without a flag.
+    final createdAt = DateTime.tryParse(user.createdAt);
+    final isNew =
+        createdAt != null &&
+        DateTime.now().toUtc().difference(createdAt.toUtc()) <
+            const Duration(minutes: 2);
+    unawaited(
+      analytics.track(
+        isNew
+            ? AnalyticsEventType.signupCompleted
+            : AnalyticsEventType.signinCompleted,
+        metadata: {'provider': user.appMetadata['provider']?.toString()},
+      ),
+    );
+  });
+  ref.onDispose(subscription.cancel);
 });
 
 final bookRepositoryProvider = Provider<BookRepository>((ref) {
