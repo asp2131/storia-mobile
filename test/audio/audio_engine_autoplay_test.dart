@@ -17,10 +17,6 @@ class _RecordingPlayer implements RawPlayer {
   @override
   Future<void> setSource(String url) async => events.add('source:$url');
   @override
-  Future<void> setAsset(String assetPath) async =>
-      events.add('asset:$assetPath');
-
-  @override
   Future<void> play() async {
     playing = true;
     events.add('play');
@@ -89,7 +85,7 @@ void main() {
   late _RecordingPlayer narration;
   late _RecordingPlayer soundscape;
 
-  setUp(() {
+  void createEngine({bool autoplayPages = true}) {
     narration = _RecordingPlayer('narration');
     soundscape = _RecordingPlayer('soundscape');
     engine = AudioEngine(
@@ -97,8 +93,16 @@ void main() {
       narrationPlayer: narration,
       soundscapePlayer: soundscape,
       pronunciationPlayer: _RecordingPlayer('pron'),
+      autoplayPages: autoplayPages,
     );
-  });
+  }
+
+  setUp(createEngine);
+
+  Future<void> useManualPlayback() async {
+    await engine.dispose();
+    createEngine(autoplayPages: false);
+  }
 
   tearDown(() async {
     await engine.dispose();
@@ -125,81 +129,126 @@ void main() {
     },
   );
 
-  test('loadPage with autoplay:false loads sources but never plays', () async {
-    await engine.loadPage(
-      pageWithNarration(
-        'https://cdn.test/n.mp3',
-        soundscapeUrl: 'https://cdn.test/s.mp3',
-      ),
-      autoplay: false,
-    );
-
-    expect(narration.events, contains('source:https://cdn.test/n.mp3'));
-    expect(soundscape.events, contains('source:https://cdn.test/s.mp3'));
-    expect(narration.events, isNot(contains('play')));
-    expect(soundscape.events, isNot(contains('play')));
-    expect(narration.playing, isFalse);
-    expect(soundscape.playing, isFalse);
-  });
-
   test(
-    'a same-soundscape reload with autoplay:false does not resume sound',
+    'manual playback loads sources without playing before consent',
     () async {
+      await useManualPlayback();
       await engine.loadPage(
         pageWithNarration(
-          'https://cdn.test/n1.mp3',
+          'https://cdn.test/n.mp3',
           soundscapeUrl: 'https://cdn.test/s.mp3',
         ),
-      );
-      await engine.loadPage(
-        pageWithNarration(
-          'https://cdn.test/n2.mp3',
-          soundscapeUrl: 'https://cdn.test/s.mp3',
-        ),
-        autoplay: false,
       );
 
-      // First load played both; the silent reload must stop narration and not
-      // re-add the already-loaded soundscape to the play list.
-      expect(narration.events.where((e) => e == 'play').length, 1);
-      expect(soundscape.events.where((e) => e == 'play').length, 1);
+      expect(narration.events, contains('source:https://cdn.test/n.mp3'));
+      expect(soundscape.events, contains('source:https://cdn.test/s.mp3'));
+      expect(narration.events, isNot(contains('play')));
+      expect(soundscape.events, isNot(contains('play')));
       expect(narration.playing, isFalse);
       expect(soundscape.playing, isFalse);
     },
   );
 
-  test('toggleNarration resumes a loaded silent channel', () async {
+  test('a same-soundscape reload stays silent before consent', () async {
+    await useManualPlayback();
     await engine.loadPage(
-      pageWithNarration('https://cdn.test/n.mp3'),
-      autoplay: false,
+      pageWithNarration(
+        'https://cdn.test/n1.mp3',
+        soundscapeUrl: 'https://cdn.test/s.mp3',
+      ),
     );
+    await engine.loadPage(
+      pageWithNarration(
+        'https://cdn.test/n2.mp3',
+        soundscapeUrl: 'https://cdn.test/s.mp3',
+      ),
+    );
+
+    expect(narration.events.where((e) => e == 'play'), isEmpty);
+    expect(soundscape.events.where((e) => e == 'play'), isEmpty);
+    expect(soundscape.events.where((e) => e.startsWith('source:')), [
+      'source:https://cdn.test/s.mp3',
+    ]);
+    expect(narration.playing, isFalse);
+    expect(soundscape.playing, isFalse);
+  });
+
+  test('toggleNarration resumes a loaded silent channel', () async {
+    await useManualPlayback();
+    await engine.loadPage(pageWithNarration('https://cdn.test/n.mp3'));
     await engine.toggleNarration();
 
     expect(narration.playing, isTrue);
   });
 
-  test(
-    'asset:/// references load through the asset loader, not setUrl',
-    () async {
-      await engine.loadPage(
-        pageWithNarration(
-          'asset:///assets/onboarding/sample/audio/page-1.mp3',
-          soundscapeUrl: 'asset:///assets/onboarding/sample/audio/harbor.mp3',
-        ),
-        autoplay: false,
-      );
+  test('narration consent enables playback on later pages', () async {
+    await useManualPlayback();
+    await engine.loadPage(
+      pageWithNarration(
+        'https://cdn.test/n1.mp3',
+        soundscapeUrl: 'https://cdn.test/s.mp3',
+      ),
+    );
+    await engine.toggleNarration();
+    await engine.loadPage(
+      pageWithNarration(
+        'https://cdn.test/n2.mp3',
+        soundscapeUrl: 'https://cdn.test/s.mp3',
+      ),
+    );
 
-      expect(
-        narration.events,
-        contains('asset:assets/onboarding/sample/audio/page-1.mp3'),
-      );
-      expect(
-        soundscape.events,
-        contains('asset:assets/onboarding/sample/audio/harbor.mp3'),
-      );
-      expect(narration.events.where((e) => e.startsWith('source:')), isEmpty);
-    },
-  );
+    expect(narration.playing, isTrue);
+    expect(soundscape.playing, isTrue);
+    expect(narration.events.where((e) => e == 'play').length, 2);
+    expect(soundscape.events.where((e) => e == 'play').length, 1);
+    expect(soundscape.events.where((e) => e.startsWith('source:')), [
+      'source:https://cdn.test/s.mp3',
+    ]);
+  });
+
+  test('soundscape consent enables narration on later pages', () async {
+    await useManualPlayback();
+    await engine.loadPage(
+      pageWithNarration(
+        'https://cdn.test/n1.mp3',
+        soundscapeUrl: 'https://cdn.test/s.mp3',
+      ),
+    );
+    await engine.toggleSoundscape();
+    expect(narration.playing, isFalse);
+    expect(soundscape.playing, isTrue);
+
+    await engine.loadPage(
+      pageWithNarration(
+        'https://cdn.test/n2.mp3',
+        soundscapeUrl: 'https://cdn.test/s.mp3',
+      ),
+    );
+    expect(narration.playing, isTrue);
+    expect(soundscape.playing, isTrue);
+    expect(soundscape.events.where((e) => e == 'play').length, 1);
+  });
+
+  test('stopAll resets consent before the next page load', () async {
+    await useManualPlayback();
+    final page = pageWithNarration(
+      'https://cdn.test/n.mp3',
+      soundscapeUrl: 'https://cdn.test/s.mp3',
+    );
+    await engine.loadPage(page);
+    await engine.toggleNarration();
+    await engine.toggleSoundscape();
+    expect(narration.playing, isTrue);
+    expect(soundscape.playing, isTrue);
+
+    await engine.stopAll();
+    await engine.loadPage(page);
+
+    expect(narration.playing, isFalse);
+    expect(soundscape.playing, isFalse);
+    expect(narration.events.where((e) => e == 'play').length, 1);
+    expect(soundscape.events.where((e) => e == 'play').length, 1);
+  });
 
   test('end during initialization cannot start delayed playback', () async {
     final pending = engine.loadPage(

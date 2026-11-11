@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:loratone/src/features/auth/data/auth_providers.dart';
 import 'package:loratone/src/features/auth/domain/auth_state.dart';
 import 'package:loratone/src/features/child/data/child_profile_providers.dart';
 import 'package:loratone/src/features/child/domain/child_profile.dart';
 import 'package:loratone/src/features/child/presentation/profile_picker_screen.dart';
 import 'package:loratone/src/features/onboarding/data/app_review_flow_providers.dart';
-import 'package:loratone/src/features/onboarding/data/entry_flow_provider.dart';
-import 'package:loratone/src/features/onboarding/domain/entry_flow_state.dart';
-import 'package:loratone/src/routing/app_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:loratone/src/routing/journey/journey_policy.dart';
+import 'package:loratone/src/routing/journey/journey_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Session, User;
 
 class _Auth extends ChangeNotifier implements AuthStateNotifier {
@@ -35,24 +35,15 @@ class _Auth extends ChangeNotifier implements AuthStateNotifier {
 void main() {
   for (final changeReader in [false, true]) {
     testWidgets(
-      'pending save requires explicit ${changeReader ? 'new reader selection' : 'confirmation of preselected reader'}',
+      'selecting ${changeReader ? 'a different reader' : 'the current reader'} persists the choice and continues',
       (tester) async {
         SharedPreferences.setMockInitialValues({
           'activeChildProfileId.parent': 'child-a',
         });
-        final entry = EntryFlowNotifier();
-        await entry.ready;
-        entry.beginParentEntry(EntryAuthIntent.signIn, saveSample: true);
-        entry.authorizeParentAfterPassedGate();
-        entry.verifyAdultYear(DateTime.now().year - 30);
         final review = AppReviewFlowNotifier();
         await review.ready;
         final container = ProviderContainer(
           overrides: [
-            entryFlowNotifierProvider.overrideWith((ref) {
-              ref.onDispose(entry.dispose);
-              return entry;
-            }),
             authStateNotifierProvider.overrideWith((ref) => _Auth()),
             appReviewFlowNotifierProvider.overrideWith((ref) => review),
             childProfilesProvider.overrideWith(
@@ -79,7 +70,25 @@ void main() {
         await container.read(childProfilesProvider.future);
         // Keep the real account-scoped selection preference implementation.
         await container.read(activeChildProfileIdStateProvider.notifier).load();
-        final router = container.read(appRouterProvider);
+        final router = GoRouter(
+          initialLocation: JourneyRoutes.profilePicker,
+          redirect: (context, state) => JourneyPolicy.redirect(
+            container.read(journeySnapshotProvider),
+            state.matchedLocation,
+          ),
+          routes: [
+            GoRoute(
+              path: JourneyRoutes.profilePicker,
+              builder: (context, state) => const ProfilePickerScreen(),
+            ),
+            GoRoute(
+              path: JourneyRoutes.library,
+              builder: (context, state) =>
+                  const Scaffold(body: Text('Library destination')),
+            ),
+          ],
+        );
+        addTearDown(router.dispose);
         await tester.pumpWidget(
           UncontrolledProviderScope(
             container: container,
@@ -92,10 +101,7 @@ void main() {
           router.routerDelegate.currentConfiguration.uri.path,
           '/profiles/select',
         );
-        expect(entry.state.pendingSampleSave, isNotNull);
-        final action = find.text(
-          changeReader ? 'Reader B' : 'Continue with Reader A',
-        );
+        final action = find.text(changeReader ? 'Reader B' : 'Reader A');
         await tester.ensureVisible(action);
         await tester.tap(action);
         await tester.pumpAndSettle();
@@ -103,14 +109,13 @@ void main() {
           container.read(activeChildProfileIdProvider),
           changeReader ? 'child-b' : 'child-a',
         );
+        expect(router.routerDelegate.currentConfiguration.uri.path, '/library');
+        final preferences = await SharedPreferences.getInstance();
         expect(
-          router.routerDelegate.currentConfiguration.uri.path,
-          '/save-story',
+          preferences.getString('activeChildProfileId.parent'),
+          changeReader ? 'child-b' : 'child-a',
         );
-        // Choosing the recipient is not itself the claim confirmation.
-        expect(entry.state.pendingSampleSave, isNotNull);
         await tester.pumpWidget(const SizedBox());
-        container.dispose();
       },
     );
   }

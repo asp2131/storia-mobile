@@ -91,7 +91,6 @@ final childProfileRouterRefreshProvider =
         childProfilesProvider,
         (_, _) => notifier.refresh(),
       );
-      ref.onDispose(notifier.dispose);
       return notifier;
     });
 
