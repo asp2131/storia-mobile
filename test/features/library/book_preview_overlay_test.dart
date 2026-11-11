@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loratone/src/data/models.dart';
-import 'package:loratone/src/features/library/catalog_copy.dart';
 import 'package:loratone/src/features/library/game/book_preview_overlay.dart';
 import 'package:loratone/src/features/narration_studio/application/narration_track_selection.dart';
 import 'package:loratone/src/features/narration_studio/domain/narration_track.dart';
@@ -16,9 +15,9 @@ Future<void> _pumpPreview(
   await tester.pumpWidget(
     MaterialApp(
       builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: TextScaler.linear(textScale),
-        ),
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(textScale)),
         child: child!,
       ),
       home: Scaffold(
@@ -39,7 +38,7 @@ Future<void> _pumpPreview(
 }
 
 void main() {
-  testWidgets('library map round trip keeps the human artwork explanation', (
+  testWidgets('library map preview identifies the book and opens reading', (
     tester,
   ) async {
     final book = Book.fromLibraryJson({
@@ -51,45 +50,17 @@ void main() {
       ],
     });
 
-    await _pumpPreview(tester, book);
-    final badge = find.widgetWithText(
-      TextButton,
-      CatalogCopy.humanCreatedArtwork,
-    );
-    expect(badge, findsOneWidget);
-    await tester.tap(badge);
-    await tester.pumpAndSettle();
-    expect(find.text(CatalogCopy.humanCreatedArtworkExplanation), findsOneWidget);
-    await tester.tap(find.byType(CloseButton));
-    await tester.pumpAndSettle();
-    expect(find.text(CatalogCopy.humanCreatedArtworkExplanation), findsNothing);
-    expect(badge, findsOneWidget);
+    var didRead = false;
+    await _pumpPreview(tester, book, onRead: () => didRead = true);
+    expect(find.text('A library book'), findsOneWidget);
+    expect(find.text('A creator'), findsOneWidget);
+    expect(find.text('8 pages'), findsOneWidget);
+    expect(didRead, isFalse);
+    await tester.tap(find.byIcon(Icons.play_arrow_rounded));
+    expect(didRead, isTrue);
   });
 
-  testWidgets('non-human and unrecognized metadata never make a human claim', (
-    tester,
-  ) async {
-    final rows = <Map<String, dynamic>>[
-      {},
-      {'artwork_provenance': null},
-      {'artwork_provenance': 'unspecified'},
-      {'artwork_provenance': 'ai_assisted_or_generated'},
-      {'artwork_provenance': 'future_classification'},
-      {'artwork_provenance': true},
-      {'artwork_provenance': ' human_created '},
-    ];
-    for (final row in rows) {
-      for (final parse in [Book.fromLibraryJson, Book.fromJson]) {
-        await _pumpPreview(tester, parse({'id': '1', 'title': 'Book', ...row}));
-        expect(
-          find.widgetWithText(TextButton, CatalogCopy.humanCreatedArtwork),
-          findsNothing,
-        );
-      }
-    }
-  });
-
-  testWidgets('parent narration keeps artwork info reachable on a small viewport', (
+  testWidgets('parent narration remains readable in a narrow scaled preview', (
     tester,
   ) async {
     tester.view.devicePixelRatio = 1;
@@ -100,7 +71,6 @@ void main() {
       'id': '1',
       'title': 'A long title for a narrow library preview',
       'author': 'A creator with a long name',
-      'artwork_provenance': 'human_created',
       'pages': [
         {'id': '1', 'page_number': 1, 'text_content': 'Hello'},
       ],
@@ -129,25 +99,14 @@ void main() {
       tester,
       narratedBook,
       textScale: 2,
-      position: const Offset(270, 310),
+      // The library positions the card; keep it inside this test viewport.
+      position: const Offset(140, 16),
       onRead: () => didRead = true,
     );
     expect(tester.takeException(), isNull);
-    final badge = find.widgetWithText(
-      TextButton,
-      CatalogCopy.humanCreatedArtwork,
-    );
-    await tester.ensureVisible(badge);
-    await tester.pumpAndSettle();
-    await tester.tap(badge);
-    await tester.pumpAndSettle();
-    expect(find.text(CatalogCopy.humanCreatedArtworkExplanation), findsOneWidget);
-    expect(tester.takeException(), isNull);
-    await tester.tap(find.byType(CloseButton));
-    await tester.pumpAndSettle();
     final readButton = find.byIcon(Icons.play_arrow_rounded);
-    await tester.ensureVisible(readButton);
-    await tester.pumpAndSettle();
+    expect(readButton.hitTestable(), findsOneWidget);
+    expect(didRead, isFalse);
     await tester.tap(readButton);
     expect(didRead, isTrue);
     expect(tester.takeException(), isNull);

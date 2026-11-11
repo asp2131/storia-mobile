@@ -155,26 +155,28 @@ class BookPreviewOverlay extends StatelessWidget {
 
               // Page count pill + Read button row
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Page count badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _accentColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '${book.pageCount} pages',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: StoriaColors.ink,
-                        fontSize: 10,
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _accentColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${book.pageCount} pages',
+                        style: textTheme.labelSmall?.copyWith(
+                          color: StoriaColors.ink,
+                          fontSize: 10,
+                        ),
                       ),
                     ),
                   ),
-                  const Spacer(),
 
                   // Play button
                   GestureDetector(
