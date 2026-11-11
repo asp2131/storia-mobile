@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:loratone/src/core/widgets/parental_gate.dart';
 import 'package:loratone/src/features/auth/domain/auth_state.dart';
 import 'package:loratone/src/features/child/data/child_profile_providers.dart';
 import 'package:loratone/src/features/onboarding/data/app_review_flow_providers.dart';
 import 'package:loratone/src/features/onboarding/presentation/review_onboarding_screen.dart';
+import 'package:loratone/src/features/onboarding/presentation/parent_birth_year_screen.dart';
 import 'package:loratone/src/routing/app_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:loratone/src/features/auth/data/auth_providers.dart';
@@ -53,25 +55,15 @@ class _SignedOut extends ChangeNotifier implements AuthStateNotifier {
 
 void main() {
   testWidgets(
-    'review signup copies the active year without another gate or backend auth',
+    'review signup requires its gate and persists the verified year without backend auth',
     (tester) async {
       SharedPreferences.setMockInitialValues({
         'app_review_parent_birth_year': 1970,
       });
-      final entry = EntryFlowNotifier();
-      await entry.ready;
-      entry.beginParentEntry(EntryAuthIntent.signUp);
-      entry.authorizeParentAfterPassedGate();
-      final verifiedYear = DateTime.now().year - 30;
-      entry.verifyAdultYear(verifiedYear);
       final review = AppReviewFlowNotifier();
       await review.ready;
       final container = ProviderContainer(
         overrides: [
-          entryFlowNotifierProvider.overrideWith((ref) {
-            ref.onDispose(entry.dispose);
-            return entry;
-          }),
           appReviewFlowNotifierProvider.overrideWith((ref) => review),
           authStateNotifierProvider.overrideWith((ref) => _SignedOut()),
           authRepositoryProvider.overrideWith((ref) {
@@ -83,6 +75,8 @@ void main() {
       addTearDown(container.dispose);
       await container.read(childProfilesProvider.future);
       final router = container.read(appRouterProvider);
+      addTearDown(router.dispose);
+      router.go('/sign-up');
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -91,21 +85,28 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(AccountScreen), findsOneWidget);
-      final visited = <String>[];
-      router.routerDelegate.addListener(() {
-        visited.add(router.routerDelegate.currentConfiguration.uri.path);
-      });
       await tester.enterText(find.byType(TextField), appReviewBypassEmail);
       final submit = find.text('Email me a code');
       await tester.ensureVisible(submit);
       await tester.tap(submit);
       await tester.pumpAndSettle();
+      expect(find.byType(ParentBirthYearScreen), findsOneWidget);
+      expect(review.state.hasParentBirthYear, false);
+      final gate = tester.widget<GateChallengeCard>(
+        find.byType(GateChallengeCard),
+      );
+      final challenge = gate.controller.value as GateChallenging;
+      gate.controller.submitAnswer(challenge.answer.toString());
+      await tester.pumpAndSettle();
+      final verifiedYear = DateTime.now().year - 30;
+      await tester.enterText(find.byType(TextField), '$verifiedYear');
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
       expect(find.byType(ReviewOnboardingScreen), findsOneWidget);
       expect(review.state.parentBirthYear, verifiedYear);
-      expect(visited, isNot(contains('/parent-birth-year')));
-      expect(find.byType(ChoiceChip), findsNWidgets(3));
+      final preferences = await SharedPreferences.getInstance();
+      expect(preferences.getInt('app_review_parent_birth_year'), verifiedYear);
       await tester.pumpWidget(const SizedBox());
-      container.dispose();
     },
   );
 

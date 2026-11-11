@@ -39,8 +39,10 @@ Future<List<String>> _pump(
   ReadingCheckpoint? continuation,
   List<ReadingCheckpoint> shelf = const [],
   DateTime? now,
+  bool dated = true,
 }) async {
   final clock = now ?? DateTime(2026, 11, 5, 21, 30);
+  final launch = dated ? DateTime(2026, 11, 8) : null;
   tester.view.physicalSize = const Size(390, 1600);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -69,6 +71,7 @@ Future<List<String>> _pump(
         readingContinuationProvider.overrideWith((ref) async => continuation),
         libraryShelfProvider.overrideWith((ref) async => shelf),
         libraryClockProvider.overrideWithValue(() => clock),
+        comicsLaunchProvider.overrideWithValue(launch),
         activeChildProfileProvider.overrideWithValue(
           const AsyncData(
             ChildProfile(
@@ -170,6 +173,17 @@ void main() {
 
     expect(find.text('Out now'), findsOneWidget);
     expect(find.text('Comics are here'), findsOneWidget);
+    expect(find.textContaining('to go'), findsNothing);
+    expect(find.text('Learn more'), findsOneWidget);
+  });
+
+  testWidgets('comics banner skips the countdown without a date', (
+    tester,
+  ) async {
+    await _pump(tester, dated: false);
+
+    expect(find.text('In the works'), findsOneWidget);
+    expect(find.text('Comics are coming'), findsOneWidget);
     expect(find.textContaining('to go'), findsNothing);
     expect(find.text('Learn more'), findsOneWidget);
   });

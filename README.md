@@ -65,6 +65,14 @@ The app entitlement lives in [ios/Runner/Runner.entitlements](/Users/akinpound/D
 
 ## iOS App Store Build
 
+One command — bumps `pubspec.yaml`, runs `bin/verify.sh`, builds the signed IPA into `build/ios/ipa` using `ios/ExportOptions.plist`:
+
+```bash
+./bin/release-ios.sh            # patch bump; also: minor | major | build (same version, new build number)
+```
+
+The manual steps below are what the script replaces.
+
 Archive with Flutter:
 
 ```bash

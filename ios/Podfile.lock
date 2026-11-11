@@ -14,6 +14,8 @@ PODS:
   - flutter_secure_storage_darwin (10.0.0):
     - Flutter
     - FlutterMacOS
+  - flutter_soloud (0.0.1):
+    - Flutter
   - flutter_tts (0.0.1):
     - Flutter
   - flutter_web_auth_2 (5.0.0):
@@ -23,7 +25,11 @@ PODS:
     - FlutterMacOS
   - package_info_plus (0.4.5):
     - Flutter
+  - record_ios (2.0.0):
+    - Flutter
   - rive_native (0.0.1):
+    - Flutter
+  - sensors_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
@@ -50,11 +56,14 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_midi_pro (from `.symlinks/plugins/flutter_midi_pro/ios`)
   - flutter_secure_storage_darwin (from `.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
+  - flutter_soloud (from `.symlinks/plugins/flutter_soloud/ios`)
   - flutter_tts (from `.symlinks/plugins/flutter_tts/ios`)
   - flutter_web_auth_2 (from `.symlinks/plugins/flutter_web_auth_2/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+  - record_ios (from `.symlinks/plugins/record_ios/ios`)
   - rive_native (from `.symlinks/plugins/rive_native/ios`)
+  - sensors_plus (from `.symlinks/plugins/sensors_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/darwin`)
   - speech_to_text (from `.symlinks/plugins/speech_to_text/darwin`)
@@ -80,6 +89,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_midi_pro/ios"
   flutter_secure_storage_darwin:
     :path: ".symlinks/plugins/flutter_secure_storage_darwin/darwin"
+  flutter_soloud:
+    :path: ".symlinks/plugins/flutter_soloud/ios"
   flutter_tts:
     :path: ".symlinks/plugins/flutter_tts/ios"
   flutter_web_auth_2:
@@ -88,8 +99,12 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/just_audio/darwin"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
+  record_ios:
+    :path: ".symlinks/plugins/record_ios/ios"
   rive_native:
     :path: ".symlinks/plugins/rive_native/ios"
+  sensors_plus:
+    :path: ".symlinks/plugins/sensors_plus/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sign_in_with_apple:
@@ -109,14 +124,17 @@ SPEC CHECKSUMS:
   connectivity_plus: 2a701ffec2c0ae28a48cf7540e279787e77c447d
   CwlCatchException: 7acc161b299a6de7f0a46a6ed741eae2c8b4d75a
   CwlCatchExceptionSupport: 54ccab8d8c78907b57f99717fb19d4cc3bce02dc
-  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
   flutter_midi_pro: 3ff9c5fa4ee56d3c61e37cabffcac6f5dcd5edfa
   flutter_secure_storage_darwin: 557817588b80e60213cbecb573c45c76b788018d
+  flutter_soloud: 78b2184802f2183a6799c6c6fcbc8e99edf4cf9a
   flutter_tts: 91ad1884033cd95ef6e9338754adad54f01f090f
   flutter_web_auth_2: 4091f1645696258ddc57849f62bef2a848fc313c
   just_audio: a42c63806f16995daf5b219ae1d679deb76e6a79
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
+  record_ios: 41f9412c3311401689babe6d7ba69362f10b8325
   rive_native: 53eb55fe169ac818c55c661c13a1e7482d34280a
+  sensors_plus: c218c5335a0c9169ad70dfcb51b96cc395b3406a
   shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
   sign_in_with_apple: fb98447f3dfb81e2926945ea43a8c9c7205eaca9
   speech_to_text: 87bf9298952e8d9073be1b6aade6d5758db5170c
@@ -124,6 +142,6 @@ SPEC CHECKSUMS:
   url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa
   wakelock_plus: 76957ab028e12bfa4e66813c99e46637f367fc7e
 
-PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+PODFILE CHECKSUM: 78059dcc92309c6d8fef87b603cd8fadc7e8af02
 
 COCOAPODS: 1.16.2

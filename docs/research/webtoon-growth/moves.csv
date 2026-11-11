@@ -1,0 +1,22 @@
+date,channel,move,evidence,traffic_lift_pct,source,pulled
+2013,product,Page Profit Share: creators get a cut of ad revenue (Korea),SEEN,,https://en.wikipedia.org/wiki/Webtoon_(platform),2026-11-05
+2014-07,product,"LINE Webtoon launches worldwide, open uploads for international artists",SEEN,,https://en.wikipedia.org/wiki/Webtoon_(platform),2026-11-05
+2015-02,contest,"First English Challenge League: 19,000+ entrants (won by Space Boy)",SEEN,,https://en.wikipedia.org/wiki/Webtoon_(platform),2026-11-05
+2015-06,contest,"Sci-fi comics contest, $30K grand prize, 800+ entrants",SEEN,,https://en.wikipedia.org/wiki/Webtoon_(platform),2026-11-05
+2016-09,creator,Patreon button added to Discover (now Canvas) series,SEEN,,https://en.wikipedia.org/wiki/Webtoon_(platform),2026-11-05
+2018-03,creator,"Lore Olympus moves from Tumblr to Canvas → Original; 1.1B+ views by 2022, NYT #1",SEEN,,https://en.wikipedia.org/wiki/Lore_Olympus,2026-11-05
+2019-07,ads,"Multi-million US brand campaign: TV, Hulu/YouTube, Times Square, cinema pre-rolls, July–Dec",SEEN,,https://icv2.com/articles/news/view/43985/webtoon-comics-platform-running-multi-million-dollar-ad-campaign-tv-web-theaters-outdoor,2026-11-05
+2019-07,creator,Discover/Featured renamed Canvas/Originals; 90–100 Originals were recruited from Canvas,SEEN,,https://icv2.com/articles/news/view/43985/webtoon-comics-platform-running-multi-million-dollar-ad-campaign-tv-web-theaters-outdoor,2026-11-05
+2021-01,IP,Naver buys Wattpad; Jun 2021 Wattpad WEBTOON Studios formed ($100M),SEEN,-10.5,https://company.wattpad.com/blog/wattpad-and-webtoon-merge-studio-divisions-to-create-wattpad-webtoon-studios-a-fully-funded-fan-driven-global-entertainment-powerhouse,2026-11-05
+2021-10,search,"Ranked keywords jump 90.6K → 153.9K (Jul→Oct 2021, +70%): more series pages indexed",SEEN,20.7,traffic.csv,2026-11-05
+2021-11,IP,DC + Archie 'Supercasting': Batman: Wayne Family Adventures 715K subscribers,SEEN,20.5,https://icv2.com/articles/columns/view/49929/webtoons-north-american-ceo-ken-kim-platforms-staggering-growth-reach-connections-u-s-comics-market,2026-11-05
+2021-11,IP,"Netflix adaptations (Hellbound, Sweet Home) top charts in 80+ countries",SEEN,20.5,https://icv2.com/articles/columns/view/49929/webtoons-north-american-ceo-ken-kim-platforms-staggering-growth-reach-connections-u-s-comics-market,2026-11-05
+2022-01,IP,Netflix 'All of Us Are Dead' adaptation,SEEN,41.5,https://en.wikipedia.org/wiki/Webtoon_(platform),2026-11-05
+2022-09,contest,Call to Action contest: $1M prize pool,SEEN,19.2,https://www.cbr.com/webtoon-call-action-comic-creators-contest/,2026-11-05
+2024-05,search,US organic traffic peaks: ~1.38M est. visits/month,SEEN,-2.3,traffic.csv,2026-11-05
+2024-06,corporate,WEBTOON Entertainment IPO on Nasdaq (WBTN),SEEN,-14.9,https://en.wikipedia.org/wiki/Webtoon_(platform),2026-11-05
+2025-03,contest,"Webcomic Legends contest: $150K grand prize, winners join Originals",SEEN,-9.5,https://www.webtoons.com/en/notice/detail?noticeNo=3320,2026-11-05
+2025-05,monetization,Daily Pass removed; those episodes now need coins,SEEN,11.8,https://kcomicsbeat.com/2025/05/29/no-youre-not-losing-it-webtoon-got-rid-of-daily-pass/,2026-11-05
+2026-01,monetization,Reward Ads: creators can lock up to 6 episodes behind an ad (was 3),SEEN,8.9,https://m.webtoons.com/en/notice/detail?noticeNo=3567,2026-11-05
+2026-10,social,FOG LAND NYCC push: 13 of the top 22 TikToks (top post 7.4M plays),SEEN,,tiktok/posts.csv,2026-11-05
+2026-10,ads,"187 active Meta ads, each selling one series (Dungeon Crawler Carl, FOG LAND…)",SEEN,,https://www.facebook.com/ads/library/?active_status=active&view_all_page_id=249767048563129,2026-11-05

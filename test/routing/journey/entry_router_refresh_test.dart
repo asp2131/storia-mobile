@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,8 +7,6 @@ import 'package:loratone/src/features/auth/domain/auth_state.dart';
 import 'package:loratone/src/features/child/data/child_profile_providers.dart';
 import 'package:loratone/src/features/child/domain/child_profile.dart';
 import 'package:loratone/src/features/onboarding/data/app_review_flow_providers.dart';
-import 'package:loratone/src/features/onboarding/data/entry_flow_provider.dart';
-import 'package:loratone/src/features/onboarding/domain/entry_flow_state.dart';
 import 'package:loratone/src/routing/app_router.dart';
 import 'package:loratone/src/routing/journey/journey_policy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,24 +94,17 @@ void main() {
       ProviderContainer container,
       GoRouter router,
       _Auth auth,
-      EntryFlowNotifier entry,
       _Selection selection,
       Future<void> Function() close,
     })
   >
-  mount(
-    WidgetTester tester, {
-    String? selected,
-    Future<void>? hydration,
-  }) async {
+  mount(WidgetTester tester, {String? selected}) async {
     final auth = _Auth();
-    final entry = EntryFlowNotifier(hydration: hydration);
     final selection = _Selection(selected);
     final container = ProviderContainer(
       overrides: [
         authStateNotifierProvider.overrideWith((ref) => auth),
         appReviewFlowProvider.overrideWithValue(_review),
-        entryFlowNotifierProvider.overrideWith((ref) => entry),
         activeChildProfileIdStateProvider.overrideWith((ref) => selection),
         childProfilesProvider.overrideWith((ref) async => const [_profile]),
       ],
@@ -147,7 +136,6 @@ void main() {
       container: container,
       router: router,
       auth: auth,
-      entry: entry,
       selection: selection,
       close: close,
     );
@@ -155,33 +143,23 @@ void main() {
 
   String location(GoRouter router) =>
       router.routerDelegate.currentConfiguration.uri.path;
-  void authorize(EntryFlowNotifier entry, {bool save = false}) {
-    entry.beginParentEntry(EntryAuthIntent.signIn, saveSample: save);
-    expect(entry.authorizeParentAfterPassedGate(), isTrue);
-    expect(entry.verifyAdultYear(DateTime.now().year - 25), isTrue);
-  }
 
   testWidgets(
-    'direct auth URL records typed intent, ignores free-form return and never grants access',
+    'direct auth URL ignores a free-form protected return destination',
     (tester) async {
       final app = await mount(tester);
       app.router.go('${JourneyRoutes.signUp}?return=/reader/catalog-book');
       await tester.pumpAndSettle();
-      expect(location(app.router), JourneyRoutes.parentBirthYear);
-      expect(app.entry.state.pendingAuthIntent, EntryAuthIntent.signUp);
-      expect(app.entry.state.isParentAuthorized, isFalse);
-      expect(app.entry.state.hasPendingSampleSave, isFalse);
+      expect(location(app.router), JourneyRoutes.signUp);
       await app.close();
     },
   );
 
-  testWidgets('entry and child refresh advance the protected journey', (
+  testWidgets('auth and child refresh advance the account journey', (
     tester,
   ) async {
     final app = await mount(tester);
     app.router.go(JourneyRoutes.signIn);
-    await tester.pumpAndSettle();
-    authorize(app.entry);
     await tester.pumpAndSettle();
     expect(location(app.router), JourneyRoutes.signIn);
     app.auth.signIn();
@@ -195,28 +173,9 @@ void main() {
   });
 
   testWidgets(
-    'auth backstop with already-selected child does not claim pending guest save',
-    (tester) async {
-      final app = await mount(tester, selected: 'child');
-      authorize(app.entry, save: true);
-      app.router.go(JourneyRoutes.signIn);
-      await tester.pumpAndSettle();
-      app.auth.signIn();
-      await tester.pumpAndSettle();
-      expect(location(app.router), JourneyRoutes.profilePicker);
-      expect(app.entry.state.hasPendingSampleSave, isTrue);
-      app.router.go(JourneyRoutes.library);
-      await tester.pumpAndSettle();
-      expect(location(app.router), JourneyRoutes.profilePicker);
-      await app.close();
-    },
-  );
-
-  testWidgets(
     'ordinary auth success with selected child goes directly to library',
     (tester) async {
       final app = await mount(tester, selected: 'child');
-      authorize(app.entry);
       app.router.go(JourneyRoutes.signIn);
       await tester.pumpAndSettle();
       app.auth.signIn();
@@ -227,33 +186,24 @@ void main() {
   );
 
   testWidgets(
-    'signout removes parent access and pending claim before another account',
+    'signout redirects an authenticated reader away from the library',
     (tester) async {
       final app = await mount(tester, selected: 'child');
-      authorize(app.entry, save: true);
       app.auth.signIn();
       await tester.pumpAndSettle();
       app.auth.signOut();
       await tester.pumpAndSettle();
-      expect(app.entry.state.isParentAuthorized, isFalse);
-      expect(app.entry.state.pendingAuthIntent, isNull);
-      expect(app.entry.state.hasPendingSampleSave, isFalse);
       expect(location(app.router), JourneyRoutes.intro);
       await app.close();
     },
   );
 
   testWidgets(
-    'unhydrated protected URL holds root and missing celebration is guest-safe',
+    'a missing celebration summary cannot open a signed-out library',
     (tester) async {
-      final ready = Completer<void>();
-      final app = await mount(tester, hydration: ready.future);
+      final app = await mount(tester);
       app.router.go(JourneyRoutes.signIn);
       await tester.pumpAndSettle();
-      expect(location(app.router), JourneyRoutes.root);
-      ready.complete();
-      await tester.pumpAndSettle();
-      expect(location(app.router), JourneyRoutes.intro);
       app.router.go(JourneyRoutes.bookCelebration);
       await tester.pumpAndSettle();
       expect(location(app.router), JourneyRoutes.intro);

@@ -423,7 +423,7 @@ class _Hero extends StatelessWidget {
 }
 
 /// Comics aren't tagged in the catalog yet, so this teases the first one
-/// with the duo art and a countdown to its launch.
+/// with the duo art, and a countdown once a launch date is set.
 class _ComicsBanner extends ConsumerStatefulWidget {
   const _ComicsBanner();
 
@@ -432,8 +432,6 @@ class _ComicsBanner extends ConsumerStatefulWidget {
 }
 
 class _ComicsBannerState extends ConsumerState<_ComicsBanner> {
-  // Local midnight, so the countdown hits zero on the kid's own Nov 8.
-  static final _launch = DateTime(2026, 11, 8);
   static final _learnMoreUri = Uri.parse('https://loratone.com/hat-trickster');
 
   // Minutes are the smallest unit shown, so a 30 s tick is plenty.
@@ -467,8 +465,10 @@ class _ComicsBannerState extends ConsumerState<_ComicsBanner> {
 
   @override
   Widget build(BuildContext context) {
-    final left = _launch.difference(ref.watch(libraryClockProvider)());
-    final launched = left <= Duration.zero;
+    // Local midnight, so the countdown hits zero on the kid's own launch day.
+    final launch = ref.watch(comicsLaunchProvider);
+    final left = launch?.difference(ref.watch(libraryClockProvider)());
+    final launched = left != null && left <= Duration.zero;
     final muted = LoratoneLibraryColors.paper.withValues(alpha: 0.85);
 
     return Container(
@@ -485,7 +485,11 @@ class _ComicsBannerState extends ConsumerState<_ComicsBanner> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _Pill(
-                    label: launched ? 'Out now' : 'Coming Nov 8',
+                    label: launched
+                        ? 'Out now'
+                        : launch == null
+                        ? 'In the works'
+                        : 'Coming ${_monthDay(launch)}',
                     background: LoratoneLibraryColors.yellow,
                     foreground: LoratoneLibraryColors.ink,
                   ),
@@ -499,7 +503,7 @@ class _ComicsBannerState extends ConsumerState<_ComicsBanner> {
                     'Loratone Originals with their own soundtracks.',
                     style: libraryBody(size: 13, color: muted),
                   ),
-                  if (!launched) ...[
+                  if (left != null && !launched) ...[
                     const SizedBox(height: 14),
                     _Countdown(left: left),
                   ],
@@ -539,6 +543,23 @@ class _ComicsBannerState extends ConsumerState<_ComicsBanner> {
     );
   }
 }
+
+const _months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+String _monthDay(DateTime d) => '${_months[d.month - 1]} ${d.day}';
 
 class _Countdown extends StatelessWidget {
   const _Countdown({required this.left});
