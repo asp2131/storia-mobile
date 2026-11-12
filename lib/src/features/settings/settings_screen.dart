@@ -12,6 +12,7 @@ import '../gen_ui/data/gen_ui_providers.dart';
 import '../gen_ui/presentation/parent_insight_cards.dart';
 import '../onboarding/data/app_review_flow_providers.dart';
 import '../../routing/journey/journey_policy.dart';
+import 'parent_pulse_card.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -42,6 +43,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               orElse: () => 'Your reader',
             ),
           ),
+          const ParentPulseCard(),
           const Divider(height: 32),
           const ListTile(
             title: Text('Reader'),

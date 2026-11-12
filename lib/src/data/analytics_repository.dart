@@ -25,7 +25,16 @@ enum AnalyticsEventType {
   narrationPageRecorded('narration_page_recorded'),
   narrationAlignmentFallback('narration_alignment_fallback'),
   narrationTrackCompleted('narration_track_completed'),
-  narrationTrackSelected('narration_track_selected');
+  narrationTrackSelected('narration_track_selected'),
+  // Funnel + pulse events. Sent without a child profile; the backend stores
+  // them against the signed-in user only.
+  appOpened('app_opened'),
+  signupCompleted('signup_completed'),
+  signinCompleted('signin_completed'),
+  onboardingCompleted('onboarding_completed'),
+  childProfileCreated('child_profile_created'),
+  libraryBookOpened('library_book_opened'),
+  parentPulseAnswered('parent_pulse_answered');
 
   const AnalyticsEventType(this.eventName);
 
@@ -113,10 +122,11 @@ class AnalyticsEvent {
     return properties;
   }
 
-  Map<String, dynamic> toApiJson({required String childProfileId}) {
+  Map<String, dynamic> toApiJson({String? childProfileId}) {
     final body = <String, dynamic>{
       'event': type.eventName,
-      'childProfileId': childProfileId,
+      if (childProfileId != null && childProfileId.trim().isNotEmpty)
+        'childProfileId': childProfileId,
       'source': 'mobile',
       'occurredAt': occurredAt.toUtc().toIso8601String(),
       'properties': toProperties(),
@@ -326,21 +336,16 @@ class AnalyticsRepository {
     }
   }
 
-  /// Sends an analytics event. Returns false on missing child context or
-  /// analytics pipeline failures and never throws, so instrumentation is
-  /// non-fatal for reader flows.
+  /// Sends an analytics event. Returns false on analytics pipeline failures
+  /// and never throws, so instrumentation is non-fatal for reader flows.
+  /// Events without a child profile (sign-up, onboarding, app open) are sent
+  /// against the signed-in user only.
   Future<bool> trackEvent(AnalyticsEvent event) async {
     try {
       final childProfileId = _firstNonBlank(
         event.childProfileId,
         _currentChildProfileId(),
       );
-      if (childProfileId == null) {
-        _logNonFatal(
-          'Skipped ${event.type.eventName}: missing childProfileId.',
-        );
-        return false;
-      }
 
       final eventWithContext = event.copyWith(
         childProfileId: childProfileId,

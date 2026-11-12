@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../data/analytics_repository.dart';
+import '../../../data/providers.dart';
 import '../../../routing/journey/journey_actions.dart';
 import '../data/app_review_flow_providers.dart';
 import '../domain/review_onboarding_profile.dart';
@@ -25,6 +29,11 @@ class ReviewOnboardingScreen extends ConsumerWidget {
               parentGoal: answers.goal,
             ),
           );
+      unawaited(
+        ref
+            .read(analyticsRepositoryProvider)
+            .track(AnalyticsEventType.onboardingCompleted),
+      );
       if (context.mounted) continueJourney(ref, context);
     },
   );

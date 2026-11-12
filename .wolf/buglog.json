@@ -3854,6 +3854,23 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-11-11T10:26:25"
+    },
+    {
+      "id": "bug-236",
+      "timestamp": "2026-11-11T00:00:00Z",
+      "error_message": "You must initialize the supabase instance before calling Supabase.instance (library_screen_test: hero resumes an unfinished book at its page)",
+      "file": "test/features/library/library_screen_test.dart",
+      "root_cause": "LibraryScreen._openBook now reads analyticsRepositoryProvider, which watches supabaseClientProvider; widget test had no override so Supabase.instance asserted.",
+      "fix": "Override analyticsRepositoryProvider in the test ProviderScope with AnalyticsRepository(transport: _NoopAnalyticsTransport()).",
+      "tags": [
+        "analytics",
+        "riverpod",
+        "widget-test",
+        "supabase"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-11-11T00:00:00Z"
     }
   ]
 }
