@@ -16,6 +16,7 @@ abstract final class StoriaColors {
   static const lineStrong = Color.fromRGBO(44, 51, 88, 0.86);
   static const success = Color(0xFF5C8A66);
   static const danger = Color(0xFFB65E5E);
+  static const heart = Color(0xFFFF5C7A);
   static const readerBackground = Color(0xFF12161A);
   static const readerChrome = Color(0xFF1D2127);
 

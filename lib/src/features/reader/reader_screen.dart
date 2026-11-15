@@ -17,13 +17,16 @@ import '../../core/widgets/sketch_border.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
 import '../../routing/journey/journey_policy.dart';
+import '../child/data/child_profile_providers.dart';
 import '../gen_ui/data/gen_ui_preferences_provider.dart';
 import '../gen_ui/presentation/reader_activity_card.dart';
 import '../narration_studio/data/narration_providers.dart';
 import '../narration_studio/presentation/narration_voice_sheet.dart';
 import 'application/reader_experience_controller.dart';
 import 'celebration/book_celebration_summary.dart';
+import 'domain/reader_capabilities.dart';
 import 'liquid_page_clipper.dart';
+import 'page_like_button.dart';
 import 'runtime/providers/reader_capabilities_provider.dart';
 import 'page_renderer.dart';
 import 'reader_tilt.dart';
@@ -439,6 +442,18 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                       c.dispatch(const ReaderExperienceToggleSoundscape()),
                   onTogglePractice: () =>
                       c.dispatch(const ReaderExperienceTogglePractice()),
+                ),
+                PageLikeButton(
+                  // Guest and sample readers must not touch account providers.
+                  childId: capabilities.access == ReaderAccess.catalog
+                      ? ref.watch(activeChildProfileIdProvider)
+                      : null,
+                  bookId: book.id,
+                  pageId: activePage.id,
+                  pageNumber: activePage.pageNumber,
+                  trackAnalytics: capabilities.allowsAnalytics,
+                  countGuestLikes: capabilities.access == ReaderAccess.guest,
+                  repeatable: capabilities.access == ReaderAccess.catalog,
                 ),
                 Align(
                   alignment: Alignment.topCenter,
