@@ -176,5 +176,26 @@ class ActiveChildProfileIdNotifier extends StateNotifier<AsyncValue<String?>> {
 }
 
 class ChildProfileRouterRefreshNotifier extends ChangeNotifier {
-  void refresh() => notifyListeners();
+  bool _scheduled = false;
+  bool _disposed = false;
+
+  /// Deferred to a microtask (and coalesced). refresh() fires from ref.listen
+  /// callbacks while journeySnapshotProvider is mid-flush; a synchronous
+  /// notify re-enters go_router's redirect, which re-reads that provider
+  /// while Riverpod iterates its dependency map ->
+  /// ConcurrentModificationError. See router_refresh_reentrancy_test.dart.
+  void refresh() {
+    if (_scheduled) return;
+    _scheduled = true;
+    scheduleMicrotask(() {
+      _scheduled = false;
+      if (!_disposed) notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 }
