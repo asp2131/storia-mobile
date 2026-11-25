@@ -101,6 +101,7 @@ abstract final class JourneyRoutes {
   static const intro = '/intro';
   static const tryStory = '/try-a-story';
   static const tryStoryReaderPattern = '/try-a-story/:bookId';
+  static const sharedBookPattern = '/book/:bookId';
   static const signIn = '/sign-in';
   static const signUp = '/sign-up';
   static const parentBirthYear = '/parent-birth-year';
@@ -117,6 +118,8 @@ abstract final class JourneyRoutes {
 
   static String reader(String bookId) => '/reader/$bookId';
   static String tryStoryReader(String bookId) => '$tryStory/$bookId';
+  static String sharedBook(String bookId) =>
+      '/book/${Uri.encodeComponent(bookId)}';
 }
 
 /// Which stage of the journey a snapshot resolves to.
@@ -199,6 +202,10 @@ abstract final class JourneyPolicy {
   /// Terminal routes (`/reader/:bookId`, `/settings`, `/aac-music-demo`)
   /// pass through when the journey is complete because no stage claims them.
   static String? redirect(JourneySnapshot snapshot, String location) {
+    // Shared books are public for every journey stage. The reader boundary
+    // checks publication before loading content and always uses guest services.
+    if (RegExp(r'^/book/[^/]+$').hasMatch(location)) return null;
+
     switch (_stageOf(snapshot)) {
       case _JourneyStage.indeterminate:
       case _JourneyStage.profileLoading:

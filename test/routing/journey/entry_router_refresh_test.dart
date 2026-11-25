@@ -144,6 +144,24 @@ void main() {
   String location(GoRouter router) =>
       router.routerDelegate.currentConfiguration.uri.path;
 
+  testWidgets('shared book survives auth and profile refreshes', (
+    tester,
+  ) async {
+    final app = await mount(tester);
+    app.router.go('${JourneyRoutes.sharedBook('70')}?utm_source=reddit');
+    await tester.pumpAndSettle();
+    expect(location(app.router), JourneyRoutes.sharedBook('70'));
+    app.auth.signIn();
+    await tester.pumpAndSettle();
+    expect(location(app.router), JourneyRoutes.sharedBook('70'));
+    app.selection.select('child');
+    await tester.pumpAndSettle();
+    app.auth.signOut();
+    await tester.pumpAndSettle();
+    expect(location(app.router), JourneyRoutes.sharedBook('70'));
+    await app.close();
+  });
+
   testWidgets(
     'direct auth URL ignores a free-form protected return destination',
     (tester) async {

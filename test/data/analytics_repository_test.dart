@@ -203,6 +203,36 @@ void main() {
       expect(body['properties'], {'userId': 'user-1'});
     });
 
+    test(
+      'signed out: sends reader events with anonId, drops the rest',
+      () async {
+        final transport = _FakeAnalyticsTransport();
+        final repository = AnalyticsRepository(
+          transport: transport,
+          currentAnonId: () => 'anon-1',
+          currentChildProfileId: () => 'stale-child',
+        );
+
+        expect(
+          await repository.track(AnalyticsEventType.pageViewed, bookId: '77'),
+          isTrue,
+        );
+        expect(
+          await repository.track(
+            AnalyticsEventType.narrationPlayed,
+            bookId: '77',
+          ),
+          isFalse,
+        );
+
+        final request = transport.requests.single;
+        expect(request.accessToken, isNull);
+        expect(request.body['anonId'], 'anon-1');
+        expect(request.body['bookId'], '77');
+        expect(request.body.containsKey('childProfileId'), isFalse);
+      },
+    );
+
     test('returns false when transport throws', () async {
       final repository = AnalyticsRepository(
         transport: _FakeAnalyticsTransport()..error = StateError('network'),

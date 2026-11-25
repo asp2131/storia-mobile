@@ -10,6 +10,7 @@ import '../../../core/theme/storia_spacing.dart';
 import '../../../data/models.dart';
 import '../../../data/providers.dart';
 import '../../../routing/journey/journey_policy.dart';
+import '../../sharing/book_links.dart';
 import '../../reader/domain/reader_capabilities.dart';
 import '../../reader/reader_screen.dart';
 import '../../reader/runtime/providers/reader_capabilities_provider.dart';
@@ -26,34 +27,57 @@ final guestReaderBookProvider = FutureProvider.autoDispose
       return ref.watch(bookRepositoryProvider).getBookById(bookId);
     });
 
-/// The account-free boundary for published intro stories. Invalid IDs never
+final sharedReaderBookProvider = FutureProvider.autoDispose
+    .family<Book?, String>((ref, bookId) async {
+      if (!BookLinks.isValidId(bookId)) return null;
+      return ref.watch(bookRepositoryProvider).getPublishedBookById(bookId);
+    });
+
+/// The account-free boundary for published stories. Invalid IDs never
 /// fetch content or construct a reader runtime, even on a cold deep link.
 class GuestReaderScreen extends ConsumerWidget {
-  const GuestReaderScreen({super.key, required this.bookId});
+  const GuestReaderScreen({super.key, required this.bookId}) : _shared = false;
+
+  const GuestReaderScreen.shared({super.key, required this.bookId})
+    : _shared = true;
 
   final String bookId;
+  final bool _shared;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    void exit() => context.go(JourneyRoutes.tryStory);
+    void exit() =>
+        context.go(_shared ? JourneyRoutes.root : JourneyRoutes.tryStory);
 
     final Widget content;
-    if (!introBookIds.contains(bookId)) {
+    if (_shared
+        ? !BookLinks.isValidId(bookId)
+        : !introBookIds.contains(bookId)) {
       content = _GuestReaderStatus(
-        message: 'Choose a story to try with Loratone.',
+        message: _shared
+            ? 'This story link is not valid.'
+            : 'Choose a story to try with Loratone.',
         onExit: exit,
       );
     } else {
       content = ref
-          .watch(guestReaderBookProvider(bookId))
+          .watch(
+            _shared
+                ? sharedReaderBookProvider(bookId)
+                : guestReaderBookProvider(bookId),
+          )
           .when(
             loading: () => _GuestReaderStatus(onExit: exit),
             error: (_, _) => _GuestReaderStatus(
               message: 'This story could not be opened. Please try again.',
               onExit: exit,
               onRetry: () {
-                ref.invalidate(introBooksProvider);
-                ref.invalidate(guestReaderBookProvider(bookId));
+                if (_shared) {
+                  ref.invalidate(sharedReaderBookProvider(bookId));
+                } else {
+                  ref.invalidate(introBooksProvider);
+                  ref.invalidate(guestReaderBookProvider(bookId));
+                }
               },
             ),
             data: (book) {

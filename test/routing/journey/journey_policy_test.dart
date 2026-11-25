@@ -67,6 +67,22 @@ void expectTable(JourneySnapshot s, Map<String, String?> expected) {
 }
 
 void main() {
+  test('shared books preserve the requested title in every journey stage', () {
+    for (final snapshot in [
+      snap(),
+      snap(ready: false),
+      snap(bypass: true),
+      snap(bypass: true, birthYear: true),
+      snap(bypass: true, birthYear: true, onboarded: true),
+      snap(session: true),
+      snap(session: true, profile: ProfileSelection.loading),
+      snap(session: true, profile: ProfileSelection.selected),
+    ]) {
+      expect(JourneyPolicy.redirect(snapshot, '/book/70'), isNull);
+    }
+    expect(JourneyPolicy.redirect(snap(), '/book/70/private'), '/intro');
+  });
+
   group('boot hold (review flow not ready)', () {
     test('allows every location regardless of other state', () {
       for (final s in [

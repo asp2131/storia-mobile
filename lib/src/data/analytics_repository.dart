@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Analytics events persisted by the existing backend
 /// `mobile_analytics_events` table via `POST /api/analytics/events`.
@@ -293,17 +295,30 @@ class AnalyticsRepository {
     AnalyticsStringResolver? currentUserId,
     AnalyticsStringResolver? currentAccessToken,
     AnalyticsStringResolver? currentChildProfileId,
+    AnalyticsStringResolver? currentAnonId,
   }) : _transport = transport,
        _clock = clock ?? DateTime.now,
        _currentUserId = currentUserId ?? _nullString,
        _currentAccessToken = currentAccessToken ?? _nullString,
-       _currentChildProfileId = currentChildProfileId ?? _nullString;
+       _currentChildProfileId = currentChildProfileId ?? _nullString,
+       _currentAnonId = currentAnonId ?? _nullString;
 
   final AnalyticsTransport _transport;
   final AnalyticsClock _clock;
   final AnalyticsStringResolver _currentUserId;
   final AnalyticsStringResolver _currentAccessToken;
   final AnalyticsStringResolver _currentChildProfileId;
+  final AnalyticsStringResolver _currentAnonId;
+
+  /// What storia's events route accepts from a reader with no account
+  /// (`GUEST_EVENTS` in storia `src/app/api/analytics/events/route.ts`).
+  static const Set<AnalyticsEventType> guestEvents = {
+    AnalyticsEventType.readingSessionStarted,
+    AnalyticsEventType.readingSessionEnded,
+    AnalyticsEventType.bookStarted,
+    AnalyticsEventType.pageViewed,
+    AnalyticsEventType.bookCompleted,
+  };
 
   Future<bool> track(
     AnalyticsEventType type, {
@@ -339,9 +354,19 @@ class AnalyticsRepository {
   /// Sends an analytics event. Returns false on analytics pipeline failures
   /// and never throws, so instrumentation is non-fatal for reader flows.
   /// Events without a child profile (sign-up, onboarding, app open) are sent
-  /// against the signed-in user only.
+  /// against the signed-in user only. Signed out, reader events carry the
+  /// device's anonymous id instead; everything else is dropped.
   Future<bool> trackEvent(AnalyticsEvent event) async {
     try {
+      final accessToken = _currentAccessToken();
+      final anonId = _currentAnonId();
+      if (anonId != null &&
+          (accessToken == null || accessToken.trim().isEmpty)) {
+        if (!guestEvents.contains(event.type)) return false;
+        await _transport.send({...event.toApiJson(), 'anonId': anonId});
+        return true;
+      }
+
       final childProfileId = _firstNonBlank(
         event.childProfileId,
         _currentChildProfileId(),
@@ -354,7 +379,7 @@ class AnalyticsRepository {
 
       await _transport.send(
         eventWithContext.toApiJson(childProfileId: childProfileId),
-        accessToken: _currentAccessToken(),
+        accessToken: accessToken,
       );
       return true;
     } catch (error, stackTrace) {
@@ -383,6 +408,28 @@ class AnalyticsRepository {
       debugPrint('[AnalyticsRepository] $message');
       return true;
     }());
+  }
+}
+
+/// Random UUID v4 kept per install (per browser on web), so signed-out reading
+/// counts as one reader. Same idea as the storia web reader's `storia_anon_id`.
+Future<String?> loadAnonId() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getString('storia_anon_id');
+    if (existing != null) return existing;
+    final random = Random.secure();
+    final b = List<int>.generate(16, (_) => random.nextInt(256));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    final h = b.map((x) => x.toRadixString(16).padLeft(2, '0')).join();
+    final id =
+        '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-'
+        '${h.substring(16, 20)}-${h.substring(20)}';
+    await prefs.setString('storia_anon_id', id);
+    return id;
+  } catch (_) {
+    return null; // Analytics must never block launch.
   }
 }
 

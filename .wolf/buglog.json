@@ -3856,6 +3856,39 @@
       "last_seen": "2026-11-11T10:26:25"
     },
     {
+      "date": "2026-11-12",
+      "error_message": "Web reader stalls while opening and turning story pages.",
+      "root_cause": "ReaderScreen eagerly initializes a 6 MB celebration GIF with GifPlayerController, which decodes every animation frame before it is shown. PageView also builds adjacent illustrations only when a swipe starts, competing with scrolling for decoding and layout work.",
+      "fix": "Render the celebration with Image.asset only while visible, enable the PageView's bounded adjacent viewport cache, and isolate illustration/page painting with RepaintBoundary. Keep the existing one-page virtualization window.",
+      "tags": [
+        "web",
+        "reader",
+        "performance",
+        "gif",
+        "scrolling",
+        "prefetch"
+      ]
+    },
+    {
+      "id": "bug-237",
+      "timestamp": "2026-11-25T03:20:15.116153Z",
+      "error_message": "ConcurrentModificationError: Concurrent modification during iteration: Instance of 'LinkedMap<ProviderElementBase<Object?>, Object>' while dispatching notifications for GoRouteInformationProvider (auth_providers.dart _handleAuthState)",
+      "file": "lib/src/features/child/data/child_profile_providers.dart",
+      "root_cause": "Auth notify -> router redirect -> ref.read(journeySnapshotProvider) -> flush iterates its _dependencies -> activeChildProfileIdStateProvider rebuilds -> childProfileRouterRefreshProvider ref.listen -> refresh() notified router synchronously -> redirect re-read journeySnapshotProvider mid-iteration; re-entrant _performBuild removed entries from the map being iterated.",
+      "fix": "ChildProfileRouterRefreshNotifier.refresh() now defers notifyListeners to a coalesced microtask (guarded against dispose). Never notify a refreshListenable synchronously from a Riverpod ref.listen callback.",
+      "tags": [
+        "riverpod",
+        "go_router",
+        "refreshListenable",
+        "reentrancy",
+        "web",
+        "auth"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-11-25T03:20:15.116153Z"
+    },
+    {
       "id": "bug-236",
       "timestamp": "2026-11-11T00:00:00Z",
       "error_message": "You must initialize the supabase instance before calling Supabase.instance (library_screen_test: hero resumes an unfinished book at its page)",
@@ -3871,6 +3904,24 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-11-11T00:00:00Z"
+    },
+    {
+      "id": "bug-238",
+      "timestamp": "2026-11-25T00:00:00Z",
+      "error_message": "No analytics for Hat Trickster after release; funnel metrics (app_opened, signup_completed, library_book_opened...) stopped arriving",
+      "file": "lib/src/data/analytics_repository.dart",
+      "root_cause": "Release 3.3.6+7 was built from chore/release-3.3.4-web-deploy, which never merged main's PR #39 (funnel events, user-only tracking). Separately, shared links (/b/<id>) open GuestReaderScreen with ReaderAccess.guest, and allowsAnalytics was catalog-only, so signed-out readers of a shared book sent nothing.",
+      "fix": "Merged origin/main into the release branch. Guest readers now track reading (tracksReading capability) and AnalyticsRepository sends the 5 storia GUEST_EVENTS with anonId (per-install UUID, shared_preferences 'storia_anon_id') when signed out. Needs storia PR #53 merged + its migration on prod.",
+      "tags": [
+        "analytics",
+        "release",
+        "guest-reader",
+        "sharing",
+        "kpi"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-11-25T00:00:00Z"
     }
   ]
 }

@@ -122,24 +122,12 @@ TextStyle resolveFontStyle(
     );
   }
 
-  switch (family) {
-    case 'Lora':
-      return GoogleFonts.lora(fontSize: size, color: color, fontWeight: fw);
-    case 'Playfair Display':
-      return GoogleFonts.playfairDisplay(
-        fontSize: size,
-        color: color,
-        fontWeight: fw,
-      );
-    case 'JetBrains Mono':
-      return GoogleFonts.jetBrainsMono(
-        fontSize: size,
-        color: color,
-        fontWeight: fw,
-      );
-    case 'Gaegu':
-      return GoogleFonts.gaegu(fontSize: size, color: color, fontWeight: fw);
-    default:
-      return GoogleFonts.inter(fontSize: size, color: color, fontWeight: fw);
-  }
+  // Any family the web editor offers is a Google Font; fetched on first use
+  // and cached on device. Unknown names keep the old Inter fallback.
+  return GoogleFonts.getFont(
+    GoogleFonts.asMap().containsKey(family) ? family : 'Inter',
+    fontSize: size,
+    color: color,
+    fontWeight: fw,
+  );
 }

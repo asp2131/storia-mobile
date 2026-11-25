@@ -9,4 +9,5 @@ cd "$(dirname "$0")/.."
 BRANCH="${1:-main}"
 
 flutter build web --release
+node bin/prepare-web-sharing.mjs
 npx wrangler pages deploy build/web --project-name=loratone-app --branch="$BRANCH"

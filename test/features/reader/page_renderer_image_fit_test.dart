@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:loratone/src/core/media/reader_media_source.dart';
 import 'package:loratone/src/data/models.dart';
 import 'package:loratone/src/features/reader/overlay/text_overlay_utils.dart';
 import 'package:loratone/src/features/reader/page_renderer.dart';
@@ -45,9 +45,15 @@ void main() {
     final pageImage = tester.widget<Image>(
       find.byWidgetPredicate(
         (widget) =>
-            widget is Image && widget.image is CachedNetworkImageProvider,
+            widget is Image && widget.image is ResizeImage,
       ),
     );
+
+    // Print-resolution uploads must not decode at full size.
+    final resized = pageImage.image as ResizeImage;
+    expect(resized.width, kReaderPageImageMaxSide);
+    expect(resized.height, kReaderPageImageMaxSide);
+    expect(resized.policy, ResizeImagePolicy.fit);
 
     expect(pageImage.fit, BoxFit.contain);
     expect(pageImage.width, double.infinity);

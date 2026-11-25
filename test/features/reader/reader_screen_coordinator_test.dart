@@ -1,8 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gif_player/gif_player.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:loratone/src/data/models.dart';
@@ -16,6 +18,7 @@ import 'package:loratone/src/features/gen_ui/presentation/reader_activity_card.d
 import 'package:loratone/src/features/reader/application/reader_experience_controller.dart';
 import 'package:loratone/src/features/reader/application/reader_experience_effects.dart';
 import 'package:loratone/src/features/reader/reader_screen.dart';
+import 'package:loratone/src/features/reader/page_renderer.dart';
 import 'package:loratone/src/features/reader/runtime/providers/reader_session_provider.dart';
 import 'package:loratone/src/features/reader/runtime/reader_session.dart';
 import 'package:loratone/src/features/reader/runtime/word_help/reader_word_help.dart';
@@ -143,6 +146,14 @@ void main() {
         .whereType<ReaderExperienceStart>()
         .single;
     expect(start.initialPageIndex, 0);
+    // Preparing the next page must not eagerly build the rest of the book.
+    final preparedPages = tester
+        .widgetList<PageRenderer>(
+          find.byType(PageRenderer, skipOffstage: false),
+        )
+        .map((renderer) => renderer.page.id)
+        .toList();
+    expect(preparedPages, ['mp-1', 'mp-2']);
   });
 
   testWidgets('ReaderScreen keeps book-not-found flow outside coordinator', (
@@ -178,58 +189,76 @@ void main() {
     expect(coordinatorLog.actions, isEmpty);
   });
 
-  testWidgets('ReaderScreen retains GifPlayer controller across GIF unmounts', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1200, 800);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-    });
+  testWidgets(
+    'celebration media loads only while visible and can be reopened',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-    final coordinatorLog = _CoordinatorLog();
+      final coordinatorLog = _CoordinatorLog();
+      final assets = _CelebrationAssetBundle();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          activeChildProfileIdProvider.overrideWith(
-            (ref) => 'reader-test-child',
-          ),
-          currentBookProvider('book-1').overrideWith((ref) async => _book),
-          bookManifestProvider('book-1').overrideWith((ref) async => null),
-          readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
-          readerExperienceControllerProvider.overrideWith(
-            () => _FakeReaderExperienceControllerNotifier._(
-              coordinatorLog,
-              'book-1',
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            activeChildProfileIdProvider.overrideWith(
+              (ref) => 'reader-test-child',
+            ),
+            currentBookProvider('book-1').overrideWith((ref) async => _book),
+            bookManifestProvider('book-1').overrideWith((ref) async => null),
+            readerSessionProvider.overrideWith((ref) => _FakeReaderSession()),
+            readerExperienceControllerProvider.overrideWith(
+              () => _FakeReaderExperienceControllerNotifier._(
+                coordinatorLog,
+                'book-1',
+              ),
+            ),
+            readerExperienceEffectsProvider.overrideWith(
+              (ref) => const NoopReaderExperienceEffects(),
+            ),
+            mockGenUiCardRepositoryProvider.overrideWithValue(
+              const _EmptyGenUiRepo(),
+            ),
+          ],
+          child: MaterialApp(
+            home: DefaultAssetBundle(
+              bundle: assets,
+              child: const ReaderScreen(bookId: 'book-1'),
             ),
           ),
-          readerExperienceEffectsProvider.overrideWith(
-            (ref) => const NoopReaderExperienceEffects(),
-          ),
-          mockGenUiCardRepositoryProvider.overrideWithValue(
-            const _EmptyGenUiRepo(),
-          ),
-        ],
-        child: const MaterialApp(home: ReaderScreen(bookId: 'book-1')),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
 
-    coordinatorLog.controller!.setShowCelebrationGif(true);
-    await tester.pump();
-    expect(find.byType(GifPlayer), findsOneWidget);
+      final celebration = find.byWidgetPredicate(
+        (widget) =>
+            widget is Image &&
+            widget.image is AssetImage &&
+            (widget.image as AssetImage).assetName ==
+                'assets/gifs/green_screen.gif',
+      );
+      expect(celebration, findsNothing);
+      expect(assets.celebrationLoads, 0);
 
-    coordinatorLog.controller!.setShowCelebrationGif(false);
-    await tester.pump();
-    expect(find.byType(GifPlayer), findsNothing);
+      coordinatorLog.controller!.setShowCelebrationGif(true);
+      await tester.pump();
+      expect(celebration, findsOneWidget);
+      expect(assets.celebrationLoads, 1);
 
-    coordinatorLog.controller!.setShowCelebrationGif(true);
-    await tester.pump();
-    expect(find.byType(GifPlayer), findsOneWidget);
-  });
+      coordinatorLog.controller!.setShowCelebrationGif(false);
+      await tester.pump();
+      expect(celebration, findsNothing);
+
+      coordinatorLog.controller!.setShowCelebrationGif(true);
+      await tester.pump();
+      expect(celebration, findsOneWidget);
+    },
+  );
 
   testWidgets('Story Spark takeover dispatches activity shown/dismissed', (
     tester,
@@ -412,6 +441,13 @@ class _FakeReaderExperienceControllerNotifier
   @override
   Future<void> dispatch(ReaderExperienceAction action) async {
     log.actions.add(action);
+    if (action case ReaderExperienceStart(:final initialPageIndex)) {
+      state = state.copyWith(
+        readerState: state.readerState.copyWith(
+          activePageIndex: initialPageIndex,
+        ),
+      );
+    }
     if (action case ReaderExperienceScrollOffsetChanged(:final offset)) {
       log.scrollOffsetListenable.value = offset;
     }
@@ -448,3 +484,21 @@ const _multiPageBook = Book(
     PageData(id: 'mp-3', pageNumber: 3, textContent: 'page three'),
   ],
 );
+
+/// Track the expensive asset without decoding the production GIF in a test.
+class _CelebrationAssetBundle extends CachingAssetBundle {
+  int celebrationLoads = 0;
+
+  @override
+  Future<ByteData> load(String key) async {
+    if (key == 'assets/gifs/green_screen.gif') {
+      celebrationLoads++;
+      return ByteData.sublistView(
+        base64Decode(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+        ),
+      );
+    }
+    return rootBundle.load(key);
+  }
+}

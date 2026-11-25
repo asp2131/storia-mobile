@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
@@ -126,4 +127,28 @@ ImageProvider<Object>? imageProviderForReaderSource(
     case EmptyReaderMediaSource():
       return null;
   }
+}
+
+/// Longest decoded side of a reader illustration, in physical pixels.
+///
+/// Uploaded art can be print resolution (6071x8598 decodes to ~209 MB a page,
+/// and three pages stay mounted). 2560 covers the tallest phone screens.
+// ponytail: fixed cap, derive from the device's physical size if tablets look soft.
+const int kReaderPageImageMaxSide = 2560;
+
+/// The one provider every reader call site must use for a page illustration,
+/// so rendering, size lookup and the image-ready probe share a single decode.
+ImageProvider<Object> readerPageImageProvider(String url) {
+  final provider = CachedNetworkImageProvider(
+    url,
+    cacheManager: ResilientCacheManager.instance,
+  );
+  // Web decodes through an <img> element and ignores decode sizes.
+  if (kIsWeb) return provider;
+  return ResizeImage(
+    provider,
+    width: kReaderPageImageMaxSide,
+    height: kReaderPageImageMaxSide,
+    policy: ResizeImagePolicy.fit,
+  );
 }

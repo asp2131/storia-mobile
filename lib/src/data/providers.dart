@@ -25,6 +25,10 @@ final apiBaseUrlProvider = Provider<String>((ref) {
 /// with the shared-preferences backed active child profile selection.
 final currentChildProfileIdProvider = Provider<String?>((ref) => null);
 
+/// Per-install anonymous id for reading analytics while signed out. `main.dart`
+/// overrides it with [loadAnonId]; null (tests) turns the guest path off.
+final anonIdProvider = Provider<String?>((ref) => null);
+
 final analyticsHttpClientProvider = Provider<http.Client>((ref) {
   final client = http.Client();
   ref.onDispose(client.close);
@@ -45,6 +49,7 @@ final analyticsRepositoryProvider = Provider<AnalyticsRepository>((ref) {
     currentUserId: () => supabase.auth.currentSession?.user.id,
     currentAccessToken: () => supabase.auth.currentSession?.accessToken,
     currentChildProfileId: () => ref.read(currentChildProfileIdProvider),
+    currentAnonId: () => ref.read(anonIdProvider),
   );
 });
 

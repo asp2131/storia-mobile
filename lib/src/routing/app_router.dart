@@ -53,6 +53,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ),
     routes: [
       GoRoute(
+        path: JourneyRoutes.sharedBookPattern,
+        builder: (context, state) => GuestReaderScreen.shared(
+          key: ValueKey(state.pathParameters['bookId']),
+          bookId: state.pathParameters['bookId'] ?? '',
+        ),
+      ),
+      GoRoute(
         path: JourneyRoutes.root,
         builder: (context, state) => const AuthGateScreen(),
       ),
