@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
+import 'data/providers.dart';
 import 'routing/app_router.dart';
 
 class StoriaApp extends ConsumerWidget {
@@ -12,6 +13,7 @@ class StoriaApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    ref.watch(authAnalyticsListenerProvider);
 
     return MaterialApp.router(
       title: 'Loratone',

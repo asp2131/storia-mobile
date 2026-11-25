@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/loratone_library_colors.dart';
 import '../../core/theme/storia_spacing.dart';
 import '../../core/widgets/parental_gate.dart';
+import '../../data/analytics_repository.dart';
 import '../../data/models.dart';
 import '../../data/providers.dart';
 import '../child/data/child_profile_providers.dart';
@@ -35,6 +36,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   _LibraryTab _tab = _LibraryTab.library;
 
   Future<void> _openBook(String bookId) async {
+    unawaited(
+      ref
+          .read(analyticsRepositoryProvider)
+          .track(AnalyticsEventType.libraryBookOpened, bookId: bookId),
+    );
     await context.push('/reader/$bookId');
     // Progress changed while reading; reload the hero and shelf.
     ref

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/data/analytics_repository.dart';
 import 'package:loratone/src/data/providers.dart';
 import 'package:loratone/src/features/child/data/child_profile_providers.dart';
 import 'package:loratone/src/features/child/domain/child_profile.dart';
@@ -65,6 +66,10 @@ Future<List<String>> _pump(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        // Opening a book fires a funnel event; keep Supabase out of the test.
+        analyticsRepositoryProvider.overrideWithValue(
+          AnalyticsRepository(transport: _NoopAnalyticsTransport()),
+        ),
         bookLibraryProvider.overrideWith(
           (ref) async => failLoad ? throw Exception('offline') : _books,
         ),
@@ -194,4 +199,9 @@ void main() {
     expect(find.text('Our books could not load'), findsOneWidget);
     expect(find.text('Try again'), findsOneWidget);
   });
+}
+
+class _NoopAnalyticsTransport implements AnalyticsTransport {
+  @override
+  Future<void> send(Map<String, dynamic> body, {String? accessToken}) async {}
 }

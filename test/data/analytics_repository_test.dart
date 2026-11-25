@@ -185,20 +185,23 @@ void main() {
       });
     });
 
-    test(
-      'returns false and does not send when child profile is missing',
-      () async {
-        final transport = _FakeAnalyticsTransport();
-        final repository = AnalyticsRepository(transport: transport);
+    test('sends user-only funnel events when child profile is missing', () async {
+      final transport = _FakeAnalyticsTransport();
+      final repository = AnalyticsRepository(
+        transport: transport,
+        currentUserId: () => 'user-1',
+      );
 
-        final didTrack = await _withSuppressedDebugPrint(
-          () => repository.track(AnalyticsEventType.pageViewed),
-        );
+      final didTrack = await repository.track(
+        AnalyticsEventType.signupCompleted,
+      );
 
-        expect(didTrack, isFalse);
-        expect(transport.requests, isEmpty);
-      },
-    );
+      expect(didTrack, isTrue);
+      final body = transport.requests.single.body;
+      expect(body['event'], 'signup_completed');
+      expect(body.containsKey('childProfileId'), isFalse);
+      expect(body['properties'], {'userId': 'user-1'});
+    });
 
     test('returns false when transport throws', () async {
       final repository = AnalyticsRepository(

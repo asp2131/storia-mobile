@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../data/analytics_repository.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -107,6 +108,14 @@ class ChildProfileActions {
         .read(activeChildProfileIdStateProvider.notifier)
         .setActiveChildProfileId(created.id);
     _ref.invalidate(childProfilesProvider);
+    unawaited(
+      _ref
+          .read(analyticsRepositoryProvider)
+          .track(
+            AnalyticsEventType.childProfileCreated,
+            childProfileId: created.id,
+          ),
+    );
     return created;
   }
 }
