@@ -7,6 +7,7 @@ import '../../../data/models.dart';
 import '../../../routing/journey/journey_actions.dart';
 import '../data/intro_books_provider.dart';
 import 'widgets/story_entry_widgets.dart';
+import '../../../core/media/reader_media_source.dart';
 
 class StoryPickerScreen extends ConsumerStatefulWidget {
   const StoryPickerScreen({super.key});
@@ -189,6 +190,7 @@ class _StoryChoice extends StatelessWidget {
                     color: LoratoneEntryColors.sky,
                     child: Image.network(
                       book.coverUrl ?? '',
+                      cacheHeight: coverDecodeHeight(context, 118),
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => const Icon(
                         Icons.auto_stories_rounded,

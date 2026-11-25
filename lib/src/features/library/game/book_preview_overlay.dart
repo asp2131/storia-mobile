@@ -7,6 +7,7 @@ import '../../../core/theme/storia_colors.dart';
 import '../../../core/theme/storia_motion.dart';
 import '../../../core/widgets/sketch_card.dart';
 import '../../../data/models.dart';
+import '../../../core/media/reader_media_source.dart';
 
 /// A Flutter overlay widget that shows a popup preview card for a book.
 ///
@@ -99,6 +100,7 @@ class BookPreviewOverlay extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: book.coverUrl!,
                     cacheManager: ResilientCacheManager.instance,
+                    memCacheHeight: coverDecodeHeight(context, 90),
                     fit: BoxFit.cover,
                     placeholder: (_, __) =>
                         Container(color: StoriaColors.paperAlt),

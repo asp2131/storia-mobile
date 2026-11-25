@@ -16,6 +16,7 @@ import '../application/recording_controller.dart';
 import '../data/narration_providers.dart';
 import '../domain/narration_track.dart';
 import 'narration_voice_sheet.dart';
+import '../../../core/media/reader_media_source.dart';
 
 /// Opens the parent's record pass over the book.
 ///
@@ -163,6 +164,8 @@ class _NarrationRecordPassState extends ConsumerState<NarrationRecordPass> {
           Positioned.fill(
             child: Image.network(
               imageUrl,
+              // Page art can be print resolution; never decode past screen size.
+              cacheHeight: kReaderPageImageMaxSide,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
