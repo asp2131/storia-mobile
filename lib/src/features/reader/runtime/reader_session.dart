@@ -70,6 +70,19 @@ class ReaderViewState {
       showCelebration: showCelebration ?? this.showCelebration,
     );
   }
+
+  /// True when [other] differs from this state by narration position at most.
+  bool sameIgnoringNarrationPosition(ReaderViewState other) =>
+      isReady == other.isReady &&
+      activePageIndex == other.activePageIndex &&
+      isNarrationPlaying == other.isNarrationPlaying &&
+      isSoundscapePlaying == other.isSoundscapePlaying &&
+      narrationVolume == other.narrationVolume &&
+      soundscapeVolume == other.soundscapeVolume &&
+      isPracticeMode == other.isPracticeMode &&
+      isListening == other.isListening &&
+      identical(spokenWordIndices, other.spokenWordIndices) &&
+      showCelebration == other.showCelebration;
 }
 
 sealed class ReaderIntent {

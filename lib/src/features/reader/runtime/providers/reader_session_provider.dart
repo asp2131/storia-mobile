@@ -1,11 +1,10 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../audio/audio_providers.dart';
-import '../../../../core/resilient_cache_manager.dart';
+import '../../../../core/media/reader_media_source.dart';
 import '../../../../data/providers.dart';
 import '../adapters/flutter_scheduler_port.dart';
 import '../adapters/speech_to_text_practice_port.dart';
@@ -21,9 +20,8 @@ import 'reader_capabilities_provider.dart';
 Future<void> _awaitImageReady(String? url) {
   if (url == null || url.isEmpty) return Future<void>.value();
   final completer = Completer<void>();
-  final stream = CachedNetworkImageProvider(
+  final stream = readerPageImageProvider(
     url,
-    cacheManager: ResilientCacheManager.instance,
   ).resolve(const ImageConfiguration());
   late final ImageStreamListener listener;
   void finish() {

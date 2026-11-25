@@ -1,12 +1,11 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/resilient_cache_manager.dart';
+import '../../core/media/reader_media_source.dart';
 import '../../core/theme/storia_colors.dart';
 import '../../data/models.dart';
 import 'overlay/overlay_layout_engine.dart';
@@ -86,9 +85,8 @@ class _PageRendererState extends State<PageRenderer> {
     }
 
     final completer = Completer<Size>();
-    final stream = CachedNetworkImageProvider(
+    final stream = readerPageImageProvider(
       imageUrl,
-      cacheManager: ResilientCacheManager.instance,
     ).resolve(const ImageConfiguration());
     late final ImageStreamListener listener;
     listener = ImageStreamListener(
@@ -202,7 +200,7 @@ class _PageRendererState extends State<PageRenderer> {
             _parallaxLayer(
               multiplier: _kBackgroundParallax,
               pageHeight: container.height,
-              child: _tiltLayer(child: imageLayer),
+              child: _tiltLayer(child: RepaintBoundary(child: imageLayer)),
             ),
             // Text layer stays at neutral parallax (multiplier 1.0 = 0 shift)
             // and must remain a direct child of Stack so Positioned works.
@@ -345,10 +343,7 @@ class _PageRendererState extends State<PageRenderer> {
 
   Widget _buildPageImage() {
     final image = Image(
-      image: CachedNetworkImageProvider(
-        widget.page.imageUrl!,
-        cacheManager: ResilientCacheManager.instance,
-      ),
+      image: readerPageImageProvider(widget.page.imageUrl!),
       fit: BoxFit.contain,
       width: double.infinity,
       height: double.infinity,

@@ -3854,6 +3854,20 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-11-11T10:26:25"
+    },
+    {
+      "date": "2026-11-12",
+      "error_message": "Web reader stalls while opening and turning story pages.",
+      "root_cause": "ReaderScreen eagerly initializes a 6 MB celebration GIF with GifPlayerController, which decodes every animation frame before it is shown. PageView also builds adjacent illustrations only when a swipe starts, competing with scrolling for decoding and layout work.",
+      "fix": "Render the celebration with Image.asset only while visible, enable the PageView's bounded adjacent viewport cache, and isolate illustration/page painting with RepaintBoundary. Keep the existing one-page virtualization window.",
+      "tags": [
+        "web",
+        "reader",
+        "performance",
+        "gif",
+        "scrolling",
+        "prefetch"
+      ]
     }
   ]
 }

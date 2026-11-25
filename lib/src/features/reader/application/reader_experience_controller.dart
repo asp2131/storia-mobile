@@ -372,12 +372,21 @@ class ReaderExperienceController {
       showCelebrationGif = false;
     }
 
-    _setState(
-      _state.copyWith(
-        readerState: next,
-        showCelebrationGif: showCelebrationGif,
-      ),
+    // The audio position stream ticks up to ~60 times a second. Widgets that
+    // need it listen to [narrationPositionListenable]; announcing every tick
+    // as a state change would rebuild the whole reader screen each time.
+    final positionOnly =
+        showCelebrationGif == _state.showCelebrationGif &&
+        next.sameIgnoringNarrationPosition(_state.readerState);
+    final nextState = _state.copyWith(
+      readerState: next,
+      showCelebrationGif: showCelebrationGif,
     );
+    if (positionOnly) {
+      _state = nextState;
+      return;
+    }
+    _setState(nextState);
   }
 
   void _onWordHelpChanged(WordHelpSnapshot snapshot) {

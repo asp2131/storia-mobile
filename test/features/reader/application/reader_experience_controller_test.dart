@@ -177,6 +177,9 @@ void main() {
       () async {
         expect(controller.narrationPositionListenable.value, Duration.zero);
         expect(controller.scrollOffsetListenable.value, 0.0);
+        final emitted = <ReaderExperienceState>[];
+        final sub = controller.states.listen(emitted.add);
+        addTearDown(sub.cancel);
 
         session.emitState(
           const ReaderViewState.initial().copyWith(
@@ -193,6 +196,12 @@ void main() {
           const Duration(seconds: 7),
         );
         expect(controller.scrollOffsetListenable.value, 1.25);
+        // Position-only ticks must not rebuild state watchers.
+        expect(emitted, isEmpty);
+        expect(
+          controller.state.readerState.narrationPosition,
+          const Duration(seconds: 7),
+        );
       },
     );
 

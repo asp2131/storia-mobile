@@ -214,3 +214,35 @@ The manual `xcodebuild -exportArchive` step works because it explicitly maps:
 - `com.storia.storiaFlutter` -> `Storia App Store Profile`
 
 That removes ambiguity during export.
+
+# Sharing published books
+
+Open a book and use **Copy book link** in the reader toolbar. After the parent
+gate, paste the link into Reddit, Discord, or a message. Links always use the
+stable custom domain: `https://app.loratone.com/book/68` (book ID 68 is an example).
+Any published title can be shared. Visitors read without signing up, using the
+guest reader; private recordings, microphone features, and account progress are
+not loaded. Draft, removed, and malformed links show an unavailable state.
+
+Cloudflare Pages adds title, author, and public cover metadata to `/book/<id>`
+responses before Flutter starts, so link crawlers can build previews. Both the
+custom domain and new `*.loratone-app.pages.dev` deployments accept these paths;
+the canonical URL remains on `app.loratone.com`. Existing immutable deployment
+URLs do not receive new code. Social platforms control whether/how they display
+and cache previews.
+
+`./bin/deploy-web.sh` builds Flutter, runs `node bin/prepare-web-sharing.mjs`,
+and deploys the app plus its Pages Worker. When building manually, run the same
+preparation command **after** `flutter build web --release` and **before**
+deploying `build/web`. The generated Worker uses only `SUPABASE_URL` and
+`SUPABASE_ANON_KEY` from the built public `.env.client` asset. No new Cloudflare
+secrets or service-role credentials are needed. Supabase's anonymous RLS policies
+must continue to allow published books and their pages/media. Publication is
+checked on each request; unpublished titles are not cached by the Worker.
+
+Validate previews with `node --test test/cloudflare/book_share_worker_test.mjs`.
+For a local Pages smoke test, build and prepare as above, then run
+`npx wrangler pages dev build/web` and open `/book/68` in a fresh browser session.
+Check `/book/68` with a Discord crawler user agent as well: the initial HTML
+should include `og:title`, `og:description`, and `og:image` when a public cover
+exists. No client-side JavaScript is required to read the preview metadata.

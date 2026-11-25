@@ -4,9 +4,9 @@ import 'dart:ui';
 
 import 'package:confetti/confetti.dart';
 import 'package:cue/cue.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gif_player/gif_player.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gooey/gooey.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,10 +22,13 @@ import '../gen_ui/data/gen_ui_preferences_provider.dart';
 import '../gen_ui/presentation/reader_activity_card.dart';
 import '../narration_studio/data/narration_providers.dart';
 import '../narration_studio/presentation/narration_voice_sheet.dart';
+import '../sharing/book_links.dart';
+import '../sharing/book_sharing.dart';
 import 'application/reader_experience_controller.dart';
 import 'celebration/book_celebration_summary.dart';
 import 'domain/reader_capabilities.dart';
 import 'liquid_page_clipper.dart';
+import 'overlay/text_overlay_utils.dart';
 import 'page_like_button.dart';
 import 'runtime/providers/reader_capabilities_provider.dart';
 import 'page_renderer.dart';
@@ -56,7 +59,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   late final ReaderTiltController _tiltController;
   bool _tiltStarted = false;
   late final ConfettiController _confettiController;
-  late GifPlayerController _gifPlayerController;
 
   late final ReaderExperienceControllerNotifier _controller;
 
@@ -84,13 +86,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _tiltController = ReaderTiltController();
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
-    );
-    _gifPlayerController = GifPlayerController(
-      dataSource: GifPlayerDataSource.asset('assets/gifs/green_screen.gif'),
-      isAutoPlay: false,
-      isAutoInitialize: true,
-      loop: true,
-      showControls: false,
     );
   }
 
@@ -172,7 +167,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
     _confettiController.dispose();
-    _gifPlayerController.dispose();
     super.dispose();
   }
 
@@ -199,10 +193,6 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
         final isCelebrating = next.readerState.showCelebration;
         if (isCelebrating && !wasCelebrating) {
           _confettiController.play();
-          _gifPlayerController.seekTo(0);
-          _gifPlayerController.play();
-        } else if (!isCelebrating && wasCelebrating) {
-          _gifPlayerController.pause();
         }
       },
     );
@@ -276,6 +266,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                   child: PageView.builder(
                     controller: _pageController,
                     scrollDirection: Axis.vertical,
+                    // Keep one adjacent viewport ready before the next swipe.
+                    // The virtualization window below bounds decoded pages.
+                    allowImplicitScrolling: true,
                     itemCount: book.pages.length,
                     onPageChanged: (index) {
                       unawaited(c.dispatch(ReaderExperiencePageChanged(index)));
@@ -289,9 +282,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
                       final page = book.pages[index];
 
-                      final pageRenderer = ValueListenableBuilder<Duration>(
-                        valueListenable: c.narrationPositionListenable,
-                        builder: (context, narrationPosition, _) {
+                      final pageRenderer = _NarrationWordBuilder(
+                        position: c.narrationPositionListenable,
+                        timestamps: page.narrationTimestamps,
+                        builder: (context, narrationPosition) {
                           return PageRenderer(
                             page: page,
                             pageIndex: index,
@@ -338,7 +332,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
                       return ValueListenableBuilder<double>(
                         valueListenable: _scrollOffsetNotifier,
-                        child: pageRenderer,
+                        child: RepaintBoundary(child: pageRenderer),
                         builder: (context, scrollOffset, child) {
                           final localOffset = scrollOffset - index;
 
@@ -472,19 +466,19 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                     ],
                   ),
                 ),
-                // Only render the GIF player when celebration is active. The
-                // controller is owned by ReaderScreen so it can survive these
-                // conditional unmounts and be disposed exactly once in dispose().
+                // Load celebration media only when visible. Image.asset streams
+                // GIF frames instead of eagerly decoding the entire animation
+                // while the reader is trying to turn pages.
                 if (state.showCelebrationGif)
                   Positioned(
                     right: 16,
                     bottom: MediaQuery.paddingOf(context).bottom + 100,
                     width: 160,
                     child: IgnorePointer(
-                      child: GifPlayer(
-                        controller: _gifPlayerController,
-                        isAutoDisposeController: false,
+                      child: Image.asset(
+                        'assets/gifs/green_screen.gif',
                         fit: BoxFit.contain,
+                        excludeFromSemantics: true,
                       ),
                     ),
                   ),
@@ -543,6 +537,71 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 // =============================================================================
 // Top bar with title / page info / settings
 // =============================================================================
+
+/// Rebuilds [builder] only when narration moves onto a different word.
+///
+/// The position stream ticks far more often than the highlighted word changes,
+/// and each rebuild re-lays-out the whole page overlay.
+class _NarrationWordBuilder extends StatefulWidget {
+  const _NarrationWordBuilder({
+    required this.position,
+    required this.timestamps,
+    required this.builder,
+  });
+
+  final ValueListenable<Duration> position;
+  final List<WordTimestamp>? timestamps;
+  final Widget Function(BuildContext context, Duration position) builder;
+
+  @override
+  State<_NarrationWordBuilder> createState() => _NarrationWordBuilderState();
+}
+
+class _NarrationWordBuilderState extends State<_NarrationWordBuilder> {
+  late Duration _position;
+  late int _wordIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _sync();
+    widget.position.addListener(_onTick);
+  }
+
+  @override
+  void didUpdateWidget(covariant _NarrationWordBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.position != widget.position) {
+      oldWidget.position.removeListener(_onTick);
+      widget.position.addListener(_onTick);
+    }
+    _sync();
+  }
+
+  @override
+  void dispose() {
+    widget.position.removeListener(_onTick);
+    super.dispose();
+  }
+
+  void _sync() {
+    _position = widget.position.value;
+    _wordIndex = computeActiveWordIndex(widget.timestamps, _position);
+  }
+
+  void _onTick() {
+    final position = widget.position.value;
+    final wordIndex = computeActiveWordIndex(widget.timestamps, position);
+    if (wordIndex == _wordIndex) return;
+    setState(() {
+      _position = position;
+      _wordIndex = wordIndex;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _position);
+}
 
 class _ReaderTopBar extends StatelessWidget {
   final Book book;
@@ -656,6 +715,15 @@ class _ReaderTopBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
+              if (BookLinks.isValidId(book.id)) ...[
+                _ChromeButton(
+                  icon: Icons.link_rounded,
+                  onTap: () => copyBookLink(context, book.id),
+                  semanticLabel: 'Copy book link',
+                  semanticHint: 'Ask a parent to copy a link to this story',
+                ),
+                const SizedBox(width: 10),
+              ],
               _ChromeButton(
                 icon: Icons.tune_rounded,
                 onTap: onAudioSettingsTap,
