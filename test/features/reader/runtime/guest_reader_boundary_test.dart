@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loratone/src/audio/page_audio.dart';
 import 'package:loratone/src/audio/audio_providers.dart';
+import 'package:loratone/src/data/analytics_repository.dart';
 import 'package:loratone/src/data/models.dart';
+import 'package:loratone/src/data/providers.dart';
 import 'package:loratone/src/features/reader/application/reader_experience_controller.dart';
 import 'package:loratone/src/features/reader/application/reader_experience_effects.dart';
 import 'package:loratone/src/features/reader/domain/reader_capabilities.dart';
@@ -13,9 +15,10 @@ import 'package:loratone/src/features/reader/runtime/providers/reader_session_pr
 
 void main() {
   test(
-    'guest reading never constructs analytics, speech or word-help services',
+    'guest reading sends only anonymous reading events, never speech or word help',
     () async {
       final audio = _PageAudio();
+      final transport = _RecordingTransport();
       final container = ProviderContainer(
         overrides: [
           readerCapabilitiesProvider.overrideWithValue(
@@ -26,8 +29,11 @@ void main() {
           readerSpeechPracticePortProvider.overrideWith(
             (ref) => throw StateError('speech initialized'),
           ),
-          readerAnalyticsTrackerProvider.overrideWith(
-            (ref) => throw StateError('analytics initialized'),
+          analyticsRepositoryProvider.overrideWithValue(
+            AnalyticsRepository(
+              transport: transport,
+              currentAnonId: () => 'anon-1',
+            ),
           ),
           readerExperienceWordHelpProvider(
             '68',
@@ -63,12 +69,31 @@ void main() {
       expect(state.readerState.isListening, isFalse);
       expect(audio.loadedPages, ['1', '2']);
       await controller.dispatch(const ReaderExperienceEnd());
+      await pumpEventQueue();
+      expect(transport.bodies, isNotEmpty);
+      for (final body in transport.bodies) {
+        expect(body['anonId'], 'anon-1');
+        expect(
+          AnalyticsRepository.guestEvents.map((e) => e.eventName),
+          contains(body['event']),
+        );
+      }
       subscription.close();
       container.dispose();
       await pumpEventQueue();
       await audio.close();
     },
   );
+}
+
+class _RecordingTransport implements AnalyticsTransport {
+  final bodies = <Map<String, dynamic>>[];
+
+  @override
+  Future<void> send(Map<String, dynamic> body, {String? accessToken}) async {
+    expect(accessToken, isNull);
+    bodies.add(body);
+  }
 }
 
 final _book = Book(

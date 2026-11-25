@@ -3904,6 +3904,24 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-11-11T00:00:00Z"
+    },
+    {
+      "id": "bug-238",
+      "timestamp": "2026-11-25T00:00:00Z",
+      "error_message": "No analytics for Hat Trickster after release; funnel metrics (app_opened, signup_completed, library_book_opened...) stopped arriving",
+      "file": "lib/src/data/analytics_repository.dart",
+      "root_cause": "Release 3.3.6+7 was built from chore/release-3.3.4-web-deploy, which never merged main's PR #39 (funnel events, user-only tracking). Separately, shared links (/b/<id>) open GuestReaderScreen with ReaderAccess.guest, and allowsAnalytics was catalog-only, so signed-out readers of a shared book sent nothing.",
+      "fix": "Merged origin/main into the release branch. Guest readers now track reading (tracksReading capability) and AnalyticsRepository sends the 5 storia GUEST_EVENTS with anonId (per-install UUID, shared_preferences 'storia_anon_id') when signed out. Needs storia PR #53 merged + its migration on prod.",
+      "tags": [
+        "analytics",
+        "release",
+        "guest-reader",
+        "sharing",
+        "kpi"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-11-25T00:00:00Z"
     }
   ]
 }

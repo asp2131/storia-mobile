@@ -60,7 +60,7 @@ final readerSessionProvider = Provider<ReaderSession>((ref) {
         ? ref.watch(readerSpeechPracticePortProvider)
         : null,
     scheduler: FlutterSchedulerPort(),
-    analyticsTracker: capabilities.allowsAnalytics
+    analyticsTracker: capabilities.tracksReading
         ? ref.watch(readerAnalyticsTrackerProvider)
         : null,
     imageReadyProbe: ref.watch(readerImageReadyProbeProvider),

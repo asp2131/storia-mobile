@@ -26,6 +26,10 @@ class ReaderCapabilities {
   bool get allowsActivities => access == ReaderAccess.catalog;
   bool get allowsAnalytics => access == ReaderAccess.catalog;
 
+  /// Reading progress (start, pages, finish). Guests send it under an
+  /// anonymous device id; the bundled sample sends nothing.
+  bool get tracksReading => access != ReaderAccess.sample;
+
   /// Account-free pages load silently until the reader explicitly starts audio.
   bool get autoplayPages => access == ReaderAccess.catalog;
 }
