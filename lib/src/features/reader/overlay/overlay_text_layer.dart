@@ -25,20 +25,26 @@ class OverlayTextLayer extends StatelessWidget {
     // One scene-level Cue drives every overlay element. Each element contributes
     // its own Actor delay so the page entrance remains staggered while sharing
     // a single active-page controller.
-    return Cue.onToggle(
-      debugLabel: 'reader-overlay-text',
-      toggled: frame.isActive,
-      motion: .smooth(),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          for (final element in frame.elements)
-            OverlayTextElement(
-              element: element,
-              onWordTap: onWordTap,
-              onWordLongPress: onWordLongPress,
-            ),
-        ],
+    // Overlay text is lettering on the art: sized as % of the image, like the
+    // Studio editor. The phone's system font size must not enlarge it (words
+    // are Text widgets in WidgetSpans and would scale; the art would not),
+    // or bubbles overflow on phones while desktop looks right.
+    return MediaQuery.withNoTextScaling(
+      child: Cue.onToggle(
+        debugLabel: 'reader-overlay-text',
+        toggled: frame.isActive,
+        motion: .smooth(),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            for (final element in frame.elements)
+              OverlayTextElement(
+                element: element,
+                onWordTap: onWordTap,
+                onWordLongPress: onWordLongPress,
+              ),
+          ],
+        ),
       ),
     );
   }

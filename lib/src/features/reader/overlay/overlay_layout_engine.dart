@@ -50,6 +50,8 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
             parseHexColor(element.color),
           ).copyWith(
             height: 1.3,
+            // CSS line-height splits leading evenly above/below; match Studio.
+            leadingDistribution: TextLeadingDistribution.even,
             shadows: element.shadow == null
                 ? null
                 : [
@@ -62,7 +64,8 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
                         (element.shadow!.x / 100) * imageSize.width,
                         (element.shadow!.y / 100) * imageSize.height,
                       ),
-                      blurRadius: (element.shadow!.blur / 100) * imageSize.width,
+                      blurRadius:
+                          (element.shadow!.blur / 100) * imageSize.width,
                     ),
                   ],
           );
@@ -98,9 +101,7 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
                 fontWeight: hasSegmentHighlight
                     ? baseStyle.fontWeight
                     : FontWeight.w900,
-                color: hasSegmentHighlight
-                    ? baseStyle.color
-                    : Colors.white,
+                color: hasSegmentHighlight ? baseStyle.color : Colors.white,
               )
             : isSpoken
             ? baseStyle.copyWith(
@@ -138,8 +139,11 @@ class OverlayLayoutEngineImpl implements OverlayLayoutEngine {
                 element.background!.color,
                 fallback: Colors.transparent,
               ),
-              padding: ((element.background!.padding ?? 0) / 100) * imageSize.width,
-              borderRadius: ((element.background!.borderRadius ?? 0) / 100) * imageSize.width,
+              padding:
+                  ((element.background!.padding ?? 0) / 100) * imageSize.width,
+              borderRadius:
+                  ((element.background!.borderRadius ?? 0) / 100) *
+                  imageSize.width,
             );
 
       elements.add(
