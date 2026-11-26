@@ -3922,6 +3922,27 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-11-25T00:00:00Z"
+    },
+    {
+      "id": "bug-overlay-system-text-scale",
+      "timestamp": "2026-11-25",
+      "error_message": "Reader overlay text overflows speech bubbles on Android phones (book 77) but matches Studio on desktop.",
+      "file": "lib/src/features/reader/overlay/overlay_text_layer.dart",
+      "root_cause": "In word-help mode each word is a Text inside a WidgetSpan; Text reads MediaQuery.textScaler (phone system font size, ~1.15x on user's device) while the art does not scale. Desktop browser scale is 1.0 so it looked right.",
+      "fix": "Wrap OverlayTextLayer in MediaQuery.withNoTextScaling; also leadingDistribution: even to match CSS line-height. Regression test in overlay_layout_engine_test.dart.",
+      "tags": [
+        "overlay",
+        "text-scale",
+        "textScaler",
+        "android",
+        "parity",
+        "studio"
+      ],
+      "related_bugs": [
+        "bug-overlay-rotation-origin"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-11-25"
     }
   ]
 }

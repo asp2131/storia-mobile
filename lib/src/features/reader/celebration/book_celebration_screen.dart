@@ -12,6 +12,7 @@ import '../../../core/theme/storia_spacing.dart';
 import '../../../core/widgets/sketch_button.dart';
 import '../../../routing/journey/journey_policy.dart';
 import 'book_celebration_summary.dart';
+import '../../../core/media/reader_media_source.dart';
 
 /// Full-screen book-finished celebration. Reached by swiping up past the last
 /// page of a book (see ReaderScreen). Session-scoped v1: hero Lottie, "You
@@ -214,6 +215,7 @@ class _CoverChip extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: CachedNetworkImage(
           imageUrl: coverUrl!,
+          memCacheHeight: coverDecodeHeight(context, 28),
           fit: BoxFit.cover,
           errorWidget: (_, __, ___) =>
               const ColoredBox(color: StoriaColors.sage),

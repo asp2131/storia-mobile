@@ -70,13 +70,32 @@ int computeActiveWordIndex(
   return foundIndex;
 }
 
+final _rgbColor = RegExp(
+  r'^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$',
+  caseSensitive: false,
+);
+
+/// Parses overlay colours as the web editor saves them: `#RGB`, `#RRGGBB`,
+/// `#AARRGGBB`, and `rgb()` / `rgba()` (used for see-through shadows and text
+/// backgrounds; before this they fell back, so backgrounds vanished).
 Color parseHexColor(String value, {Color fallback = Colors.white}) {
   var hex = value.trim();
   if (hex.isEmpty) {
     return fallback;
   }
+  final rgb = _rgbColor.firstMatch(hex);
+  if (rgb != null) {
+    int channel(int group) => int.parse(rgb.group(group)!).clamp(0, 255);
+    final alpha = rgb.group(4) == null
+        ? 1.0
+        : (double.tryParse(rgb.group(4)!) ?? 1.0).clamp(0.0, 1.0);
+    return Color.fromRGBO(channel(1), channel(2), channel(3), alpha);
+  }
   if (hex.startsWith('#')) {
     hex = hex.substring(1);
+  }
+  if (hex.length == 3) {
+    hex = hex.split('').map((c) => '$c$c').join();
   }
   if (hex.length == 6) {
     hex = 'FF$hex';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loratone/src/data/models.dart';
 import 'package:loratone/src/features/reader/overlay/overlay_layout_engine.dart';
+import 'package:loratone/src/features/reader/overlay/overlay_text_layer.dart';
 import 'package:loratone/src/features/reader/overlay/text_overlay_utils.dart';
 
 void main() {
@@ -93,5 +94,56 @@ void main() {
     expect(tokens.length, 3);
     expect(tokens[1].isWord, false);
     expect(tokens[1].raw, '   ');
+  });
+
+  testWidgets('overlay words ignore the system font size setting', (
+    tester,
+  ) async {
+    final frame = engine.build(
+      overlay: const TextOverlayConfig(
+        version: 1,
+        elements: [
+          TextElement(
+            id: 'bubble',
+            text: 'Hello world',
+            x: 0,
+            y: 0,
+            width: 50,
+            fontFamily: 'Inter',
+            fontSize: 5,
+            fontWeight: 400,
+            color: '#000000',
+            textAlign: 'left',
+            rotation: 0,
+          ),
+        ],
+      ),
+      imageSize: const Size(400, 600),
+      activeWordIndex: -1,
+      spokenWordIndices: const {},
+      isActive: true,
+    );
+
+    Future<Size> wordSize(double systemScale) async {
+      await tester.pumpWidget(
+        MediaQuery(
+          data: MediaQueryData(textScaler: TextScaler.linear(systemScale)),
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: SizedBox(
+              width: 400,
+              height: 600,
+              // onWordTap makes each word a Text in a WidgetSpan, the path
+              // that used to pick up the phone's font size.
+              child: OverlayTextLayer(frame: frame, onWordTap: (_, _) {}),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 1));
+      return tester.getSize(find.text('Hello'));
+    }
+
+    expect(await wordSize(1.3), await wordSize(1.0));
   });
 }

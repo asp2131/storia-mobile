@@ -15,6 +15,7 @@ import '../child/data/child_profile_providers.dart';
 import '../reader/data/reading_checkpoint_provider.dart';
 import '../reader/domain/reading_checkpoint.dart';
 import 'library_providers.dart';
+import '../../core/media/reader_media_source.dart';
 
 const _kLoraHead = 'assets/images/library/lora_head.png';
 const _kCloudReader = 'assets/images/library/cloud_reader.png';
@@ -838,10 +839,15 @@ class _CoverArt extends StatelessWidget {
       // after a route return (see .wolf/cerebrum.md).
       child: url == null || url.isEmpty
           ? fallback
-          : Image.network(
-              url,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => fallback,
+          : LayoutBuilder(
+              builder: (context, constraints) => Image.network(
+                url,
+                cacheHeight: constraints.maxHeight.isFinite
+                    ? coverDecodeHeight(context, constraints.maxHeight)
+                    : null,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => fallback,
+              ),
             ),
     );
   }

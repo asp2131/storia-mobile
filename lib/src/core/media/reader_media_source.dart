@@ -136,6 +136,13 @@ ImageProvider<Object>? imageProviderForReaderSource(
 // ponytail: fixed cap, derive from the device's physical size if tablets look soft.
 const int kReaderPageImageMaxSide = 2560;
 
+/// Decoded height for network art drawn [boxHeight] logical px tall with
+/// BoxFit.cover. Twice the box in physical pixels, so art narrower than the box
+/// still covers it sharply; covers otherwise decode at upload size (up to 17 MB
+/// each on the shelf).
+int coverDecodeHeight(BuildContext context, double boxHeight) =>
+    (boxHeight * MediaQuery.devicePixelRatioOf(context) * 2).ceil();
+
 /// The one provider every reader call site must use for a page illustration,
 /// so rendering, size lookup and the image-ready probe share a single decode.
 ImageProvider<Object> readerPageImageProvider(String url) {
