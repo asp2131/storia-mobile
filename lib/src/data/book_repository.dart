@@ -12,7 +12,9 @@ class BookRepository {
         .from('books')
         .select('id, title, author, cover_url, pages(count)')
         .eq('is_published', true)
-        .order('inserted_at');
+        // Newest first. (postgrest's order() already defaults to descending;
+        // spelled out because the library once assumed the opposite.)
+        .order('inserted_at', ascending: false);
 
     final rows = (data as List<dynamic>).whereType<Map<String, dynamic>>();
     return rows.map(Book.fromLibraryJson).toList(growable: false);
