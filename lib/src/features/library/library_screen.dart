@@ -162,8 +162,8 @@ class _LibraryHomeState extends ConsumerState<_LibraryHome> {
                     (b.author ?? '').toLowerCase().contains(query),
               )
               .toList();
-    // The repository orders by inserted_at, so the newest books are last.
-    final newest = books.reversed.take(8).toList();
+    // getPublishedBooks returns the newest books first.
+    final newest = books.take(8).toList();
 
     return ListView(
       padding: const EdgeInsets.only(bottom: _kTabBarClearance),
@@ -195,21 +195,27 @@ class _LibraryHomeState extends ConsumerState<_LibraryHome> {
             onOpenBook: widget.onOpenBook,
           ),
           const _SectionTitle('New books'),
-          SizedBox(
-            height: 232,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-              itemCount: newest.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 14),
-              itemBuilder: (context, i) => SizedBox(
-                width: 128,
-                child: _BookTile(
-                  book: newest[i],
-                  coverHeight: 170,
-                  onTap: () => widget.onOpenBook(newest[i].id),
-                ),
-              ),
+          // No fixed row height: the row takes its tallest tile's height,
+          // so two-line titles fit at any system font size.
+          // ponytail: builds all 8 tiles eagerly; fine at take(8).
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final (i, book) in newest.indexed) ...[
+                  if (i > 0) const SizedBox(width: 14),
+                  SizedBox(
+                    width: 128,
+                    child: _BookTile(
+                      book: book,
+                      coverHeight: 170,
+                      onTap: () => widget.onOpenBook(book.id),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           const _ComicsBanner(),
@@ -322,7 +328,7 @@ class _Hero extends StatelessWidget {
     final resumed = checkpoint == null
         ? null
         : books.where((b) => b.id == checkpoint.bookId).firstOrNull;
-    final book = resumed ?? books.last;
+    final book = resumed ?? books.first;
     final isResume = resumed != null && !checkpoint!.completed;
     final progress = isResume && book.pageCount > 0
         ? ((checkpoint.pageIndex + 1) / book.pageCount).clamp(0.0, 1.0)
@@ -1093,9 +1099,10 @@ class _TabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 72 tall at normal text size (56 tabs + 8 padding); grows with the
+    // system font size instead of overflowing.
     return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: LoratoneLibraryColors.ink,
         borderRadius: BorderRadius.circular(26),
@@ -1155,9 +1162,10 @@ class _TabButton extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(18),
             onTap: onTap,
-            child: SizedBox(
-              height: 56,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 56),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(icon, size: 22, color: fg),

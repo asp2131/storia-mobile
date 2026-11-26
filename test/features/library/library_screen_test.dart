@@ -28,10 +28,11 @@ ReadingCheckpoint _checkpoint(
   updatedAt: DateTime(2026, 10, 29),
 );
 
+// Newest first, like getPublishedBooks.
 final _books = [
-  _book('a', 'Oldest Owl'),
-  _book('b', 'Middle Moon'),
   _book('c', 'Newest Nap'),
+  _book('b', 'Middle Moon'),
+  _book('a', 'Oldest Owl'),
 ];
 
 Future<List<String>> _pump(
@@ -41,6 +42,7 @@ Future<List<String>> _pump(
   List<ReadingCheckpoint> shelf = const [],
   DateTime? now,
   bool dated = true,
+  List<Book>? books,
 }) async {
   final clock = now ?? DateTime(2026, 11, 5, 21, 30);
   final launch = dated ? DateTime(2026, 11, 8) : null;
@@ -71,7 +73,8 @@ Future<List<String>> _pump(
           AnalyticsRepository(transport: _NoopAnalyticsTransport()),
         ),
         bookLibraryProvider.overrideWith(
-          (ref) async => failLoad ? throw Exception('offline') : _books,
+          (ref) async =>
+              failLoad ? throw Exception('offline') : books ?? _books,
         ),
         readingContinuationProvider.overrideWith((ref) async => continuation),
         libraryShelfProvider.overrideWith((ref) async => shelf),
@@ -103,6 +106,7 @@ void main() {
 
     expect(find.text('Hi, Jo!'), findsOneWidget);
     expect(find.text('Start listening'), findsOneWidget);
+    expect(find.bySemanticsLabel('Start listening: Newest Nap'), findsOne);
     expect(find.text('New books'), findsOneWidget);
     expect(find.text('All books'), findsOneWidget);
     expect(find.text('Comics are coming'), findsOneWidget);
@@ -119,6 +123,23 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(opened, ['b']);
+  });
+
+  testWidgets('new book tiles fit two-line titles at a large font size', (
+    tester,
+  ) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    // A RenderFlex overflow is reported as an exception and fails the test.
+    await _pump(
+      tester,
+      books: [
+        _book('x', "My Day at Granny's House"),
+        _book('y', 'The Wizard of Oz and Friends'),
+      ],
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('search narrows the books', (tester) async {
